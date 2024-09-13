@@ -23,7 +23,7 @@ const { tag } = Astro.params
 const { posts } = Astro.props
 ---
 
-<BaseLayout pageTitle={tag}>
+<BaseLayout pageTitle={`${tag} Articles`}>
 	<p>Posts tagged with {tag}</p>
 	<ul>
 		{
