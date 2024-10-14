@@ -2,7 +2,11 @@
 import { ViewTransitions } from 'astro:transitions'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
-import '../styles/global.css'
+import 'modern-normalize/modern-normalize.css'
+import '../styles/global/_variables.scss'
+import '../styles/global.scss'
+import '../styles/global/_header.scss'
+import '../styles/global/_layout.scss'
 
 const { pageTitle } = Astro.props
 ---
@@ -14,15 +18,30 @@ const { pageTitle } = Astro.props
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{pageTitle}</title>
-		<ViewTransitions />
-	</head><body>
-		<Header />
-
-		<h1>{pageTitle}</h1>
-		<slot />
-		<Footer />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap"
+			rel="stylesheet"
+		/></head
+	>
+	<ViewTransitions />
+	<body>
+		<div class="site">
+			<Header />
+			<main>
+				<h1>{pageTitle}</h1>
+				<slot />
+			</main>
+			<aside>
+				<h1>Sidebar</h1>
+			</aside>
+			<Footer />
+		</div>
 		<script>
 			import '../scripts/menu.js'
 		</script>
 	</body>
+
+
 </html>

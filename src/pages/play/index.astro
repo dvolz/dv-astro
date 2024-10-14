@@ -1,0 +1,22 @@
+---
+import { object } from 'astro:schema'
+
+import BaseLayout from '../../layouts/BaseLayout.astro'
+// Get all pages inside pages/experiments
+const experimentPages = await Astro.glob('../play/*.astro')
+const pageTitle = 'Experiments'
+console.log(experimentPages)
+---
+
+<BaseLayout pageTitle={pageTitle}>
+	<p>This is where I post my experiments</p>
+	<ul>
+		{
+			experimentPages.map((page) => (
+				<li>
+					<a href={page.url}>{page.frontmatter.title}</a>
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>

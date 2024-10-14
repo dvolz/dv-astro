@@ -1,8 +1,18 @@
 ---
 import Social from './Social.astro'
+import CatSVG from '../svgs/cat4.svg?raw'
 ---
 
+<style>
+	.catSVG {
+		width: 70px;
+		height: auto;
+	}
+</style>
 <footer>
+	<div class="catSVG">
+		<Fragment set:html={CatSVG} />
+	</div>
 	<Social platform="twitter" username="astrodotbuild" />
 	<Social platform="github" username="withastro" />
 	<Social platform="youtube" username="astrodotbuild" />

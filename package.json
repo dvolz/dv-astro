@@ -11,8 +11,13 @@
   },
   "dependencies": {
     "@astrojs/preact": "^3.5.3",
-    "@astrojs/rss": "^4.0.7",
-    "astro": "^4.15.4",
-    "preact": "^10.23.2"
+    "@astrojs/rss": "^4.0.8",
+    "astro": "^4.16.2",
+    "modern-normalize": "^3.0.1",
+    "preact": "^10.23.2",
+    "scss": "^0.2.4"
+  },
+  "devDependencies": {
+    "sass-embedded": "^1.79.3"
   }
 }
