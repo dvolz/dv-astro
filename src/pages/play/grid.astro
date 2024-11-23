@@ -67,6 +67,7 @@ const fullWidthBody = true
 				let width = index === 0 || index === 3 ? value : 100 - value
 				column.style.flexBasis = `${width}%`
 				column.innerText = `${width}%`
+				console.log('updated')
 			})
 
 			box.style.width = `${squareWidth + 0.1}%`
