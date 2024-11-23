@@ -1,14 +1,41 @@
 ---
-const { platform, username } = Astro.props
+import { platforms, defaultPlatform } from '../data/platforms.js'
+const { platform, username, mdicon } = Astro.props
+import { Icon } from 'astro-icon/components' // Centralized mapping for platform-specific settings
+
+// Get platform-specific details
+const { url, icon } = platforms[platform]
+	? { url: platforms[platform].url(username), icon: platforms[platform].icon }
+	: {
+			url: defaultPlatform.url(platform, username),
+			icon: defaultPlatform.icon(mdicon),
+		}
 ---
 
-<style>
-	a {
-		padding: 0.5rem 1rem;
-		color: white;
-		background-color: #4c1d95;
-		text-decoration: none;
+<style lang="scss">
+	.social-item {
+		margin-right: 1.5rem;
+		list-style-type: none;
+	}
+	$svg-size: 4rem;
+	svg {
+		width: $svg-size;
+		height: $svg-size;
+		color: var(--background-color);
+		transition: color 0.3s ease;
+	}
+	a svg {
+		&:hover {
+			color: var(--highlight-accent);
+		}
 	}
 </style>
 
-<a href={`https://www.${platform}.com/${username}`}>{platform}</a>
+<li class="social-item">
+	<a href={url} title={platform} target="_blank">
+		<Icon
+			name={icon}
+			style="stroke: var(--text-color); stroke-width:.7; fill:none;"
+		/>
+	</a>
+</li>

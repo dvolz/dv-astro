@@ -1,0 +1,23 @@
+// Global Content Control
+.content {
+	padding: 3rem 2.5rem;
+	text-align: left;
+}
+.content-center {
+	text-align: center;
+}
+
+// Short for .content-parent-max-width.
+// Attach this class to the column encasing the content block to
+// center content within the column while still giving it a max-width.
+// This prevents super wide blocks of content.
+// I would suggest giving a default max-width that fits the needs of your site
+// and then tweaking individual blocks that deviate from the norm.
+.content-pmw {
+	text-align: center;
+	.content {
+		display: inline-block;
+		width: 100%;
+		max-width: 85rem;
+	}
+}

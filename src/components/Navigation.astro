@@ -1,9 +1,22 @@
 ---
-import Logo from './Logo.astro'
+const navLinks = [
+	{ path: '/about/', name: 'About' },
+	{ path: '/thoughts/', name: 'Thoughts' },
+	{ path: '/play/', name: 'Play' },
+]
+const currentPath = Astro.url.pathname
 ---
 
 <ul class="nav-links">
-	<li><a href="/about/">About</a></li>
-	<li><a href="/thoughts/">Thoughts</a></li>
-	<li><a href="/play/">Play</a></li>
+	{
+		navLinks.map((link) => (
+			<li>
+				<a
+					href={link.path}
+					class={currentPath.startsWith(link.path) ? 'active' : ''}>
+					{link.name}
+				</a>
+			</li>
+		))
+	}
 </ul>

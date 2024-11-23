@@ -1,11 +1,23 @@
 ---
 import { object } from 'astro:schema'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import Greeting from '../components/Greeting.jsx'
-const pageTitle = 'Home Page'
+import HomeContent from '../components/HomeContent.astro'
+import RecentItems from '../components/RecentItems.astro'
+const pageTitle = 'Hello and welcome'
+const subTitle = 'I am David Volz, a software manager and engineer'
 ---
 
-<BaseLayout pageTitle={pageTitle}>
-	<h2>My awesome blog subtitle</h2>
-	<Greeting client:load messages={['Hej', 'Hallo', 'Hola', 'Habari']} />
+<BaseLayout pageTitle={pageTitle} subTitle={subTitle}>
+	<div class="content-pmw">
+		<div class="content content-center">
+			<p>
+				Sample paragraph that is about 100 words long. It has a couple sentences
+				that are decent. Then one final sentence that closes the thoughts of the
+				paragraph.
+			</p>
+		</div>
+	</div>
+
+	<HomeContent />
+	<RecentItems />
 </BaseLayout>

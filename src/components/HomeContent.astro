@@ -1,0 +1,120 @@
+---
+import { Icon } from 'astro-icon/components'
+---
+
+<style lang="scss">
+	.home-content {
+		display: grid;
+		grid-template-columns: minmax(30rem, 50rem);
+		gap: 2rem;
+		justify-content: space-around;
+	}
+
+	$border-height: 0.5rem;
+	.box {
+		position: relative;
+		// middle stroke
+		border: $border-height solid var(--background-color);
+		border-radius: $border-height + 1.1;
+		padding: 2.5rem 2rem 3rem;
+		text-align: center;
+		color: var(--text-color);
+		transition: border-color 0.3s ease;
+		&:before,
+		&:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+		// outer stroke
+		&:before {
+			border: 1px solid var(--text-color);
+			left: -($border-height + 0.1);
+			top: -($border-height + 0.1);
+			width: calc(100% + 12px);
+			height: calc(100% + 12px);
+			border-radius: $border-height + 1.2;
+		}
+		// inner stroke
+		&:after {
+			border: 1px solid var(--text-color);
+			border-radius: $border-height + 0.5;
+		}
+
+		h4 {
+			transition: transform 0.3s ease;
+		}
+
+		$svg-size: 5rem;
+		svg {
+			width: $svg-size;
+			height: $svg-size;
+			margin-right: 1rem;
+			color: var(--highlight-accent);
+			transition: transform 0.3s ease;
+			path {
+				stroke-color: var(--text-color);
+			}
+		}
+		p {
+			margin: 0;
+		}
+
+		&:hover {
+			border-color: var(--highlight-secondary);
+			h4 {
+				transform: translate(3px, 0); /* Slight move and rotation */
+			}
+			svg {
+				transform: translate(-4px, -4px) rotate(-5deg);
+			}
+		}
+		&:nth-child(2) {
+			svg {
+				color: var(--highlight-secondary);
+			}
+			&:hover {
+				border-color: var(--highlight-accent);
+			}
+		}
+	}
+
+	.top {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 1.5rem;
+	}
+	@media screen and (min-width: 768px) {
+		.home-content {
+			grid-template-columns: repeat(2, minmax(30rem, 50rem));
+		}
+	}
+</style>
+
+<div class="home-content">
+	<a href="/thoughts" class="box">
+		<div class="top">
+			<Icon
+				name="mdi:brain"
+				style="stroke: var(--text-color); stroke-width: .3;"
+			/>
+			<h4>Thoughts</h4>
+		</div>
+
+		<p>Read my thoughts on various topics.</p>
+	</a>
+	<a href="/play" class="box">
+		<div class="top">
+			<Icon
+				name="mdi:palette-outline"
+				style="stroke: var(--text-color); stroke-width: .3;"
+			/>
+			<h4>Play</h4>
+		</div>
+		<p>Check out some of my ideas.</p>
+	</a>
+</div>

@@ -1,0 +1,52 @@
+---
+const { pageTitle, subTitle } = Astro.props
+---
+
+<style>
+	.typographyHero {
+		text-align: center;
+		padding: 1rem 2rem 2rem;
+		@media screen and (min-width: 768px) {
+			padding: 3.5rem 2rem 3rem;
+		}
+		&:after {
+			content: '';
+			display: block;
+			width: 100%;
+			max-width: 50rem;
+			height: 0.7rem;
+			background: var(--accent-color);
+			border: 0.1rem solid var(--text-color);
+			margin: 0 auto;
+			border-radius: 0.5rem;
+			margin-top: 0.5rem;
+		}
+	}
+	.mainTitle {
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-style: normal;
+		font-size: 5rem;
+		line-height: 1;
+	}
+	.subTitle {
+		font-size: 2.5rem;
+		line-height: 1.3;
+		margin-bottom: 1.5rem;
+	}
+	@media screen and (min-width: 768px) {
+		.mainTitle {
+			font-size: 7.5rem;
+			margin-bottom: 3rem;
+		}
+		.subTitle {
+			font-size: 3rem;
+			margin-bottom: 3.5rem;
+		}
+	}
+</style>
+
+<div class="typographyHero">
+	<p class="mainTitle">{pageTitle}</p>
+	<p class="subTitle">{subTitle}</p>
+</div>

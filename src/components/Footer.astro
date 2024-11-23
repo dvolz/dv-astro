@@ -1,19 +1,125 @@
 ---
-import Social from './Social.astro'
 import CatSVG from '../svgs/cat4.svg?raw'
+import AstroSVG from '../svgs/astro.svg?raw'
+const currentYear = new Date().getFullYear()
+import Social from './Social.astro'
+const socialLinks = [
+	{ platform: 'twitter', username: 'johndoe', mdicon: 'twitter' },
+	{ platform: 'instagram', username: 'penia', mdicon: 'instagram' },
+	{ platform: 'linkedin', username: 'davidtvolz', mdicon: 'linkedin' },
+]
 ---
 
-<style>
+<style lang="scss">
+	footer {
+		padding: 4rem 3rem;
+		position: relative;
+		&:before,
+		&:after {
+			bottom: inherit;
+			top: 0;
+			width: calc(100% - 4rem);
+			left: 2rem;
+		}
+	}
+	.row {
+		display: flex;
+		flex-flow: row wrap;
+		width: 100%;
+	}
+	.column {
+		width: 100%;
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+	.social-footer {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0;
+		li {
+			list-style-type: none;
+		}
+	}
+
 	.catSVG {
 		width: 70px;
 		height: auto;
+		margin: 0 auto;
+	}
+	.astroColumn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-flow: row wrap;
+		p {
+			margin: 0;
+		}
+	}
+	.astroSVG {
+		width: 20rem;
+		height: auto;
+		:global(.letter) {
+			stroke-width: 2.5;
+			stroke: var(--text-color);
+			fill: var(--background-color);
+			transition: fill 0.5s ease;
+			&:hover {
+				fill: url(#rainbow);
+				animation: rainbowAnimation 5s linear infinite;
+			}
+		}
+
+		/* Define the animation to move the gradient */
+		@keyframes rainbowAnimation {
+			0% {
+				fill: url(#rainbow);
+				stop-color: red;
+			}
+			100% {
+				fill: url(#rainbow);
+				stop-color: violet;
+			}
+		}
+	}
+
+	@media screen and (min-width: 768px) {
+		$column-width: 33.33337%;
+		.column {
+			flex: 0 0 $column-width;
+			max-width: $column-width;
+		}
+		.social-footer {
+			justify-content: start;
+		}
+		.astroColumn {
+			justify-content: end;
+		}
 	}
 </style>
-<footer>
-	<div class="catSVG">
-		<Fragment set:html={CatSVG} />
+<footer class="solo-line">
+	<div class="row">
+		<div class="column">
+			<ul class="social-footer">
+				{
+					socialLinks.map(({ platform, username, mdicon }) => (
+						<Social platform={platform} username={username} mdicon={mdicon} />
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="column catColumn">
+			<div class="catSVG">
+				<Fragment set:html={CatSVG} />
+			</div>
+			<p>&copy; Copyright {currentYear}</p>
+		</div>
+		<div class="column astroColumn">
+			<p>Developed from scratch using</p>
+			<div class="astroSVG">
+				<Fragment set:html={AstroSVG} />
+			</div>
+		</div>
 	</div>
-	<Social platform="twitter" username="astrodotbuild" />
-	<Social platform="github" username="withastro" />
-	<Social platform="youtube" username="astrodotbuild" />
 </footer>

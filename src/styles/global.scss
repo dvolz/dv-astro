@@ -1,5 +1,6 @@
 html {
 	font-size: 10px;
+	background: var(--background-color);
 }
 body {
 	font-family: var(--p-font);
@@ -8,22 +9,20 @@ body {
 	font-style: normal;
 	line-height: 1.5;
 	font-size: 1.6rem;
+	color: var(--text-color);
+	background-color: var(--background-color);
 }
 
 * {
 	box-sizing: border-box;
 }
 
-h1 {
-	margin: 1rem 0;
-	font-size: 2.5rem;
-}
-
-html.dark {
-	background-color: #0d0950;
-	color: #fff;
-}
-
 .dark .nav-links a {
 	color: #fff;
+}
+
+@media screen and (min-width: 768px) {
+	body {
+		font-size: 1.8rem;
+	}
 }

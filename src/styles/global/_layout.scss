@@ -6,7 +6,7 @@
 		'main main main'
 		'sidebar sidebar sidebar'
 		'footer footer footer';
-	max-width: 1400px;
+	max-width: 1200px;
 	margin: 0 auto;
 }
 header {
@@ -15,11 +15,11 @@ header {
 }
 main {
 	grid-area: main;
+	padding: 0 2rem;
 }
 aside {
 	grid-area: sidebar;
-	height: 200px;
-	border: 1px solid black;
+	padding: 0 2rem;
 }
 footer {
 	grid-area: footer;
@@ -27,7 +27,7 @@ footer {
 
 //min width css media query
 @media screen and (min-width: 768px) {
-	.site {
+	.sidebar.site {
 		grid-template-columns: 1fr 1fr 1fr;
 		grid-template-areas:
 			'header header header'
