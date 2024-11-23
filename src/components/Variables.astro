@@ -1,11 +1,5 @@
 ---
-import { preferences } from '../scripts/preferences.js'
 
-document.addEventListener('preferenceChange', (event) => {
-	const { key, value } = event.detail
-	console.log(`${key} preference updated to: ${value}`)
-	// Update the Variables component UI dynamically if needed
-})
 ---
 
 <style lang="scss">
@@ -21,10 +15,10 @@ document.addEventListener('preferenceChange', (event) => {
 		--accent-color: #5bb598; // Highlight or accent tone
 		--highlight-secondary: #4a97b8; // Bright blue for highlights
 		--highlight-accent: #55c892; // Bright green for highlights
-		// --text-color: #332e2e; // Text color
-		// --background-color: #fff7f2; // Main background
-		--text-color: #fff7f2; // Text color
-		--background-color: #332e2e; // Main background
+		--text-color: #332e2e; // Text color
+		--background-color: #fff7f2; // Main background
+		// --text-color: #fff7f2; // Text color
+		// --background-color: #332e2e; // Main background
 
 		// Sizes
 		--tablet: 768px;
