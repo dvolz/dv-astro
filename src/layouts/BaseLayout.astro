@@ -12,7 +12,14 @@ import '../styles/global/_header.scss'
 import '../styles/global/_layout.scss'
 import '../styles/global/_content.scss'
 import '../styles/global/_solo-line.scss'
-const { pageTitle, subTitle, showSidebar = false } = Astro.props
+const {
+	pageTitle,
+	subTitle,
+	showSidebar,
+	showTypographyHero = true,
+	typoGraphyHeroStyle = '',
+	fullWidthBody = false,
+} = Astro.props
 ---
 
 <html lang="en">
@@ -31,11 +38,27 @@ const { pageTitle, subTitle, showSidebar = false } = Astro.props
 		<Variables />
 	</head>
 	<ViewTransitions />
-	<body>
-		<div class={['site', showSidebar && 'sidebar'].filter(Boolean).join(' ')}>
+	{fullWidthBody}
+	<body class={fullWidthBody ? 'full-width-body' : ''}>
+		<div
+			class={[
+				'site',
+				showSidebar ? 'sidebar' : '',
+				fullWidthBody ? 'full-width-body' : '',
+			]
+				.filter(Boolean)
+				.join(' ')}>
 			<Header />
 			<main>
-				<TypographyHero pageTitle={pageTitle} subTitle={subTitle} />
+				{
+					showTypographyHero && (
+						<TypographyHero
+							pageTitle={pageTitle}
+							subTitle={subTitle}
+							typoGraphyHeroStyle={typoGraphyHeroStyle}
+						/>
+					)
+				}
 				<slot />
 			</main>
 			{
@@ -49,8 +72,5 @@ const { pageTitle, subTitle, showSidebar = false } = Astro.props
 			}
 			<Footer />
 		</div>
-		<script>
-			import '../scripts/menu.js'
-		</script>
 	</body>
 </html>

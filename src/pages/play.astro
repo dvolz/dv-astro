@@ -1,0 +1,45 @@
+---
+import { object } from 'astro:schema'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+// Get all pages inside pages/experiments
+const mdPlay = (await Astro.glob('./play/*.md')) || {}
+const astroPlay = (await Astro.glob('./play/*.astro')) || {}
+// Combine `.md` and `.astro` posts, ensuring they have similar metadata structures
+const allPosts = [
+	...mdPlay.map((post) => ({
+		url: post.url,
+		title: post.frontmatter.title,
+		date: post.frontmatter.pubDate,
+	})),
+	...astroPlay.map((post) => ({
+		url: post.url,
+		title: post.title,
+		date: post.pubDate,
+	})),
+].sort((a, b) => {
+	const dateA = new Date(a.date)
+	const dateB = new Date(b.date)
+	return dateB - dateA // Sort by date (newest first)
+})
+
+const pageTitle = 'Experiments'
+---
+
+<BaseLayout pageTitle={pageTitle}>
+	<p>This is where I post my experiments</p>
+	<ul>
+		{
+			allPosts.length > 0 ? (
+				allPosts.map((page) => (
+					<li>
+						<a href={page.url}>{page.title}</a>
+					</li>
+				))
+			) : (
+				<p>No experiments have been posted yet.</p>
+			)
+		}
+	</ul>
+</BaseLayout>

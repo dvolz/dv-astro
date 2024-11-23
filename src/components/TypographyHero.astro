@@ -1,5 +1,6 @@
 ---
-const { pageTitle, subTitle } = Astro.props
+const { pageTitle, subTitle, typoGraphyHeroStyle } = Astro.props
+const compiledClasses = `typographyHero ${typoGraphyHeroStyle}?`.trim()
 ---
 
 <style>
@@ -44,9 +45,20 @@ const { pageTitle, subTitle } = Astro.props
 			margin-bottom: 3.5rem;
 		}
 	}
+
+	.inverted {
+		.mainTitle {
+			color: var(--background-color);
+			-webkit-text-stroke: 0.1rem var(--text-color);
+			text-stroke: 0.1rem var(--text-color);
+		}
+		&:after {
+			background-color: var(--background-color);
+		}
+	}
 </style>
 
-<div class="typographyHero">
+<div class={compiledClasses}>
 	<p class="mainTitle">{pageTitle}</p>
 	<p class="subTitle">{subTitle}</p>
 </div>

@@ -16,10 +16,14 @@ header {
 main {
 	grid-area: main;
 	padding: 0 2rem;
+	margin-bottom: 4rem;
 }
-aside {
-	grid-area: sidebar;
-	padding: 0 2rem;
+.full-width-body {
+	main {
+		width: 100vw;
+		max-width: none;
+		margin-left: calc(50% - 50vw);
+	}
 }
 footer {
 	grid-area: footer;

@@ -1,11 +1,136 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
-
-export const frontmatter = {
-	title: 'Grid Experiment',
+import BlogDetails from '../../components/BlogDetails.astro'
+export const title = 'Square and Lines'
+export const author = 'David Volz'
+export const description = 'Playing with squares and lines'
+export const image = {
+	url: 'https://docs.astro.build/assets/arc.webp',
+	alt: 'The Astro logo on a dark background with a purple gradient arc.',
 }
+export const pubDate = '2025-11-23'
+export const tags = ['css', 'code', 'learning in public', 'successes']
+const showTypographyHero = true
+const typoGraphyHeroStyle = 'inverted'
+const fullWidthBody = true
 ---
 
-<BaseLayout pageTitle={frontmatter.title}>
-	<p>This is my experients</p>
+<BaseLayout
+	pageTitle={title}
+	{showTypographyHero}
+	typoGraphyHeroStyle={typoGraphyHeroStyle}
+	fullWidthBody={fullWidthBody}>
+	<BlogDetails />
+
+	<div>
+		<label>
+			Box Width: <span id="boxWidthValue">56.08</span>%
+			<input
+				type="range"
+				id="boxWidthSlider"
+				min="51"
+				max="99"
+				value="56.08"
+				data-box-width="56.08"
+				client:load
+			/>
+		</label>
+	</div>
+
+	<div class="row box-lines">
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="box"></div>
+	</div>
 </BaseLayout>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const slider = document.querySelector('#boxWidthSlider')
+		const boxWidthValue = document.querySelector('#boxWidthValue')
+
+		function getSquareWidth(width) {
+			return 100 - (100 - width) * 2
+		}
+
+		function updateStyles(e) {
+			const value = e.target.value
+			boxWidthValue.innerText = value
+			let squareWidth = getSquareWidth(value)
+
+			const columns = document.querySelectorAll('.column-box-lines')
+			const box = document.querySelector('.box-lines .box')
+
+			columns.forEach((column, index) => {
+				let width = index === 0 || index === 3 ? value : 100 - value
+				column.style.flexBasis = `${width}%`
+				column.innerText = `${width}%`
+			})
+
+			box.style.width = `${squareWidth + 0.1}%`
+			box.style.paddingBottom = `${squareWidth}%`
+			box.innerText = `${squareWidth}%`
+		}
+
+		// Ensure the initial load also applies the styles
+		if (slider) {
+			slider.addEventListener('input', updateStyles)
+			console.log('penis')
+			updateStyles({ target: slider }) // Apply styles on initial load
+		}
+	})
+</script>
+<style></style>
+<style lang="scss">
+	.box-lines {
+		display: flex;
+		flex-flow: row wrap;
+		position: relative;
+		.column {
+			flex: 1 1 0px;
+			border: 0.1rem solid var(--text-color);
+			height: 25vw;
+			// Top and Bottom
+			&:nth-child(1),
+			&:nth-child(2) {
+				border-bottom: none;
+			}
+
+			// Left
+			&:nth-child(1),
+			&:nth-child(3) {
+				border-right: none;
+			}
+
+			// 56
+			--width-a: 56.08%;
+			&:nth-child(1),
+			&:nth-child(4) {
+				flex: 0 0 var(--width-a);
+			}
+			// 44
+			--width-b: 43.92%;
+			&:nth-child(2),
+			&:nth-child(3) {
+				flex: 0 0 var(--width-b);
+			}
+		}
+
+		// Square
+		.box {
+			--box-size: 21.9%;
+			position: relative;
+			position: absolute;
+			height: 0;
+			width: var(--box-size);
+			padding-bottom: var(--box-size);
+			border: 0.1rem solid var(--text-color);
+			background-color: var(--background-color);
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+		}
+	}
+</style>

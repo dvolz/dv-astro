@@ -1,0 +1,28 @@
+---
+export const layout = '../../layouts/MarkdownPostLayout.astro'
+export const title = 'Square and Lines'
+export const author = 'David Volz'
+export const description = 'Playing with squares and lines'
+export const image = {
+	url: 'https://docs.astro.build/assets/arc.webp',
+	alt: 'The Astro logo on a dark background with a purple gradient arc.',
+}
+export const pubDate = '2025-11-23'
+export const tags = ['css', 'code', 'learning in public', 'successes']
+---
+
+<layout>
+	<h1>{title}</h1>
+	<p>
+		<em>By {author} on {pubDate}</em>
+	</p>
+	<img src={image.url} alt={image.alt} />
+	<p>{description}</p>
+
+	<div>
+		<p>
+			After a successful first week learning Astro, I decided to try some more.
+			I wrote and imported a small component from memory!
+		</p>
+	</div>
+</layout>
