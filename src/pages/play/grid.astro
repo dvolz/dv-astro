@@ -104,7 +104,7 @@ const fullWidthBody = true
 			display: flex;
 			flex-direction: column;
 
-			padding: 1rem;
+			padding: 1rem 3rem;
 			max-width: 50rem; /* Adjust the width as needed */
 			width: 100%;
 			margin: 20px auto 0;
@@ -114,9 +114,10 @@ const fullWidthBody = true
 				font-size: 1.1rem;
 				color: #333;
 				display: flex;
-				justify-content: space-between;
+				justify-content: center;
 				align-items: center;
 				gap: 2rem;
+				flex-flow: row wrap;
 			}
 			input[type='range'] {
 				width: 100%;
@@ -127,6 +128,7 @@ const fullWidthBody = true
 				appearance: none;
 				outline: none;
 				transition: background 0.3s linear;
+				margin-bottom: 2rem;
 				&:active {
 					background: var(--highlight-secondary);
 				}
@@ -216,6 +218,12 @@ const fullWidthBody = true
 				top: 50%;
 				left: 50%;
 				transform: translate(-50%, -50%);
+			}
+		}
+
+		@media screen and (max-width: 768px) {
+			#boxWidthSlider {
+				flex: 0 0 100%; /* This column will take 100% of the container's width */
 			}
 		}
 	</style>
