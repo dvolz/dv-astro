@@ -1,0 +1,41 @@
+$border-height: 0.5rem;
+.line-button {
+	position: relative;
+	border: $border-height solid var(--background-color);
+	border-radius: $border-height + 1.1;
+	padding: 1rem 2rem;
+	text-align: center;
+	color: var(--text-color);
+	transition: border-color 0.3s ease;
+	font-size: 1.6rem;
+	font-weight: 300;
+	margin: 0 0.5rem;
+
+	&:before,
+	&:after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: calc(100% - 0.3rem);
+		height: 100%;
+	}
+	// outer stroke
+	&:before {
+		border: 1px solid var(--text-color);
+		left: -($border-height + 0.1);
+		top: -($border-height + 0.1);
+		width: calc(100% + 0.8rem);
+		height: calc(100% + 1.2rem);
+		border-radius: $border-height + 1.2;
+	}
+	// inner stroke
+	&:after {
+		border: 1px solid var(--text-color);
+		border-radius: $border-height + 0.5;
+	}
+
+	&:hover {
+		border-color: var(--highlight-secondary);
+	}
+}

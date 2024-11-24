@@ -1,26 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
-export const title = 'Shapes and Lines'
-export const author = 'David Volz'
-export const description = 'Shapes and Lines'
-export const image = {
-	url: 'https://docs.astro.build/assets/arc.webp',
-	alt: 'The Astro logo on a dark background with a purple gradient arc.',
+export const blogData = {
+	title: 'Shapes and Lines',
+	author: 'David Volz',
+	description: 'Shapes and Lines',
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2024-11-22',
+	tags: ['css', 'code', 'design', 'fluff'],
 }
-export const pubDate = '2025-11-23'
-export const tags = ['css', 'code', 'design', 'fluff']
 const showTypographyHero = true
 const typoGraphyHeroStyle = 'inverted'
 const fullWidthBody = true
 ---
 
 <BaseLayout
-	pageTitle={title}
+	pageTitle={blogData.title}
 	{showTypographyHero}
 	typoGraphyHeroStyle={typoGraphyHeroStyle}
 	fullWidthBody={fullWidthBody}>
-	<BlogDetails />
+	<BlogDetails blogData={blogData} />
 
 	<div class="controls">
 		<label>
@@ -78,7 +80,7 @@ const fullWidthBody = true
 					column.innerText = `${parseFloat(width).toFixed(2)}%`
 				})
 
-				box.style.width = `${squareWidth + 0.2}%`
+				box.style.width = `${squareWidth + 0.1}%`
 				box.style.paddingBottom = `${squareWidth}%`
 				boxHeightDisplay.innerText = `${parseFloat(squareWidth).toFixed(2)}%`
 

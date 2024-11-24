@@ -1,3 +1,70 @@
 ---
-
+const { blogData } = Astro.props
+import { formatDate } from '../scripts/helpers.js' // Adjust the path as needed
+import { Icon } from 'astro-icon/components'
 ---
+
+<style lang="scss">
+	.blog-details {
+		display: flex;
+		width: 100%;
+		max-width: 120rem;
+		margin: 0 auto;
+		justify-content: space-between;
+	}
+	.date {
+		display: flex;
+		align-items: center;
+		font-size: 1.6rem;
+		font-style: italic;
+		font-weight: 300;
+		line-height: 1.2;
+		p {
+			margin: 0 0 0 0.5rem;
+		}
+		span {
+			display: block;
+			font-family: var(--a-font);
+			font-weight: 700;
+			font-style: normal;
+		}
+	}
+	$svg-size: 5rem;
+	svg {
+		width: $svg-size;
+		height: $svg-size;
+		color: var(--background-color);
+	}
+	.tags {
+		display: flex;
+		li {
+			list-style-type: none;
+		}
+	}
+</style>
+
+<div class="blog-details">
+	<div class="date">
+		<Icon
+			name="mdi:calendar-outline"
+			style="stroke: var(--text-color); stroke-width: .3;"
+		/>
+		<div class="date-inner"></div>
+		<p>Published on <span>{formatDate(blogData.pubDate)}</span></p>
+	</div>
+	<div>
+		<ul class="tags">
+			{
+				blogData.tags.map((tag) => (
+					<li key={tag}>
+						<a href={`/tags/${tag}`} class="line-button">
+							{tag}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</div>
+
+<!-- Display tags -->

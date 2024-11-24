@@ -15,8 +15,8 @@ const allPosts = [
 	})),
 	...astroPlay.map((post) => ({
 		url: post.url,
-		title: post.title,
-		date: post.pubDate,
+		title: post.blogData?.title ?? 'Untitled',
+		date: post.blogData?.pubDate ?? 'Unknown date',
 	})),
 ].sort((a, b) => {
 	const dateA = new Date(a.date)
@@ -24,7 +24,7 @@ const allPosts = [
 	return dateB - dateA // Sort by date (newest first)
 })
 
-const pageTitle = 'Experiments'
+const pageTitle = 'Play'
 ---
 
 <BaseLayout pageTitle={pageTitle}>
