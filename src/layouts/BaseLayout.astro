@@ -1,5 +1,4 @@
 ---
-import { ViewTransitions } from 'astro:transitions'
 import Header from '../components/Header.astro'
 import TypographyHero from '../components/TypographyHero.astro'
 import Footer from '../components/Footer.astro'
@@ -37,8 +36,6 @@ const {
 		/>
 		<Variables />
 	</head>
-	<ViewTransitions />
-	{fullWidthBody}
 	<body class={fullWidthBody ? 'full-width-body' : ''}>
 		<div
 			class={[

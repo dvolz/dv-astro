@@ -1,15 +1,15 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
-export const title = 'Square and Lines'
+export const title = 'Shapes and Lines'
 export const author = 'David Volz'
-export const description = 'Playing with squares and lines'
+export const description = 'Shapes and Lines'
 export const image = {
 	url: 'https://docs.astro.build/assets/arc.webp',
 	alt: 'The Astro logo on a dark background with a purple gradient arc.',
 }
 export const pubDate = '2025-11-23'
-export const tags = ['css', 'code', 'learning in public', 'successes']
+export const tags = ['css', 'code', 'design', 'fluff']
 const showTypographyHero = true
 const typoGraphyHeroStyle = 'inverted'
 const fullWidthBody = true
@@ -22,17 +22,19 @@ const fullWidthBody = true
 	fullWidthBody={fullWidthBody}>
 	<BlogDetails />
 
-	<div>
+	<div class="controls">
 		<label>
-			Box Width: <span id="boxWidthValue">56.08</span>%
+			<p class="sliderLabel">Box Width</p>
+			<p class="sliderValue">
+				<span id="boxWidthValue">56.08</span>%
+			</p>
 			<input
 				type="range"
 				id="boxWidthSlider"
 				min="51"
-				max="99"
+				max="95"
 				value="56.08"
-				data-box-width="56.08"
-				client:load
+				step="0.01"
 			/>
 		</label>
 	</div>
@@ -42,96 +44,179 @@ const fullWidthBody = true
 		<div class="column column-box-lines"></div>
 		<div class="column column-box-lines"></div>
 		<div class="column column-box-lines"></div>
-		<div class="box"></div>
+		<div class="box"><div class="box-height"></div></div>
 	</div>
-</BaseLayout>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const slider = document.querySelector('#boxWidthSlider')
+			const boxWidthValue = document.querySelector('#boxWidthValue')
 
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		const slider = document.querySelector('#boxWidthSlider')
-		const boxWidthValue = document.querySelector('#boxWidthValue')
+			// Function to calculate the square width
+			function getSquareWidth(width) {
+				return 100 - (100 - width) * 2
+			}
 
-		function getSquareWidth(width) {
-			return 100 - (100 - width) * 2
-		}
+			// Function to update styles based on the slider value
+			function updateStyles(e) {
+				let value = e?.target?.value || slider?.value
+				if (!value) return
 
-		function updateStyles(e) {
-			const value = e.target.value
-			boxWidthValue.innerText = value
-			let squareWidth = getSquareWidth(value)
+				// Round the value to two decimal places
+				value = parseFloat(value).toFixed(2)
 
-			const columns = document.querySelectorAll('.column-box-lines')
-			const box = document.querySelector('.box-lines .box')
+				boxWidthValue.innerText = value
+				const squareWidth = getSquareWidth(value)
 
-			columns.forEach((column, index) => {
-				let width = index === 0 || index === 3 ? value : 100 - value
-				column.style.flexBasis = `${width}%`
-				column.innerText = `${width}%`
-				console.log('updated')
-			})
+				const columns = document.querySelectorAll('.column-box-lines')
+				const box = document.querySelector('.box-lines .box')
+				const boxHouse = document.querySelector('.box-lines')
+				const boxHeightDisplay = document.querySelector('.box-height')
 
-			box.style.width = `${squareWidth + 0.1}%`
-			box.style.paddingBottom = `${squareWidth}%`
-			box.innerText = `${squareWidth}%`
-		}
+				columns.forEach((column, index) => {
+					let width = index === 0 || index === 3 ? value : 100 - value
+					column.style.flexBasis = `${width}%`
+					column.innerText = `${parseFloat(width).toFixed(2)}%`
+				})
 
-		// Ensure the initial load also applies the styles
-		if (slider) {
-			slider.addEventListener('input', updateStyles)
-			console.log('penis')
-			updateStyles({ target: slider }) // Apply styles on initial load
-		}
-	})
-</script>
-<style></style>
-<style lang="scss">
-	.box-lines {
-		display: flex;
-		flex-flow: row wrap;
-		position: relative;
-		.column {
-			flex: 1 1 0px;
+				box.style.width = `${squareWidth + 0.2}%`
+				box.style.paddingBottom = `${squareWidth}%`
+				boxHeightDisplay.innerText = `${parseFloat(squareWidth).toFixed(2)}%`
+
+				const boxHeight = box.offsetHeight
+				const boxHouseHeight = boxHouse.offsetHeight
+				if (boxHeight > boxHouseHeight) {
+					// If the box is taller than the container, adjust padding
+					box.style.paddingBottom = `${squareWidth / 2}%`
+				}
+			}
+
+			// Attach event listener to the slider
+			if (slider) {
+				slider.addEventListener('input', updateStyles)
+				requestAnimationFrame(() => updateStyles({ target: slider }))
+			}
+			updateStyles() // Initialize styles when DOM content is loaded
+		})
+	</script>
+
+	<style lang="scss">
+		.controls {
+			display: flex;
+			flex-direction: column;
+
+			padding: 1rem;
+			max-width: 50rem; /* Adjust the width as needed */
+			width: 100%;
+			margin: 20px auto 0;
 			border: 0.1rem solid var(--text-color);
-			height: 25vw;
-			// Top and Bottom
-			&:nth-child(1),
-			&:nth-child(2) {
-				border-bottom: none;
+			border-bottom: none;
+			label {
+				font-size: 1.1rem;
+				color: #333;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 2rem;
 			}
-
-			// Left
-			&:nth-child(1),
-			&:nth-child(3) {
-				border-right: none;
-			}
-
-			// 56
-			--width-a: 56.08%;
-			&:nth-child(1),
-			&:nth-child(4) {
-				flex: 0 0 var(--width-a);
-			}
-			// 44
-			--width-b: 43.92%;
-			&:nth-child(2),
-			&:nth-child(3) {
-				flex: 0 0 var(--width-b);
+			input[type='range'] {
+				width: 100%;
+				height: 0.7rem;
+				border-radius: 0.5rem;
+				background: var(--background-color);
+				border: 0.1rem solid var(--text-color);
+				appearance: none;
+				outline: none;
+				transition: background 0.3s linear;
+				&:active {
+					background: var(--highlight-secondary);
+				}
 			}
 		}
+		.sliderLabel {
+			font-size: 1.5rem;
+			font-family: var(--a-font);
+			flex: 0 0 8rem;
+			margin: 0;
+		}
+		.sliderValue {
+			font-weight: bold;
+			font-size: 3rem;
+			font-family: var(--a-font);
+			color: var(--background-color);
+			-webkit-text-stroke: 0.1rem var(--text-color);
+			text-stroke: 0.1rem var(--text-color);
+			display: inline-block;
+			min-width: 11rem;
+			margin: 0;
+		}
 
-		// Square
-		.box {
-			--box-size: 21.9%;
+		.box-lines {
+			display: flex;
+			flex-flow: row wrap;
 			position: relative;
-			position: absolute;
-			height: 0;
-			width: var(--box-size);
-			padding-bottom: var(--box-size);
-			border: 0.1rem solid var(--text-color);
-			background-color: var(--background-color);
-			left: 50%;
-			top: 50%;
-			transform: translate(-50%, -50%);
+			.column {
+				flex: 1 1 0px;
+				border: 0.1rem solid var(--text-color);
+				height: 25vw;
+				// Top and Bottom
+				&:nth-child(1),
+				&:nth-child(2) {
+					border-bottom: none;
+				}
+
+				// Left
+				&:nth-child(1),
+				&:nth-child(3) {
+					border-right: none;
+				}
+
+				// 56
+				--width-a: 56.08%;
+				&:nth-child(1),
+				&:nth-child(4) {
+					flex: 0 0 var(--width-a);
+				}
+				// 44
+				--width-b: 43.92%;
+				&:nth-child(2),
+				&:nth-child(3) {
+					flex: 0 0 var(--width-b);
+				}
+			}
+
+			// Square
+			.box {
+				--box-size: 21.9%;
+				position: absolute;
+				height: 0;
+				width: var(--box-size);
+				padding-bottom: var(--box-size);
+				border: 0.1rem solid var(--text-color);
+				background-color: var(--background-color);
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+			.column,
+			.box {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-size: 4rem;
+				font-family: var(--a-font);
+				color: var(--background-color);
+				-webkit-text-stroke: 0.1rem var(--text-color);
+				text-stroke: 0.1rem var(--text-color);
+				white-space: nowrap; /* Prevents text from wrapping and breaking */
+				overflow: hidden; /* Optionally hides text that overflows the column */
+				text-overflow: ellipsis;
+			}
+			.box-height {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+			}
 		}
-	}
-</style>
+	</style>
+</BaseLayout>

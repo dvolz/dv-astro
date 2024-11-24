@@ -1,0 +1,68 @@
+---
+export const title = 'Simple Test Page'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+---
+
+<BaseLayout>
+	<div>
+		<label>
+			Box Width: <span id="boxWidthValue">56.08</span>%
+			<input
+				type="range"
+				id="boxWidthSlider"
+				min="51"
+				max="99"
+				value="56.08"
+				data-box-width="56.08"
+			/>
+		</label>
+	</div>
+
+	<div class="row box-lines">
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="box"></div>
+	</div>
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', function () {
+			const slider = document.querySelector('#boxWidthSlider')
+			const boxWidthValue = document.querySelector('#boxWidthValue')
+
+			function getSquareWidth(width) {
+				return 100 - (100 - width) * 2
+			}
+
+			function updateStyles(e) {
+				const value =
+					e?.target?.value || slider?.getAttribute('value') || slider?.value
+				if (!value) return
+
+				boxWidthValue.innerText = value
+				const squareWidth = getSquareWidth(value)
+
+				const columns = document.querySelectorAll('.column-box-lines')
+				const box = document.querySelector('.box-lines .box')
+
+				columns.forEach((column, index) => {
+					let width = index === 0 || index === 3 ? value : 100 - value
+					column.style.flexBasis = `${width}%`
+					column.innerText = `${width}%`
+				})
+
+				box.style.width = `${squareWidth + 0.1}%`
+				box.style.paddingBottom = `${squareWidth}%`
+				box.innerText = `${squareWidth}%`
+			}
+
+			if (slider) {
+				slider.addEventListener('input', updateStyles)
+				requestAnimationFrame(() => updateStyles({ target: slider }))
+			}
+			setTimeout(updateStyles, 500)
+			console.log('Simple Page Loaded')
+			updateStyles()
+		})
+	</script></BaseLayout
+>
