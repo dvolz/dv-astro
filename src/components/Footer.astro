@@ -1,5 +1,5 @@
 ---
-import CatSVG from '../svgs/cat4.svg?raw'
+import CatSVG from '../components/CatSVG.astro'
 import AstroSVG from '../svgs/astro.svg?raw'
 const currentYear = new Date().getFullYear()
 import Social from './Social.astro'
@@ -42,11 +42,6 @@ const socialLinks = [
 		}
 	}
 
-	.catSVG {
-		width: 70px;
-		height: auto;
-		margin: 0 auto;
-	}
 	.astroColumn {
 		display: flex;
 		align-items: center;
@@ -110,9 +105,7 @@ const socialLinks = [
 		</div>
 
 		<div class="column catColumn">
-			<div class="catSVG">
-				<Fragment set:html={CatSVG} />
-			</div>
+			<CatSVG />
 			<p>&copy; Copyright {currentYear}</p>
 		</div>
 		<div class="column astroColumn">

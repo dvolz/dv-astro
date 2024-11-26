@@ -1,0 +1,47 @@
+---
+import CatSVGFile from '../svgs/cat4.svg?raw'
+
+// Pre-encode the SVG data once for faster toggling
+const encodedSVG = encodeURIComponent(CatSVGFile.trim())
+const svgBackground = `url("data:image/svg+xml,${encodedSVG}")`
+---
+
+<style>
+	.catSVG {
+		width: 70px;
+		height: auto;
+		margin: 0 auto;
+		cursor: pointer; /* Indicates the element is clickable */
+	}
+</style>
+
+<div id="background-container">
+	<div class="catSVG" id="cat-svg">
+		<Fragment set:html={CatSVGFile} />
+	</div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const svgElement = document.getElementById('cat-svg')
+		const body = document.querySelector('body')
+		let isBackgroundSet = false // Toggle state
+
+		// Function to toggle the background
+		function toggleBackground() {
+			if (isBackgroundSet) {
+				// Remove background
+				body.style.backgroundImage = ''
+				isBackgroundSet = false
+			} else {
+				// Set background
+				body.style.backgroundImage = `{{ svgBackground }}`
+				body.style.backgroundRepeat = 'repeat'
+				isBackgroundSet = true
+			}
+		}
+
+		// Attach the toggle function to the click event
+		svgElement.addEventListener('click', toggleBackground)
+	})
+</script>

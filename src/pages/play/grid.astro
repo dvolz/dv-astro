@@ -123,19 +123,38 @@ const fullWidthBody = true
 			}
 			input[type='range'] {
 				width: 100%;
-				height: 0.7rem;
-				border-radius: 0.5rem;
+				height: 2rem;
 				background: var(--background-color);
 				border: 0.1rem solid var(--text-color);
 				appearance: none;
 				outline: none;
 				transition: background 0.3s linear;
 				margin-bottom: 2rem;
-				&:active {
+
+				$thumb-height: 2.5rem;
+				/* Chrome, Safari, and Edge */
+				&::-webkit-slider-thumb {
+					appearance: none;
+					width: $thumb-height;
+					height: $thumb-height;
 					background: var(--highlight-secondary);
+					border: 0.1rem solid var(--text-color);
+					border-radius: 50%;
+					cursor: pointer;
+				}
+
+				/* Firefox */
+				&::-moz-range-thumb {
+					width: $thumb-height;
+					height: $thumb-height;
+					background: var(--highlight-secondary);
+					border: 0.1rem solid var(--text-color);
+					border-radius: 50%;
+					cursor: pointer;
 				}
 			}
 		}
+
 		.sliderLabel {
 			font-size: 1.5rem;
 			font-family: var(--a-font);
