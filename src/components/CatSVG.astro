@@ -38,9 +38,12 @@ import CatSVGFile from '../svgs/cat.svg?raw'
 
 		const svgBackground = `url('/cat-bg.svg')`
 
+		// Preload the SVG
+		const preloadImage = new Image()
+		preloadImage.src = '/cat-bg.svg' // Load the SVG into the browser cache
+
 		// Function to toggle the background
 		function toggleBackground() {
-			console.log(svgBackground) // Logs the actual background URL
 			if (isBackgroundSet) {
 				// Remove background
 				catHouse.style.backgroundImage = ''
