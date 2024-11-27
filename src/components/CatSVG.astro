@@ -1,12 +1,21 @@
 ---
-import CatSVGFile from '../svgs/cat4.svg?raw'
-
-// Pre-encode the SVG data once for faster toggling
-const encodedSVG = encodeURIComponent(CatSVGFile.trim())
-const svgBackground = `url("data:image/svg+xml,${encodedSVG}")`
+import CatSVGFile from '../svgs/cat.svg?raw'
 ---
 
 <style>
+	:global(body) {
+		position: relative;
+	}
+	:global(.catHouse) {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-size: 15rem;
+		opacity: 0.3;
+		pointer-events: none;
+	}
 	.catSVG {
 		width: 70px;
 		height: auto;
@@ -24,19 +33,22 @@ const svgBackground = `url("data:image/svg+xml,${encodedSVG}")`
 <script>
 	document.addEventListener('DOMContentLoaded', () => {
 		const svgElement = document.getElementById('cat-svg')
-		const body = document.querySelector('body')
+		const catHouse = document.querySelector('.catHouse')
 		let isBackgroundSet = false // Toggle state
+
+		const svgBackground = `url('/cat-bg.svg')`
 
 		// Function to toggle the background
 		function toggleBackground() {
+			console.log(svgBackground) // Logs the actual background URL
 			if (isBackgroundSet) {
 				// Remove background
-				body.style.backgroundImage = ''
+				catHouse.style.backgroundImage = ''
 				isBackgroundSet = false
 			} else {
 				// Set background
-				body.style.backgroundImage = `{{ svgBackground }}`
-				body.style.backgroundRepeat = 'repeat'
+				catHouse.style.backgroundImage = svgBackground
+				catHouse.style.backgroundRepeat = 'repeat'
 				isBackgroundSet = true
 			}
 		}

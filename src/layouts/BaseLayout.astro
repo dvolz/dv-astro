@@ -19,6 +19,7 @@ const {
 	showTypographyHero = true,
 	typoGraphyHeroStyle = '',
 	fullWidthBody = false,
+	pubDate,
 } = Astro.props
 ---
 
@@ -41,6 +42,7 @@ const {
 		<Variables />
 	</head>
 	<body class={fullWidthBody ? 'full-width-body' : ''}>
+		<div class="catHouse"></div>
 		<div
 			class={[
 				'site',

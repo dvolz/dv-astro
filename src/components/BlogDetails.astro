@@ -1,5 +1,5 @@
 ---
-const { blogData } = Astro.props
+const { title, author, description, image, pubDate, tags } = Astro.props
 import { formatDate } from '../scripts/helpers.js' // Adjust the path as needed
 import { Icon } from 'astro-icon/components'
 ---
@@ -10,7 +10,7 @@ import { Icon } from 'astro-icon/components'
 		width: 100%;
 		max-width: 120rem;
 		margin: 0 auto;
-		justify-content: space-between;
+		justify-content: start;
 	}
 	.date {
 		display: flex;
@@ -37,12 +37,17 @@ import { Icon } from 'astro-icon/components'
 	}
 	.tags {
 		display: flex;
+		padding: 0;
 		li {
 			list-style-type: none;
 		}
 	}
+	@media screen and (min-width: 768px) {
+		.blog-details {
+			justify-content: space-between;
+		}
+	}
 </style>
-
 <div class="blog-details">
 	<div class="date">
 		<Icon
@@ -50,12 +55,12 @@ import { Icon } from 'astro-icon/components'
 			style="stroke: var(--text-color); stroke-width: .3;"
 		/>
 		<div class="date-inner"></div>
-		<p>Published on <span>{formatDate(blogData.pubDate)}</span></p>
+		<p>Published on <span>{formatDate(pubDate)}</span></p>
 	</div>
 	<div>
 		<ul class="tags">
 			{
-				blogData.tags.map((tag) => (
+				tags.map((tag) => (
 					<li key={tag}>
 						<a href={`/tags/${tag}`} class="line-button">
 							{tag}

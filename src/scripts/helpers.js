@@ -1,13 +1,20 @@
-// helpers.js
 export function formatDate(dateString) {
-	// Parse the date string in UTC to avoid time zone offset issues
-	const dateParts = dateString.split('-')
-	const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2])) // Months are 0-indexed
+	// Parse the date string into a Date object
+	const date = new Date(dateString)
 
-	const options = { year: 'numeric', month: 'long', day: 'numeric' }
-	const formattedDate = date.toLocaleDateString('en-US', options)
-
+	// Ensure we only work with the date portion and avoid time
+	const year = date.getUTCFullYear()
+	const month = date.getUTCMonth() // 0-indexed
 	const day = date.getUTCDate()
+
+	// Create a new Date object using just the date (ignoring time)
+	const cleanDate = new Date(Date.UTC(year, month, day))
+
+	// Format options for the date
+	const options = { year: 'numeric', month: 'long', day: 'numeric' }
+	const formattedDate = cleanDate.toLocaleDateString('en-US', options)
+
+	// Determine the ordinal suffix for the day
 	const suffix =
 		day % 10 === 1 && day !== 11
 			? 'st'
@@ -17,5 +24,6 @@ export function formatDate(dateString) {
 			? 'rd'
 			: 'th'
 
+	// Replace the day with its ordinal suffix
 	return formattedDate.replace(/\d+/, `${day}${suffix}`)
 }
