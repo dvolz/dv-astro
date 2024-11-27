@@ -58,21 +58,23 @@ import { Icon } from 'astro-icon/components'
 <script is:inline>
 	const applyTheme = () => {
 		const isDark = localStorage.theme === 'dark'
-		const root = document.body
+		const root = document.documentElement
+		const body = document.body
 
 		// Update CSS variables for dark and light theme
 		if (isDark) {
 			// Dark theme values
-			root.style.setProperty('--text-color', '#fff7f2')
-			root.style.setProperty('--background-color', '#332e2e')
-			root.style.setProperty('--link-color', '#c3eeff')
-			root.style.setProperty('--link-hover', '#fff')
+			body.style.setProperty('--text-color', '#fff7f2')
+			body.style.setProperty('--background-color', '#332e2e')
+			body.style.setProperty('--link-color', '#c3eeff')
+			body.style.setProperty('--link-hover', '#fff')
+			root.classList.add('dark')
 		} else {
 			// Light theme values
-			root.style.setProperty('--text-color', '#332e2e')
-			root.style.setProperty('--background-color', '#fff7f2')
-			root.style.setProperty('--link-color', '#568091')
-			root.style.setProperty('--link-hover', '#29435c')
+			body.style.setProperty('--text-color', '#332e2e')
+			body.style.setProperty('--background-color', '#fff7f2')
+			body.style.setProperty('--link-color', '#568091')
+			body.style.setProperty('--link-hover', '#29435c')
 		}
 	}
 
