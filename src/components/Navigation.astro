@@ -1,4 +1,5 @@
 ---
+import ThemeIcon from './ThemeIcon.astro'
 const navLinks = [
 	{ path: '/about/', name: 'About' },
 	{ path: '/thoughts/', name: 'Thoughts' },
@@ -7,6 +8,11 @@ const navLinks = [
 const currentPath = Astro.url.pathname
 ---
 
+<style>
+	.theme-li {
+		margin-left: 1rem;
+	}
+</style>
 <ul class="nav-links">
 	{
 		navLinks.map((link) => (
@@ -19,4 +25,5 @@ const currentPath = Astro.url.pathname
 			</li>
 		))
 	}
+	<li class="theme-li"><ThemeIcon /></li>
 </ul>

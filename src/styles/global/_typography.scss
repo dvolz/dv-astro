@@ -44,10 +44,10 @@ p {
 	margin: 0 0 2rem;
 }
 a {
-	color: var(--secondary-color);
+	color: var(--link-color);
 	text-decoration: none;
 	transition: color 0.3s ease;
 	&:hover {
-		color: var(--primary-color);
+		color: var(--link-hover);
 	}
 }
