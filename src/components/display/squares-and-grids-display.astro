@@ -65,12 +65,28 @@ const { title, url, description } = Astro.props
 			white-space: nowrap; /* Prevents text from wrapping and breaking */
 			overflow: hidden; /* Optionally hides text that overflows the column */
 			text-overflow: ellipsis;
+			transition: border 0.3s ease;
 		}
 		.box-height {
 			position: absolute;
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%, -50%);
+		}
+		.column {
+			position: relative;
+			transition:
+				background 0.3s ease,
+				border 0.3s ease;
+		}
+	}
+	.blogPost:hover .box-lines {
+		.column {
+			border-color: var(--background-color);
+			background: var(--text-color);
+		}
+		.box {
+			border-color: var(--background-color);
 		}
 	}
 </style>
