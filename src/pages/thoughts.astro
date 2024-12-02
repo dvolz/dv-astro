@@ -11,11 +11,13 @@ const allPosts = [
 		url: post.url,
 		title: post.frontmatter.title,
 		date: post.frontmatter.pubDate,
+		display: post.frontmatter.display ? post.frontmatter.display : '',
 	})),
 	...astroPosts.map((post) => ({
 		url: post.url,
 		title: post.title,
 		date: post.pubDate,
+		display: post.display ? post.display : '',
 	})),
 ].sort((a, b) => {
 	const dateA = new Date(a.date)

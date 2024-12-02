@@ -1,6 +1,6 @@
 ---
 import CatSVG from '../components/CatSVG.astro'
-import AstroSVG from '../svgs/astro.svg?raw'
+import AstroSVG from '../components/AstroSVG.astro'
 const currentYear = new Date().getFullYear()
 import Social from './Social.astro'
 const socialLinks = [
@@ -51,32 +51,6 @@ const socialLinks = [
 			margin: 0;
 		}
 	}
-	.astroSVG {
-		width: 20rem;
-		height: auto;
-		:global(.letter) {
-			stroke-width: 2.5;
-			stroke: var(--text-color);
-			fill: var(--background-color);
-			transition: fill 0.5s ease;
-			&:hover {
-				fill: url(#rainbow);
-				animation: rainbowAnimation 5s linear infinite;
-			}
-		}
-
-		/* Define the animation to move the gradient */
-		@keyframes rainbowAnimation {
-			0% {
-				fill: url(#rainbow);
-				stop-color: red;
-			}
-			100% {
-				fill: url(#rainbow);
-				stop-color: violet;
-			}
-		}
-	}
 
 	@media screen and (min-width: 768px) {
 		$column-width: 33.33337%;
@@ -110,9 +84,7 @@ const socialLinks = [
 		</div>
 		<div class="column astroColumn">
 			<p>Developed from scratch using</p>
-			<div class="astroSVG">
-				<Fragment set:html={AstroSVG} />
-			</div>
+			<AstroSVG />
 		</div>
 	</div>
 </footer>

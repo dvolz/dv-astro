@@ -15,7 +15,7 @@
     "@astrojs/rss": "^4.0.8",
     "@iconify-json/heroicons-outline": "^1.2.0",
     "@iconify-json/mdi": "^1.2.1",
-    "astro": "^4.16.2",
+    "astro": "^4.16.16",
     "astro-icon": "^1.1.2",
     "modern-normalize": "^3.0.1",
     "preact": "^10.23.2",

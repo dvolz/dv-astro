@@ -1,0 +1,89 @@
+---
+const { title, url, description } = Astro.props
+---
+
+<style lang="scss">
+	.box-lines {
+		display: flex;
+		flex-flow: row wrap;
+		position: relative;
+		border: none !important;
+		padding: 0 !important;
+		.column {
+			flex: 1 1 0px;
+			border: 0.1rem solid var(--text-color);
+			height: 9rem;
+			// Top and Bottom
+			&:nth-child(1),
+			&:nth-child(2) {
+				border-bottom: none;
+			}
+
+			// Left
+			&:nth-child(1),
+			&:nth-child(3) {
+				border-right: none;
+			}
+
+			// 56
+			--width-a: 56.08%;
+			&:nth-child(1),
+			&:nth-child(4) {
+				flex: 0 0 var(--width-a);
+			}
+			// 44
+			--width-b: 43.92%;
+			&:nth-child(2),
+			&:nth-child(3) {
+				flex: 0 0 var(--width-b);
+			}
+		}
+
+		// Square
+		.box {
+			--box-size: 21.9%;
+			position: absolute;
+			height: 0;
+			width: var(--box-size);
+			padding-bottom: var(--box-size);
+			border: 0.1rem solid var(--text-color);
+			background-color: var(--background-color);
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+		}
+		.column,
+		.box {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 4rem;
+			font-family: var(--a-font);
+			color: var(--background-color);
+			-webkit-text-stroke: 0.1rem var(--text-color);
+			text-stroke: 0.1rem var(--text-color);
+			white-space: nowrap; /* Prevents text from wrapping and breaking */
+			overflow: hidden; /* Optionally hides text that overflows the column */
+			text-overflow: ellipsis;
+		}
+		.box-height {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+	}
+</style>
+
+<a class="blogPost" href={url}>
+	<div class="row box-lines frame">
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="box"><div class="box-height">{title}</div></div>
+	</div>
+	<p class="description">{description}</p>
+</a>
+test2000
+

@@ -1,5 +1,6 @@
 ---
 import { object } from 'astro:schema'
+import BlogPost from '../components/BlogPost.astro'
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 
@@ -12,11 +13,15 @@ const allPosts = [
 		url: post.url,
 		title: post.frontmatter.title,
 		date: post.frontmatter.pubDate,
+		display: post.frontmatter.display ? post.frontmatter.display : '',
+		description: post.frontmatter.description ? post.frontmatter.description : '',
 	})),
 	...astroPlay.map((post) => ({
 		url: post.url,
 		title: post.blogData?.title ?? 'Untitled',
 		date: post.blogData?.pubDate ?? 'Unknown date',
+		display: post.blogData?.display ?? 'No Display',
+		description: post.blogData?.description ?? 'No Description',
 	})),
 ].sort((a, b) => {
 	const dateA = new Date(a.date)
@@ -27,19 +32,20 @@ const allPosts = [
 const pageTitle = 'Play'
 ---
 
+
 <BaseLayout pageTitle={pageTitle}>
+	<div class="content">
 	<p>This is where I post my experiments</p>
-	<ul>
+	<ul class="recentItems">
 		{
 			allPosts.length > 0 ? (
-				allPosts.map((page) => (
-					<li>
-						<a href={page.url}>{page.title}</a>
-					</li>
+				allPosts.map((post) => (
+					<BlogPost url={post.url} title={post.title} date={post.date}, display={post.display}, description={post.description} />
 				))
 			) : (
 				<p>No experiments have been posted yet.</p>
 			)
 		}
 	</ul>
+</div>
 </BaseLayout>

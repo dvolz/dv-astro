@@ -1,0 +1,54 @@
+---
+import AstroSVGRaw from '../svgs/astro.svg?raw'
+---
+
+<script>
+	const gradient = document.getElementById('rainbowGradient')
+	let progress = 0
+
+	// Function to animate the gradient
+	function animateGradient() {
+		progress = (progress + 0.5) % 100
+
+		// Update gradient's stop offsets for a seamless animation
+		const stops = gradient.querySelectorAll('stop')
+		stops.forEach((stop, index) => {
+			const offset = (progress + index * 16.7) % 100 // Adjust offset step for smooth blending
+			stop.setAttribute('offset', `${offset}%`)
+		})
+
+		// Use requestAnimationFrame for smooth rendering
+		requestAnimationFrame(animateGradient)
+	}
+
+	// Start the animation
+	animateGradient()
+</script>
+
+<style lang="scss">
+	:root {
+		--color-red: #ff0000;
+		--color-orange: #ffa500;
+		--color-yellow: #ffff00;
+		--color-green: #008000;
+		--color-blue: #0000ff;
+		--color-violet: #8a2be2;
+	}
+
+	.astroSVG {
+		width: 20rem;
+		height: auto;
+		:global(.letter) {
+			stroke-width: 2.5;
+			stroke: var(--text-color);
+			transition: fill 0.5s ease;
+		}
+	}
+
+	:global(.letter) {
+		fill: url(#rainbowGradient);
+	}
+</style>
+<div class="astroSVG">
+	<Fragment set:html={AstroSVGRaw} />
+</div>

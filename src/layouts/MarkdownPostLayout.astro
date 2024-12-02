@@ -1,13 +1,12 @@
 ---
 import BaseLayout from './BaseLayout.astro'
 import BlogDetails from '../components/BlogDetails.astro'
-import { fade } from 'astro:transitions'
 const { frontmatter } = Astro.props
 ---
 
 <BaseLayout pageTitle={frontmatter.title}>
 	<BlogDetails {...frontmatter} />
-	<p transition:animate={fade({ duration: '2s' })}>
+	<p>
 		<em>{frontmatter.description}</em>
 	</p>
 	<p>Written by: <a href="/about/"> {frontmatter.author}</a></p>

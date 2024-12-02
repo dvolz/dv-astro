@@ -1,0 +1,164 @@
+---
+const { title, url, description } = Astro.props
+---
+
+<style lang="scss">
+	.box-lines {
+		display: flex;
+		flex-flow: row wrap;
+		position: relative;
+		border: none !important;
+		padding: 0 !important;
+		.column {
+			flex: 1 1 0px;
+			border: 0.1rem solid var(--text-color);
+			height: 9rem;
+			// Top and Bottom
+			&:nth-child(1),
+			&:nth-child(2) {
+				border-bottom: none;
+			}
+
+			// Left
+			&:nth-child(1),
+			&:nth-child(3) {
+				border-right: none;
+			}
+
+			// 56
+			--width-a: 56.08%;
+			&:nth-child(1),
+			&:nth-child(4) {
+				flex: 0 0 var(--width-a);
+			}
+			// 44
+			--width-b: 43.92%;
+			&:nth-child(2),
+			&:nth-child(3) {
+				flex: 0 0 var(--width-b);
+			}
+		}
+
+		// Square
+		.box {
+			--box-size: 21.9%;
+			position: absolute;
+			height: 0;
+			width: var(--box-size);
+			padding-bottom: var(--box-size);
+			border: 0.1rem solid var(--text-color);
+			background-color: var(--background-color);
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+		}
+		.column,
+		.box {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 2.5rem;
+			font-family: var(--a-font);
+			color: var(--background-color);
+			-webkit-text-stroke: 0.1rem var(--text-color);
+			text-stroke: 0.1rem var(--text-color);
+			white-space: nowrap; /* Prevents text from wrapping and breaking */
+			overflow: hidden; /* Optionally hides text that overflows the column */
+			text-overflow: ellipsis;
+		}
+		.box-height {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+	}
+</style>
+
+<a class="blogPost" href={url}>
+	<div class="row box-lines">
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="column column-box-lines"></div>
+		<div class="box"><div class="box-height">{title}</div></div>
+	</div>
+	<p class="description">{description}</p>
+</a>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		// Function to calculate the square width
+		function getSquareWidth(width) {
+			return 100 - (100 - width) * 2
+		}
+
+		// Function to update styles based on the animated value
+		function updateStyles(value) {
+			value = parseFloat(value).toFixed(2)
+
+			let squareWidth = Math.max(1, getSquareWidth(value)) // Prevent disappearing
+
+			const columns = document.querySelectorAll('.column-box-lines')
+			const box = document.querySelector('.box-lines .box')
+			const boxHouse = document.querySelector('.box-lines')
+
+			columns.forEach((column, index) => {
+				let width = index === 0 || index === 3 ? value : 100 - value
+				column.style.flexBasis = `${width}%`
+			})
+
+			box.style.width = `${squareWidth + 0.1}%`
+			box.style.paddingBottom = `${squareWidth / 2}%`
+		}
+
+		// Easing function (easeInOutQuad)
+		function easeInOutQuad(t) {
+			return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+		}
+
+		// Animation variables
+		let startValue = 55
+		let endValue = 90
+		let direction = 1 // 1 = opening, -1 = closing
+		let duration = 2000 // Animation duration in ms
+		let startTime = null
+
+		// Reduce frame rate by skipping frames
+		const targetFrameRate = 30 // Adjust this to your desired frame rate
+		const frameDuration = 1000 / targetFrameRate
+
+		let lastFrameTime = 0
+
+		function animate(timestamp) {
+			if (!startTime) startTime = timestamp
+
+			const elapsed = timestamp - startTime
+
+			// Skip frames based on desired frame rate
+			if (timestamp - lastFrameTime < frameDuration) {
+				requestAnimationFrame(animate)
+				return
+			}
+			lastFrameTime = timestamp
+
+			let progress = elapsed / duration
+
+			if (progress >= 1) {
+				direction *= -1
+				;[startValue, endValue] = [endValue, startValue]
+				progress = 0
+				startTime = timestamp
+			}
+
+			const easedProgress = easeInOutQuad(progress)
+			const value = startValue + (endValue - startValue) * easedProgress
+
+			updateStyles(value)
+
+			requestAnimationFrame(animate)
+		}
+
+		// Start the animation
+		requestAnimationFrame(animate)
+	})
+</script>
