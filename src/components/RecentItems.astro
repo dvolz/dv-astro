@@ -1,5 +1,50 @@
 ---
-import { Icon } from 'astro-icon/components'
+import BlogPost from './BlogPost.astro'
+
+const { featured = 'false', category = 'both', display='false' } = Astro.props; // Extract props with default values
+const isFeatured = featured === 'true';
+
+
+// Logic for determining what to display
+const displayThoughts = display === 'both' || display === 'thoughts';
+const displayPlay = display === 'both' || display === 'play';
+
+const mdPlay = (await Astro.glob('../pages/play/*.md')) || {}
+const astroPlay = (await Astro.glob('../pages/play/*.astro')) || {}
+const mdThoughts = await Astro.glob('../pages/thoughts/*.md') || {}
+const astroThoughts = await Astro.glob('../pages/thoughts/*.astro') || {}
+
+// Combine `.md` and `.astro` posts, ensuring they have similar metadata structures
+// Utility function to transform posts
+const transformPosts = (posts, sourceType) =>
+  posts.map((post) => {
+    const isAstro = sourceType === 'astro';
+    const data = isAstro ? post.blogData : post.frontmatter;
+
+    return {
+      url: post.url,
+      title: data?.title ?? 'Untitled',
+      date: data?.pubDate ?? 'Unknown date',
+      display: data?.display ?? '',
+      description: data?.description ?? 'No Description',
+      featured: data?.featured ?? false,
+    };
+  });
+
+  
+
+// Construct the `allPosts` array based on the category
+const allPosts = [
+  ...(category === 'both' || category === 'thoughts' ? transformPosts(mdThoughts, 'markdown') : []),
+  ...(category === 'both' || category === 'thoughts' ? transformPosts(astroThoughts, 'astro') : []),
+  ...(category === 'both' || category === 'play' ? transformPosts(mdPlay, 'markdown') : []),
+  ...(category === 'both' || category === 'play' ? transformPosts(astroPlay, 'astro') : []),
+].sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date (newest first)
+
+const filteredPosts = isFeatured 
+  ? allPosts.filter(post => post.featured === true) 
+  : allPosts;
+
 ---
 
 <style lang="scss">
@@ -7,9 +52,14 @@ import { Icon } from 'astro-icon/components'
 		margin: 4rem 0;
 	}
 </style>
-
-<div class="recent-items">
-	<div class="item">
-		<h4>Recent Item TBD LOL</h4>
-	</div>
-</div>
+<ul class="recentItems">
+	{
+		filteredPosts.length > 0 ? (
+			filteredPosts.map((post) => (
+				<BlogPost url={post.url} title={post.title} date={post.date}, display={post.display}, description={post.description} />
+			))
+		) : (
+			<p>No posts</p>
+		)
+	}
+</ul>

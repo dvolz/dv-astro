@@ -2,6 +2,8 @@
 const { title, url, display, description } = Astro.props
 
 const formattedTitle = title.replace(/\s+/g, '-').toLowerCase()
+console.log('Post data:', { title, display, description });
+
 
 // Dynamically import the component if `display` is true
 let DynamicComponent = null
@@ -16,11 +18,8 @@ if (display) {
 }
 ---
 
-<style is:global>
-
-</style>
-
 <li>
+	{display}
 	{
 		display && DynamicComponent ? (
 			<DynamicComponent.default title={title} url={url}, description={description} />

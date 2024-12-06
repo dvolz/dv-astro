@@ -1,29 +1,29 @@
 {
-  "name": "digital-disk",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/preact": "^3.5.3",
-    "@astrojs/react": "^3.6.3",
-    "@astrojs/rss": "^4.0.8",
-    "@iconify-json/heroicons-outline": "^1.2.0",
-    "@iconify-json/mdi": "^1.2.1",
-    "astro": "^4.16.16",
-    "astro-icon": "^1.1.2",
-    "modern-normalize": "^3.0.1",
-    "preact": "^10.23.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "scss": "^0.2.4"
-  },
-  "devDependencies": {
-    "sass-embedded": "^1.79.3"
-  }
+	"name": "digital-disk",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"start": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro"
+	},
+	"dependencies": {
+		"@astrojs/preact": "^3.5.3",
+		"@astrojs/react": "^3.6.3",
+		"@astrojs/rss": "^4.0.8",
+		"@iconify-json/heroicons-outline": "^1.2.0",
+		"@iconify-json/mdi": "^1.2.1",
+		"astro": "^4.16.16",
+		"astro-icon": "^1.1.2",
+		"modern-normalize": "^3.0.1",
+		"preact": "^10.23.2",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"scss": "^0.2.4"
+	},
+	"devDependencies": {
+		"sass-embedded": "^1.79.3"
+	}
 }

@@ -3,49 +3,14 @@ import { object } from 'astro:schema'
 import BlogPost from '../components/BlogPost.astro'
 
 import BaseLayout from '../layouts/BaseLayout.astro'
-
-// Get all pages inside pages/experiments
-const mdPlay = (await Astro.glob('./play/*.md')) || {}
-const astroPlay = (await Astro.glob('./play/*.astro')) || {}
-// Combine `.md` and `.astro` posts, ensuring they have similar metadata structures
-const allPosts = [
-	...mdPlay.map((post) => ({
-		url: post.url,
-		title: post.frontmatter.title,
-		date: post.frontmatter.pubDate,
-		display: post.frontmatter.display ? post.frontmatter.display : '',
-		description: post.frontmatter.description ? post.frontmatter.description : '',
-	})),
-	...astroPlay.map((post) => ({
-		url: post.url,
-		title: post.blogData?.title ?? 'Untitled',
-		date: post.blogData?.pubDate ?? 'Unknown date',
-		display: post.blogData?.display ?? 'No Display',
-		description: post.blogData?.description ?? 'No Description',
-	})),
-].sort((a, b) => {
-	const dateA = new Date(a.date)
-	const dateB = new Date(b.date)
-	return dateB - dateA // Sort by date (newest first)
-})
+import RecentItems from '../components/RecentItems.astro'
 
 const pageTitle = 'Play'
 ---
 
-
 <BaseLayout pageTitle={pageTitle}>
 	<div class="content">
-	<p>This is where I post my experiments</p>
-	<ul class="recentItems">
-		{
-			allPosts.length > 0 ? (
-				allPosts.map((post) => (
-					<BlogPost url={post.url} title={post.title} date={post.date}, display={post.display}, description={post.description} />
-				))
-			) : (
-				<p>No experiments have been posted yet.</p>
-			)
-		}
-	</ul>
-</div>
+		<p>This is where I post my experiments</p>
+		<RecentItems category="play" />
+	</div>
 </BaseLayout>

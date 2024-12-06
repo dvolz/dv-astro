@@ -1,39 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import BlogPost from '../components/BlogPost.astro'
-
-const mdPosts = await Astro.glob('./thoughts/*.md')
-const astroPosts = await Astro.glob('./thoughts/*.astro')
-
-// Combine `.md` and `.astro` posts, ensuring they have similar metadata structures
-const allPosts = [
-	...mdPosts.map((post) => ({
-		url: post.url,
-		title: post.frontmatter.title,
-		date: post.frontmatter.pubDate,
-		display: post.frontmatter.display ? post.frontmatter.display : '',
-	})),
-	...astroPosts.map((post) => ({
-		url: post.url,
-		title: post.title,
-		date: post.pubDate,
-		display: post.display ? post.display : '',
-	})),
-].sort((a, b) => {
-	const dateA = new Date(a.date)
-	const dateB = new Date(b.date)
-	return dateB - dateA // Sort by date (newest first)
-})
+import RecentItems from '../components/RecentItems.astro'
 
 const pageTitle = `Penia's Salad Blog`
 ---
 
 <BaseLayout pageTitle={pageTitle}>
-	<ul>
-		{
-			allPosts.map((post) => (
-				<BlogPost url={post.url} title={post.title} date={post.date} />
-			))
-		}
-	</ul>
+	<RecentItems category="thoughts" />
 </BaseLayout>

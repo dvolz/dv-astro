@@ -2,9 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
 export const blogData = {
-	title: 'Squares and Grids',
+	title: 'Shapes and Grids',
 	author: 'David Volz',
-	description: 'Squares and Grids',
+	description: `Playing with some shapes and grids.`,
 	image: {
 		url: 'https://docs.astro.build/assets/arc.webp',
 		alt: 'The Astro logo on a dark background with a purple gradient arc.',
@@ -12,6 +12,7 @@ export const blogData = {
 	display: true,
 	pubDate: '2024-11-22',
 	tags: ['css', 'code', 'design', 'fluff'],
+	featured: true,
 }
 const showTypographyHero = true
 const typoGraphyHeroStyle = 'inverted'

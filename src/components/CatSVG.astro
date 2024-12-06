@@ -37,22 +37,29 @@ import CatSVGFile from '../svgs/cat.svg?raw'
 	document.addEventListener('DOMContentLoaded', () => {
 		const svgElement = document.getElementById('cat-svg')
 		const catHouse = document.querySelector('.catHouse')
-		let isBackgroundSet = false // Toggle state
+		let isBackgroundSet =
+			JSON.parse(localStorage.getItem('isBackgroundSet')) || false // Get the saved state or default to false
+
+		// Function to apply the background state
+		function applyBackgroundState() {
+			if (isBackgroundSet) {
+				catHouse.style.opacity = '.3' // Set background
+			} else {
+				catHouse.style.opacity = '0' // Remove background
+			}
+		}
 
 		// Function to toggle the background
 		function toggleBackground() {
-			if (isBackgroundSet) {
-				// Remove background
-				catHouse.style.opacity = '0'
-				isBackgroundSet = false
-			} else {
-				// Set background
-				catHouse.style.opacity = '.3'
-				isBackgroundSet = true
-			}
+			isBackgroundSet = !isBackgroundSet // Toggle state
+			applyBackgroundState() // Apply the updated state
+			localStorage.setItem('isBackgroundSet', JSON.stringify(isBackgroundSet)) // Save state to local storage
 		}
 
 		// Attach the toggle function to the click event
 		svgElement.addEventListener('click', toggleBackground)
+
+		// Apply the saved state on page load
+		applyBackgroundState()
 	})
 </script>
