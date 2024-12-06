@@ -1,31 +1,16 @@
 ---
-const { title, url, display, description } = Astro.props
-
-const formattedTitle = title.replace(/\s+/g, '-').toLowerCase()
-console.log('Post data:', { title, display, description });
-
-
-// Dynamically import the component if `display` is true
-let DynamicComponent = null
-if (display) {
-	try {
-		DynamicComponent = await import(
-			`../components/display/${formattedTitle}-display.astro`
-		)
-	} catch (e) {
-		console.error(`Component ../components/display/${title}-display.astro not found`, e)
-	}
-}
+const { title, url, date, display, description, DynamicComponent } = Astro.props
 ---
 
 <li>
-	{display}
 	{
-		display && DynamicComponent ? (
-			<DynamicComponent.default title={title} url={url}, description={description} />
+		display === true && DynamicComponent ? (
+			<DynamicComponent title={title} url={url} description={description} />
 		) : (
 			<a class="blogPost" href={url}>
-				<div class="frame"><p class="title">{title}</p></div>
+				<div class="frame">
+					<p class="title">{title}</p>
+				</div>
 				<p class="description">{description}</p>
 			</a>
 		)
