@@ -4,10 +4,15 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import HomeContent from '../components/HomeContent.astro'
 import RecentItems from '../components/RecentItems.astro'
 const pageTitle = 'Hello and welcome'
+const description = "David Volz's Personal Site"
 const subTitle = 'I am David Volz, a software manager and engineer'
 ---
 
-<BaseLayout pageTitle={pageTitle} subTitle={subTitle}>
+<BaseLayout
+	pageTitle={pageTitle}
+	subTitle={subTitle}
+	,
+	description={description}>
 	<div class="content-pmw">
 		<div class="content content-center">
 			<p>

@@ -3,8 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import RecentItems from '../components/RecentItems.astro'
 
 const pageTitle = `Penia's Salad Blog`
+const description = 'Play page that showcases experiments'
 ---
 
-<BaseLayout pageTitle={pageTitle}>
+<BaseLayout pageTitle={pageTitle} description={description}>
 	<RecentItems category="thoughts" />
 </BaseLayout>

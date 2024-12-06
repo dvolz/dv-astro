@@ -4,7 +4,7 @@ import BlogDetails from '../components/BlogDetails.astro'
 const { frontmatter } = Astro.props
 ---
 
-<BaseLayout pageTitle={frontmatter.title}>
+<BaseLayout pageTitle={frontmatter.title} description={frontmatter.description}>
 	<BlogDetails {...frontmatter} />
 	<p>
 		<em>{frontmatter.description}</em>
