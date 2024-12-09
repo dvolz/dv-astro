@@ -1,0 +1,7 @@
+.inverted {
+	.logo-link {
+		&:not(:hover) path {
+			fill: var(--background-color) !important;
+		}
+	}
+}

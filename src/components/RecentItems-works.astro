@@ -1,0 +1,92 @@
+---
+import BlogPost from './BlogPost.astro'
+
+const { featured = 'false', category = 'both' } = Astro.props // Extract props with default values
+const isFeatured = featured === 'true'
+
+const mdPlay = (await Astro.glob('../pages/play/*.md')) || {}
+const astroPlay = (await Astro.glob('../pages/play/*.astro')) || {}
+const mdThoughts = (await Astro.glob('../pages/thoughts/*.md')) || {}
+const astroThoughts = (await Astro.glob('../pages/thoughts/*.astro')) || {}
+
+// Utility function to transform posts
+const transformPosts = (posts, sourceType) =>
+	posts.map((post) => {
+		const isAstro = sourceType === 'astro'
+		const data = isAstro ? post.blogData : post.frontmatter
+
+		return {
+			url: post.url,
+			title: data?.title ?? 'Untitled',
+			date: data?.pubDate ?? 'Unknown date',
+			display: data?.display ?? false,
+			description: data?.description ?? 'No Description',
+			featured: data?.featured ?? false,
+		}
+	})
+
+// Construct the `allPosts` array based on the category
+const allPosts = [
+	...(category === 'both' || category === 'thoughts'
+		? transformPosts(mdThoughts, 'markdown')
+		: []),
+	...(category === 'both' || category === 'thoughts'
+		? transformPosts(astroThoughts, 'astro')
+		: []),
+	...(category === 'both' || category === 'play'
+		? transformPosts(mdPlay, 'markdown')
+		: []),
+	...(category === 'both' || category === 'play'
+		? transformPosts(astroPlay, 'astro')
+		: []),
+].sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date (newest first)
+
+// Filter posts by featured status if needed
+const filteredPosts = isFeatured
+	? allPosts.filter((post) => post.featured === true)
+	: allPosts
+
+// Dynamically import components for posts with `display: true`
+const processedPosts = await Promise.all(
+	filteredPosts.map(async (post) => {
+		if (post.display === true) {
+			try {
+				const formattedTitle = post.title.replace(/\s+/g, '-').toLowerCase()
+				const DynamicComponent = await import(
+					`../components/display/${formattedTitle}-display.astro`
+				)
+				return { ...post, DynamicComponent: DynamicComponent.default }
+			} catch (e) {
+				console.error(`Failed to import dynamic component for ${post.title}`, e)
+				return { ...post, DynamicComponent: null }
+			}
+		}
+		return { ...post, DynamicComponent: null }
+	})
+)
+---
+
+<style lang="scss">
+	.recent-items {
+		margin: 4rem 0;
+	}
+</style>
+
+<ul class="recentItems">
+	{
+		processedPosts.length > 0 ? (
+			processedPosts.map((post) => (
+				<BlogPost
+					url={post.url}
+					title={post.title}
+					date={post.date}
+					display={post.display}
+					description={post.description}
+					DynamicComponent={post.DynamicComponent}
+				/>
+			))
+		) : (
+			<p>No posts</p>
+		)
+	}
+</ul>

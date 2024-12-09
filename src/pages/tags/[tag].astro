@@ -1,12 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogPost from '../../components/BlogPost.astro'
+import {
+	transformPosts,
+	filterPostsByCategory,
+	filterFeaturedPosts,
+	loadDynamicComponents,
+} from '../../scripts/postHelpers'
 
 export async function getStaticPaths() {
-	const allPosts = await Astro.glob('../thoughts/*.md')
-	const uniqueTags = [
-		...new Set(allPosts.map((post) => post.frontmatter.tags).flat()),
+	const mdPlay = await Astro.glob('../pages/play/*.md')
+	const astroPlay = await Astro.glob('../pages/play/*.astro')
+	const mdThoughts = await Astro.glob('../pages/thoughts/*.md')
+	const astroThoughts = await Astro.glob('../pages/thoughts/*.astro')
+
+	// Transform posts
+	const allPosts = [
+		...transformPosts(mdThoughts, 'markdown'),
+		...transformPosts(astroThoughts, 'astro'),
+		...transformPosts(mdPlay, 'markdown'),
+		...transformPosts(astroPlay, 'astro'),
 	]
+	console.log('All Posts:', JSON.stringify(allPosts, null, 2))
+	const uniqueTags = [...new Set(allPosts.map((post) => post.data.tags).flat())]
 
 	return uniqueTags.map((tag) => {
 		const filteredPosts = allPosts.filter((post) =>

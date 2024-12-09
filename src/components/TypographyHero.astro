@@ -1,6 +1,6 @@
 ---
-const { pageTitle, subTitle, typoGraphyHeroStyle } = Astro.props
-const compiledClasses = `typographyHero ${typoGraphyHeroStyle}`.trim()
+const { pageTitle, subTitle, theme } = Astro.props
+const compiledClasses = `typographyHero ${theme}`.trim()
 ---
 
 <style>

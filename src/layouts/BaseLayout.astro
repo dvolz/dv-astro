@@ -18,7 +18,7 @@ const {
 	subTitle,
 	showSidebar,
 	showTypographyHero = true,
-	typoGraphyHeroStyle = '',
+	theme = '',
 	fullWidthBody = false,
 	pubDate,
 	description = 'Sample Description',
@@ -44,7 +44,7 @@ const {
 
 		<Variables />
 	</head>
-	<body class={fullWidthBody ? 'full-width-body' : ''}>
+	<body class={`${fullWidthBody ? 'full-width-body' : ''} ${theme}`}>
 		<div class="catHouse"></div>
 		<div
 			class={[
@@ -61,7 +61,7 @@ const {
 						<TypographyHero
 							pageTitle={pageTitle}
 							subTitle={subTitle}
-							typoGraphyHeroStyle={typoGraphyHeroStyle}
+							theme={theme}
 						/>
 					)
 				}

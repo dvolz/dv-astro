@@ -15,15 +15,16 @@ export const blogData = {
 	featured: true,
 }
 const showTypographyHero = true
-const typoGraphyHeroStyle = 'inverted'
+const theme = 'inverted'
 const fullWidthBody = true
+import '../../styles/themes/_inverted.scss'
 ---
 
 <BaseLayout
 	pageTitle={blogData.title}
 	{showTypographyHero}
 	description={blogData.description}
-	typoGraphyHeroStyle={typoGraphyHeroStyle}
+	theme={theme}
 	fullWidthBody={fullWidthBody}
 	display={blogData.display}>
 	<BlogDetails {...blogData} />
