@@ -33,6 +33,13 @@ const featuredFilteredPosts = filterFeaturedPosts(
 
 // Dynamically load components for posts with `display: true`
 const processedPosts = await loadDynamicComponents(featuredFilteredPosts)
+
+// Sort posts by date (most recent first)
+const sortedPosts = processedPosts.sort((a, b) => {
+	const dateA = new Date(a.date)
+	const dateB = new Date(b.date)
+	return dateB - dateA // Sort in descending order
+})
 ---
 
 <style lang="scss">
@@ -43,8 +50,8 @@ const processedPosts = await loadDynamicComponents(featuredFilteredPosts)
 
 <ul class="recentItems">
 	{
-		processedPosts.length > 0 ? (
-			processedPosts.map((post) => (
+		sortedPosts.length > 0 ? (
+			sortedPosts.map((post) => (
 				<BlogPost
 					url={post.url}
 					title={post.title}
