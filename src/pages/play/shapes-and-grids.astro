@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
-import Image from '../../components/Image.astro'
-const imagePath = '/public/images/sample.jpeg'
+import AstroImage from '../../components/AstroImage.astro'
+import sampleImage from '../../assets/images/sample.jpeg' // Import the image from src/assets
 export const blogData = {
 	title: 'Shapes and Grids',
 	author: 'David Volz',
@@ -78,12 +78,7 @@ import '../../styles/themes/_inverted.scss'
 
 		<figure>
 			<!-- figure -->
-			<Image
-				src={imagePath}
-				alt="Reusable optimized image"
-				width={600}
-				height={400}
-			/>
+			<AstroImage src={sampleImage} alt="Sample image" />
 			<!-- img -->
 			<figcaption>This is a caption for the image. (figcaption)</figcaption>
 		</figure>

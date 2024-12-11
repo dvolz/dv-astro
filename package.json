@@ -7,14 +7,15 @@
 		"start": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
-		"astro": "astro"
+		"astro": "astro",
+		"clean": "rm -rf .astro/ dist/ node_modules/.vite && npm cache clean --force"
 	},
 	"dependencies": {
 		"@astrojs/preact": "^3.5.3",
 		"@astrojs/react": "^3.6.3",
 		"@astrojs/rss": "^4.0.8",
 		"@iconify-json/mdi": "^1.2.1",
-		"astro": "^5.0.0",
+		"astro": "^5.0.3",
 		"astro-icon": "^1.1.2",
 		"modern-normalize": "^3.0.1",
 		"preact": "^10.23.2",

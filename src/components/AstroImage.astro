@@ -1,0 +1,37 @@
+---
+import { Image } from 'astro:assets'
+
+// Destructure the props and set defaults
+const {
+	src,
+	alt,
+	width = 800,
+	height = 600,
+	format = 'webp',
+	quality = 75,
+	layout = 'responsive',
+} = Astro.props
+
+// Check if the src is passed as a URL (a string path)
+let resolvedSrc = src
+
+// If the src is not directly imported but a path string, resolve it using import.meta.glob
+if (typeof src === 'string' && src.startsWith('/src/assets/images')) {
+	const images = import.meta.glob('/src/assets/images/*.jpeg', { eager: true })
+	resolvedSrc = images[src]
+}
+
+if (!resolvedSrc) {
+	throw new Error(`Image not found for the path: ${src}`)
+}
+---
+
+<Image
+	src={resolvedSrc}
+	alt={alt}
+	width={width}
+	height={height}
+	format={format}
+	quality={quality}
+	layout={layout}
+/>
