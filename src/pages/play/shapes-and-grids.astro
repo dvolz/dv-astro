@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
+import Image from '../../components/Image.astro'
+const imagePath = '/public/images/sample.jpeg'
 export const blogData = {
 	title: 'Shapes and Grids',
 	author: 'David Volz',
@@ -27,8 +29,104 @@ import '../../styles/themes/_inverted.scss'
 	theme={theme}
 	fullWidthBody={fullWidthBody}
 	display={blogData.display}>
-	<BlogDetails {...blogData} />
+	<div class="article">
+		<BlogDetails {...blogData} />
 
+		<p>
+			This is an introductory paragraph with some <a href="#">links</a> for you to
+			click on. (a)
+		</p>
+		<!-- p -->
+
+		<h3>Subheading</h3>
+		<!-- h3 -->
+		<p>
+			Here's some text with an <em>emphasized</em> word and a <strong
+				>strong</strong
+			> word. (em, strong)
+		</p>
+		<!-- p -->
+
+		<blockquote>
+			<!-- blockquote -->
+			"This is a blockquote, typically used for quotes or special attention text."
+		</blockquote>
+
+		<p>Here's a list of things:</p>
+		<!-- p -->
+		<ul>
+			<!-- ul -->
+			<li>Item one</li>
+			<!-- li -->
+			<li>Item two</li>
+			<!-- li -->
+			<li>Item three</li>
+			<!-- li -->
+		</ul>
+
+		<p>And here's an ordered list:</p>
+		<!-- p -->
+		<ol>
+			<!-- ol -->
+			<li>First item</li>
+			<!-- li -->
+			<li>Second item</li>
+			<!-- li -->
+			<li>Third item</li>
+			<!-- li -->
+		</ol>
+
+		<figure>
+			<!-- figure -->
+			<Image
+				src={imagePath}
+				alt="Reusable optimized image"
+				width={600}
+				height={400}
+			/>
+			<!-- img -->
+			<figcaption>This is a caption for the image. (figcaption)</figcaption>
+		</figure>
+
+		<table>
+			<!-- table -->
+			<thead>
+				<!-- thead -->
+				<tr>
+					<!-- tr -->
+					<th>Header 1</th>
+					<!-- th -->
+					<th>Header 2</th>
+					<!-- th -->
+				</tr>
+			</thead>
+			<tbody>
+				<!-- tbody -->
+				<tr>
+					<!-- tr -->
+					<td>Data 1</td>
+					<!-- td -->
+					<td>Data 2</td>
+					<!-- td -->
+				</tr>
+				<tr>
+					<!-- tr -->
+					<td>Data 3</td>
+					<!-- td -->
+					<td>Data 4</td>
+					<!-- td -->
+				</tr>
+			</tbody>
+		</table>
+
+		<p>Code example:</p>
+		<!-- p -->
+
+		<p>Horizontal rule below:</p>
+		<!-- p -->
+		<hr />
+		<!-- hr -->
+	</div>
 	<div class="grid-feature">
 		<div class="controls">
 			<label>

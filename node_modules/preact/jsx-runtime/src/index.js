@@ -35,15 +35,9 @@ function createVNode(type, props, key, isStaticChildren, __source, __self) {
 		ref,
 		i;
 
-	if ('ref' in normalizedProps) {
-		normalizedProps = {};
-		for (i in props) {
-			if (i == 'ref') {
-				ref = props[i];
-			} else {
-				normalizedProps[i] = props[i];
-			}
-		}
+	if ('ref' in props) {
+		ref = props.ref;
+		delete props.ref;
 	}
 
 	/** @type {VNode & { __source: any; __self: any }} */
@@ -56,7 +50,6 @@ function createVNode(type, props, key, isStaticChildren, __source, __self) {
 		_parent: null,
 		_depth: 0,
 		_dom: null,
-		_nextDom: undefined,
 		_component: null,
 		constructor: undefined,
 		_original: --vnodeId,

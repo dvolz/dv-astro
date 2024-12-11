@@ -9,8 +9,9 @@ import { Icon } from 'astro-icon/components'
 		display: flex;
 		width: 100%;
 		max-width: 120rem;
-		margin: 0 auto;
 		justify-content: start;
+		position: relative;
+		margin: 1rem auto 3rem;
 	}
 	.date {
 		display: flex;
@@ -35,16 +36,8 @@ import { Icon } from 'astro-icon/components'
 		height: $svg-size;
 		color: var(--background-color);
 	}
-	.tags {
-		display: flex;
-		padding: 0;
-		li {
-			list-style-type: none;
-		}
-	}
 	@media screen and (min-width: 768px) {
 		.blog-details {
-			justify-content: space-between;
 		}
 	}
 </style>
@@ -58,7 +51,7 @@ import { Icon } from 'astro-icon/components'
 		<p>Published on <span>{formatDate(pubDate)}</span></p>
 	</div>
 	<div>
-		<ul class="tags">
+		<!-- <ul class="tags">
 			{
 				tags.map((tag) => (
 					<li key={tag}>
@@ -68,7 +61,7 @@ import { Icon } from 'astro-icon/components'
 					</li>
 				))
 			}
-		</ul>
+		</ul> -->
 	</div>
 </div>
 

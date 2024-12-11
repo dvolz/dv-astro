@@ -129,6 +129,8 @@ import { Icon } from 'astro-icon/components'
 			// Dark theme values
 			body.style.setProperty('--text-color', '#fff7f2')
 			body.style.setProperty('--background-color', '#332e2e')
+			body.style.setProperty('--contrast-background-color', '#55c892')
+
 			body.style.setProperty('--link-color', '#c3eeff')
 			body.style.setProperty('--link-hover', '#fff')
 			root.classList.add('dark')
@@ -136,8 +138,9 @@ import { Icon } from 'astro-icon/components'
 			// Light theme values
 			body.style.setProperty('--text-color', '#332e2e')
 			body.style.setProperty('--background-color', '#fff7f2')
-			body.style.setProperty('--link-color', '#0382b4')
-			body.style.setProperty('--link-hover', '#29435c')
+			body.style.setProperty('--contrast-background-color', '#29435c')
+			body.style.setProperty('--link-color', '#3F6E89')
+			body.style.setProperty('--link-hover', '#55c892')
 		}
 	}
 
