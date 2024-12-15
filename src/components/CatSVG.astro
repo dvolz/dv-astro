@@ -71,8 +71,8 @@ import '../styles/module/_slider.scss'
 
 		// Function to update the SVG's viewBox for spacing
 		function updateSVGViewBox(spacing) {
-			const baseWidth = 1000
-			const baseHeight = 600
+			const baseWidth = 600
+			const baseHeight = 400
 			const baseX = 75
 			const baseY = 75
 
@@ -109,7 +109,7 @@ import '../styles/module/_slider.scss'
 		// Initial background state from localStorage or default to false
 		let isBackgroundSet =
 			JSON.parse(localStorage.getItem('isBackgroundSet')) || false
-		let spacing = JSON.parse(localStorage.getItem('backgroundSpacing')) || 100 // Default to 100 if not found
+		let spacing = JSON.parse(localStorage.getItem('backgroundSpacing')) || 150 // Default to 100 if not found
 
 		// Function to apply the background state
 		function applyBackgroundState() {
