@@ -60,7 +60,7 @@ const sortedPosts = processedPosts.sort((a, b) => {
 })
 
 const { tag } = Astro.params
-const { posts } = Astro.props
+import '../../styles/global/_recent-items.scss'
 ---
 
 <BaseLayout pageTitle={`${tag} Articles`}>

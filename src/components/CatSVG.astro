@@ -1,51 +1,125 @@
 ---
 import CatSVGFile from '../svgs/cat.svg?raw'
+import '../styles/module/_slider.scss'
 ---
 
 <style>
-	:global(body) {
-		position: relative;
-	}
-	:global(.catHouse) {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: url('/cat-bg.svg');
-		background-repeat: repeat;
-		background-size: 15rem;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.3s ease;
-	}
 	.catSVG {
 		width: 70px;
 		height: auto;
 		margin: 0 auto;
 		cursor: pointer; /* Indicates the element is clickable */
 	}
+	.catControls {
+		max-height: 0; /* Hidden by default */
+		overflow: hidden;
+		transition: max-height 0.3s linear;
+		width: 100%;
+		max-width: 40rem;
+		margin: 0 auto;
+
+		background-color: var(--background-color);
+	}
+	.catControlsInner {
+		padding: 2rem 2rem 1.5rem;
+		border: 0.1rem solid var(--text-color);
+		margin-bottom: 2rem;
+	}
+	label,
+	#slider-value {
+		font-family: var(--a-font);
+	}
+	label {
+		margin-bottom: 1.5rem;
+		display: block;
+	}
+
+	#spacing-slider {
+		margin-bottom: 0rem;
+	}
+	#slider-value {
+		font-size: 3rem;
+	}
 </style>
 
 <div id="background-container">
-	<div class="catSVG" id="cat-svg">
+	<div class="catSVG" id="cat-svg" data-svg={CatSVGFile}>
 		<Fragment set:html={CatSVGFile} />
+	</div>
+	<div class="catControls">
+		<div class="catControlsInner">
+			<label for="spacing-slider">Adjust Cat Space:</label>
+			<input id="spacing-slider" type="range" min="50" max="300" value="100" />
+			<span id="slider-value">100</span>
+		</div>
 	</div>
 </div>
 
 <script>
 	document.addEventListener('DOMContentLoaded', () => {
+		const body = document.querySelector('body')
+		const slider = document.getElementById('spacing-slider')
+		const sliderValue = document.getElementById('slider-value')
 		const svgElement = document.getElementById('cat-svg')
-		const catHouse = document.querySelector('.catHouse')
+		const rawSVG = svgElement.getAttribute('data-svg')
+		const catControls = document.querySelector('.catControls')
+
+		// Function to encode SVG for inline use
+		function encodeSVG(svg) {
+			return `data:image/svg+xml,${encodeURIComponent(svg)}`
+		}
+
+		// Function to update the SVG's viewBox for spacing
+		function updateSVGViewBox(spacing) {
+			const baseWidth = 1000
+			const baseHeight = 600
+			const baseX = 75
+			const baseY = 75
+
+			// Calculate scaling factor based on slider value
+			const scaleFactor = 1 + (spacing - 50) / 200 // Scaling factor between 1 and 1.75
+
+			// Adjust the width and height based on the scale factor
+			const newWidth = baseWidth * scaleFactor
+			const newHeight = baseHeight * scaleFactor
+
+			// Adjust the x and y coordinates to maintain the positioning of the cat
+			const newX = baseX - (newWidth - baseWidth) / 2 // Center the cat horizontally
+			const newY = baseY - (newHeight - baseHeight) / 2 // Center the cat vertically
+
+			// Create the updated viewBox
+			const updatedViewBox = `${newX} ${newY} ${newWidth} ${newHeight}`
+
+			// Replace the viewBox in the raw SVG
+			const updatedSVG = rawSVG.replace(
+				/<svg[^>]+>/,
+				`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}" opacity="0.3">` // Apply opacity here
+			)
+			// Encode the updated SVG
+			const encodedSVG = encodeSVG(updatedSVG)
+
+			// Set the updated SVG as the background
+			body.style.backgroundImage = `url('${encodedSVG}')`
+
+			// Adjust background-size to keep the cats the same size
+			const backgroundSize = `${newWidth / 5}px ${newHeight / 5}px`
+			body.style.backgroundSize = backgroundSize
+		}
+
+		// Initial background state from localStorage or default to false
 		let isBackgroundSet =
-			JSON.parse(localStorage.getItem('isBackgroundSet')) || false // Get the saved state or default to false
+			JSON.parse(localStorage.getItem('isBackgroundSet')) || false
+		let spacing = JSON.parse(localStorage.getItem('backgroundSpacing')) || 100 // Default to 100 if not found
 
 		// Function to apply the background state
 		function applyBackgroundState() {
 			if (isBackgroundSet) {
-				catHouse.style.opacity = '.3' // Set background
+				body.style.backgroundImage = `url('${encodeSVG(rawSVG)}')`
+				catControls.style.maxHeight = '20rem' // Show controls
+				updateSVGViewBox(spacing) // Use the saved spacing value
 			} else {
-				catHouse.style.opacity = '0' // Remove background
+				body.style.backgroundImage = ''
+				catControls.style.maxHeight = '0' // Hide controls
 			}
 		}
 
@@ -56,10 +130,29 @@ import CatSVGFile from '../svgs/cat.svg?raw'
 			localStorage.setItem('isBackgroundSet', JSON.stringify(isBackgroundSet)) // Save state to local storage
 		}
 
+		// Update slider value display and background on input
+		slider.addEventListener('input', (event) => {
+			if (isBackgroundSet) {
+				spacing = parseInt(event.target.value, 10)
+				sliderValue.textContent = spacing
+				updateSVGViewBox(spacing)
+				localStorage.setItem('backgroundSpacing', JSON.stringify(spacing)) // Save state to local storage
+			}
+		})
+
+		// Set the slider value on page load to the saved spacing value
+		slider.value = spacing
+		sliderValue.textContent = spacing // Set the displayed value next to the slider
+
 		// Attach the toggle function to the click event
 		svgElement.addEventListener('click', toggleBackground)
 
 		// Apply the saved state on page load
 		applyBackgroundState()
+
+		// Initialize the background with the default slider value if enabled
+		if (isBackgroundSet) {
+			updateSVGViewBox(spacing)
+		}
 	})
 </script>

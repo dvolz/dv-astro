@@ -20,6 +20,7 @@ const showTypographyHero = true
 const theme = 'inverted'
 const fullWidthBody = true
 import '../../styles/themes/_inverted.scss'
+import '../../styles/module/_slider.scss'
 ---
 
 <BaseLayout
@@ -207,7 +208,7 @@ import '../../styles/themes/_inverted.scss'
 			flex-direction: column;
 
 			padding: 1rem 3rem;
-			max-width: 50rem; /* Adjust the width as needed */
+			max-width: 50rem;
 			width: 100%;
 			margin: 20px auto 0;
 			border: 0.1rem solid var(--text-color);
@@ -220,39 +221,6 @@ import '../../styles/themes/_inverted.scss'
 				align-items: center;
 				gap: 2rem;
 				flex-flow: row wrap;
-			}
-			input[type='range'] {
-				width: 100%;
-				height: 2rem;
-				background: var(--background-color);
-				border: 0.1rem solid var(--text-color);
-				appearance: none;
-				outline: none;
-				border-radius: 0;
-				transition: background 0.3s linear;
-				margin-bottom: 2rem;
-
-				$thumb-height: 2.5rem;
-				/* Chrome, Safari, and Edge */
-				&::-webkit-slider-thumb {
-					appearance: none;
-					width: $thumb-height;
-					height: $thumb-height;
-					background: var(--highlight-secondary);
-					border: 0.1rem solid var(--text-color);
-					border-radius: 50%;
-					cursor: pointer;
-				}
-
-				/* Firefox */
-				&::-moz-range-thumb {
-					width: $thumb-height;
-					height: $thumb-height;
-					background: var(--highlight-secondary);
-					border: 0.1rem solid var(--text-color);
-					border-radius: 50%;
-					cursor: pointer;
-				}
 			}
 		}
 
@@ -331,8 +299,8 @@ import '../../styles/themes/_inverted.scss'
 				color: var(--background-color);
 				-webkit-text-stroke: 0.1rem var(--text-color);
 				text-stroke: 0.1rem var(--text-color);
-				white-space: nowrap; /* Prevents text from wrapping and breaking */
-				overflow: hidden; /* Optionally hides text that overflows the column */
+				white-space: nowrap;
+				overflow: hidden;
 				text-overflow: ellipsis;
 			}
 			.box-height {
@@ -345,7 +313,7 @@ import '../../styles/themes/_inverted.scss'
 
 		@media screen and (max-width: 768px) {
 			#boxWidthSlider {
-				flex: 0 0 100%; /* This column will take 100% of the container's width */
+				flex: 0 0 100%;
 			}
 		}
 	</style>

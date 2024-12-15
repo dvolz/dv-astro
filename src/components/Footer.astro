@@ -43,13 +43,13 @@ const socialLinks = [
 	}
 
 	.astroColumn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-flow: row wrap;
+		text-align: center;
 		p {
 			margin: 0;
 		}
+	}
+	:global(.astroSVG) {
+		margin: 0 auto;
 	}
 
 	@media screen and (min-width: 768px) {
@@ -62,7 +62,10 @@ const socialLinks = [
 			justify-content: start;
 		}
 		.astroColumn {
-			justify-content: end;
+			text-align: right;
+		}
+		:global(.astroSVG) {
+			margin: 0 0 0 auto;
 		}
 	}
 </style>

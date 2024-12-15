@@ -6,16 +6,6 @@ import RecentItems from '../components/RecentItems.astro'
 const pageTitle = 'Hello and welcome'
 const description = "David Volz's Personal Site"
 const subTitle = 'I am David Volz, a software manager and engineer'
-import { Image } from 'astro:assets'
-import sampleImage from '../assets/images/sample.jpeg'
-const {
-	src,
-	alt = 'Sample image',
-	width = 800,
-	height = 600,
-	format = 'webp',
-	quality = 75,
-} = Astro.props
 ---
 
 <BaseLayout
@@ -32,14 +22,6 @@ const {
 			</p>
 		</div>
 	</div>
-	<Image
-		src={sampleImage}
-		alt={alt}
-		width={width}
-		height={height}
-		format={format}
-		quality={quality}
-	/>
 
 	<HomeContent />
 	<RecentItems featured="true" />
