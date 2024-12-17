@@ -2,6 +2,11 @@
 import AstroSVGRaw from '../svgs/astro.svg?raw'
 const lastUpdated = import.meta.env.LAST_UPDATED || 'unknown'
 const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
+// Reactive state for controlling visibility
+let isOpen = false
+function toggleDetails() {
+	isOpen = !isOpen
+}
 ---
 
 <style lang="scss">
@@ -35,26 +40,39 @@ const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
 		max-height: 0;
 		overflow: hidden;
 		transition: all 0.3s ease-in;
+		&.open {
+			max-height: 16rem;
+		}
 	}
 	.terminal {
 		font-family: 'Courier New', Courier, monospace;
 		background-color: $terminal-background;
 		color: $terminal-green;
-		border-radius: 10px;
-		box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+		border-radius: 1rem;
+		box-shadow: 0 0 2rem rgba(0, 255, 0, 0.7);
 		margin: 0 auto;
-		font-size: 16px;
-		line-height: 1;
+		font-size: 1.6rem;
+		line-height: 2.2;
+		max-width: 40rem;
 		.inner {
-			padding: 2.5rem 2rem 2rem;
+			padding: 2rem;
+		}
+		span {
+			border: 0.1rem solid $terminal-green;
+			border-radius: 0.5rem;
+			box-shadow: 0 0 0.8rem rgba(0, 255, 0, 0.7);
+			padding: 0.7rem;
 		}
 	}
 
 	.terminal p {
+		margin-bottom: 1rem;
 		&:last-child {
 			&:after {
 				content: '|';
 				animation: blink 0.8s step-end infinite;
+				margin-left: -0.5rem;
+				display: inline-block;
 			}
 		}
 	}
@@ -65,14 +83,16 @@ const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
 		}
 	}
 </style>
+
 <div class="astroSVG">
 	<Fragment set:html={AstroSVGRaw} />
 </div>
 <div class="lastUpdated terminal">
 	<div class="inner">
-		<p>Astro Version: {astroVersion}</p>
+		<p>Astro Version <span>{astroVersion}</span></p>
 		<p>
-			Site last updated: {lastUpdated}
+			Site last updated<br />
+			<span>{lastUpdated}</span>
 		</p>
 	</div>
 </div>
@@ -84,13 +104,12 @@ const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
 		let isOpen = false
 		function showDetails() {
 			if (isOpen) {
-				details.style.maxHeight = '0'
 				astroSVG.classList.toggle('open')
+				details.classList.toggle('open')
 				isOpen = false
 			} else {
-				console.log('closed')
-				details.style.maxHeight = '10rem'
 				astroSVG.classList.toggle('open')
+				details.classList.toggle('open')
 				isOpen = true
 			}
 		}
