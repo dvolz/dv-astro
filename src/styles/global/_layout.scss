@@ -20,9 +20,10 @@ main {
 }
 .full-width-body {
 	main {
-		width: 100vw;
-		max-width: none;
-		margin-left: calc(50% - 50vw);
+		width: 100vw; /* Full viewport width */
+		max-width: none; /* Removes any max-width constraints */
+		margin-left: calc(50% - 50vw); /* Aligns full width with the viewport */
+		margin-right: calc(50% - 50vw);
 	}
 }
 footer {
