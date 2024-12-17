@@ -1,54 +1,99 @@
 ---
 import AstroSVGRaw from '../svgs/astro.svg?raw'
+const lastUpdated = import.meta.env.LAST_UPDATED || 'unknown'
+const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
 ---
 
-<script>
-	const gradient = document.getElementById('rainbowGradient')
-	let progress = 0
-
-	// Function to animate the gradient
-	function animateGradient() {
-		progress = (progress + 0.5) % 100
-
-		// Update gradient's stop offsets for a seamless animation
-		const stops = gradient.querySelectorAll('stop')
-		stops.forEach((stop, index) => {
-			const offset = (progress + index * 16.7) % 100 // Adjust offset step for smooth blending
-			stop.setAttribute('offset', `${offset}%`)
-		})
-
-		// Use requestAnimationFrame for smooth rendering
-		requestAnimationFrame(animateGradient)
-	}
-
-	// Start the animation
-	animateGradient()
-</script>
-
 <style lang="scss">
-	:root {
-		--color-red: #ff0000;
-		--color-orange: #ffa500;
-		--color-yellow: #ffff00;
-		--color-green: #008000;
-		--color-blue: #0000ff;
-		--color-violet: #8a2be2;
-	}
-
-	.astroSVG {
+	$terminal-green: #00ff00;
+	$terminal-background: #1e1e1e;
+	:global(.astroSVG) {
 		width: 20rem;
 		height: auto;
+		cursor: pointer;
 		:global(.letter) {
 			stroke-width: 2.5;
 			stroke: var(--text-color);
-			transition: fill 0.5s ease;
+			transition: all 0.5s ease;
+			fill: var(--background-color);
+		}
+		&:hover {
+			:global(.letter) {
+				stroke: $terminal-green;
+				fill: $terminal-background;
+			}
+		}
+	}
+	:global(.astroSVG.open) {
+		:global(.letter) {
+			filter: drop-shadow(0 0 10px #00ff00);
+			fill: $terminal-background;
 		}
 	}
 
-	:global(.letter) {
-		fill: url(#rainbowGradient);
+	.lastUpdated {
+		max-height: 0;
+		overflow: hidden;
+		transition: all 0.3s ease-in;
+	}
+	.terminal {
+		font-family: 'Courier New', Courier, monospace;
+		background-color: $terminal-background;
+		color: $terminal-green;
+		border-radius: 10px;
+		box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+		margin: 0 auto;
+		font-size: 16px;
+		line-height: 1;
+		.inner {
+			padding: 2.5rem 2rem 2rem;
+		}
+	}
+
+	.terminal p {
+		&:last-child {
+			&:after {
+				content: '|';
+				animation: blink 0.8s step-end infinite;
+			}
+		}
+	}
+
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
 	}
 </style>
 <div class="astroSVG">
 	<Fragment set:html={AstroSVGRaw} />
 </div>
+<div class="lastUpdated terminal">
+	<div class="inner">
+		<p>Astro Version: {astroVersion}</p>
+		<p>
+			Site last updated: {lastUpdated}
+		</p>
+	</div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const astroSVG = document.querySelector('.astroSVG')
+		const details = document.querySelector('.lastUpdated')
+		let isOpen = false
+		function showDetails() {
+			if (isOpen) {
+				details.style.maxHeight = '0'
+				astroSVG.classList.toggle('open')
+				isOpen = false
+			} else {
+				console.log('closed')
+				details.style.maxHeight = '10rem'
+				astroSVG.classList.toggle('open')
+				isOpen = true
+			}
+		}
+		astroSVG.addEventListener('click', showDetails)
+	})
+</script>
