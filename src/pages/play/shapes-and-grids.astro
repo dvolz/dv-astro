@@ -138,40 +138,54 @@ const renderedMath = mathExpressions.map((item) => ({
 
 	let isResizing = false
 
-	resizeHandle.addEventListener('mousedown', (e) => {
+	// Add both mouse and touch event listeners
+	resizeHandle.addEventListener('mousedown', startResize)
+	resizeHandle.addEventListener('touchstart', startResize, { passive: false })
+
+	function startResize(e) {
+		e.preventDefault() // Prevent default touch actions on mobile
 		isResizing = true
 
-		// Add mousemove and mouseup listeners to the document
+		// Add mouse and touch move/up listeners to the document
 		document.addEventListener('mousemove', onMouseMove)
 		document.addEventListener('mouseup', onMouseUp)
-	})
+		document.addEventListener('touchmove', onTouchMove, { passive: false })
+		document.addEventListener('touchend', onMouseUp)
+	}
 
 	function onMouseMove(e) {
+		handleResize(e.clientX)
+	}
+
+	function onTouchMove(e) {
+		// Use the first touch point for resizing
+		const touch = e.touches[0]
+		handleResize(touch.clientX)
+	}
+
+	function handleResize(clientX) {
 		if (isResizing) {
 			// Calculate the new width
-			const width = e.clientX - resizableBox.offsetLeft
+			const width = clientX - resizableBox.offsetLeft
 
 			// Prevent the box from exceeding the viewport width
 			const maxWidth = body.clientWidth
-			if (width <= maxWidth) {
+			if (width <= maxWidth && width >= 100) {
+				// Ensure a minimum width
 				resizableBox.style.width = `${width}px`
 			}
 		}
 	}
 
-	function onMouseUp(e) {
+	function onMouseUp() {
 		if (isResizing) {
 			isResizing = false
-
-			// Ensure the box width doesn't exceed the viewport
-			const boxWidth = parseInt(resizableBox.style.width, 10)
-			if (boxWidth > body.clientWidth) {
-				resizableBox.style.width = `${body.clientWidth}px`
-			}
 
 			// Clean up event listeners
 			document.removeEventListener('mousemove', onMouseMove)
 			document.removeEventListener('mouseup', onMouseUp)
+			document.removeEventListener('touchmove', onTouchMove)
+			document.removeEventListener('touchend', onMouseUp)
 		}
 	}
 </script>
