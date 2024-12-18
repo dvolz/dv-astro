@@ -2,11 +2,6 @@
 import AstroSVGRaw from '../svgs/astro.svg?raw'
 const lastUpdated = import.meta.env.LAST_UPDATED || 'unknown'
 const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
-// Reactive state for controlling visibility
-let isOpen = false
-function toggleDetails() {
-	isOpen = !isOpen
-}
 ---
 
 <style lang="scss">
@@ -51,7 +46,8 @@ function toggleDetails() {
 		border-radius: 1rem;
 		box-shadow: 0 0 2rem rgba(0, 255, 0, 0.7);
 		margin: 0 auto;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
+		text-align: right;
 		line-height: 2.2;
 		max-width: 30rem;
 		@media screen and (min-width: 850px) {
@@ -59,12 +55,31 @@ function toggleDetails() {
 		}
 		.inner {
 			padding: 2rem;
+			position: relative;
+			&:before {
+				content: '';
+				display: block;
+				border-top: 0.1rem dashed $terminal-green;
+				margin-bottom: 2rem;
+			}
+			&:after {
+				content: '$ astro details';
+				padding-right: 1rem;
+				position: absolute;
+				top: 0.6rem;
+				background: $terminal-background;
+				left: 1.3rem;
+				font-size: 1.3rem;
+			}
 		}
 		span {
 			border: 0.1rem solid $terminal-green;
 			border-radius: 0.5rem;
 			box-shadow: 0 0 0.8rem rgba(0, 255, 0, 0.7);
 			padding: 0.7rem;
+		}
+		.top {
+			border-top: 0.1rem dashed $terminal-green;
 		}
 	}
 

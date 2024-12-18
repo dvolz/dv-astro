@@ -1,24 +1,114 @@
-.article {
-	max-width: 75rem;
+.details-width {
+	width: 100%;
+	max-width: 80rem;
 	margin: 0 auto;
-	padding: 0 2rem;
 }
-blockquote {
+
+.article {
+	display: grid;
+	max-width: 55rem;
+	margin: 0 auto;
+	grid-template-columns: 1fr;
+}
+.article > * {
+	grid-column: 1 / -1;
+}
+
+figcaption {
+	font-size: 1.4rem;
+}
+
+.article > blockquote {
+	grid-column: 1 / -1;
+	font-size: 3rem;
+	font-style: italic;
+	text-align: left;
+	margin: 0;
 	position: relative;
-	margin: 0 0 2rem;
-	padding: 0.5rem 0;
-	font-size: 1.8rem;
+	margin: 0 0 3rem;
+	padding: 0.5rem 0 0.5rem 3rem;
+
 	opacity: 0.9;
 	font-style: italic;
 
-	&:after {
+	&:before {
 		content: '';
-		display: block;
+		position: absolute;
+		display: inline-block;
 		height: 100%;
 		width: 0.1rem;
 		background: var(--contrast-background-color);
 		position: absolute;
 		top: 0;
-		left: -2rem;
+		left: 0;
+	}
+	@media screen and (min-width: 768px) {
+		font-size: 3.5rem;
+		max-width: 70rem;
+		margin: 0 auto 2.5rem;
+	}
+}
+@media screen and (max-width: 767px) {
+	.article > {
+		figure,
+		blockquote {
+			width: calc(100vw - 4rem);
+			margin-left: calc(-50vw + 50%); /* Center align the figure */
+			transform: translateX(2rem);
+		}
+	}
+}
+
+.tip {
+	background: #fafafa;
+	padding: 10px;
+}
+figure {
+	padding: 1rem;
+	border: 0.1rem solid var(--text-color);
+	text-align: center;
+}
+figcaption {
+	font-style: italic;
+	font-size: 1.6rem;
+}
+
+@media screen and (min-width: 768px) {
+	.article {
+		grid-template-columns: 1fr 4fr 1fr;
+		grid-gap: 10px 50px;
+		max-width: 120rem;
+	}
+	.article > * {
+		grid-column: 2 / -2;
+	}
+
+	.article > figure {
+		margin: 0;
+		grid-column: 1 / -1;
+	}
+	.tip {
+		align-self: start;
+		align-self: start; /* Aligns the tip to the top of its grid cell */
+		justify-self: center; /* Center aligns the tip horizontally */
+		position: relative;
+		width: 100%;
+	}
+	.tip-inner {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+	}
+
+	.tip-left {
+		grid-column: 1 / span 1;
+		text-align: right;
+		border-right: 2px solid var(--yellow);
+	}
+
+	.tip-right {
+		grid-column: span 1 / -1;
+		border-left: 2px solid var(--yellow);
 	}
 }

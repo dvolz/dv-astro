@@ -93,7 +93,7 @@ import '../styles/module/_slider.scss'
 			// Replace the viewBox in the raw SVG
 			const updatedSVG = rawSVG.replace(
 				/<svg[^>]+>/,
-				`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}" opacity="0.3">` // Apply opacity here
+				`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}" opacity="0.2">` // Apply opacity here
 			)
 			// Encode the updated SVG
 			const encodedSVG = encodeSVG(updatedSVG)
