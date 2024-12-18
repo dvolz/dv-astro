@@ -200,6 +200,7 @@ const renderedMath = mathExpressions.map((item) => ({
 		<BlogDetails {...blogData} />
 	</div>
 	<div class="article">
+		<h3>The Design</h3>
 		<p>
 			A couple years back I was working on building a site that had a layout
 			that stuck in my mind after completing it. It had two rows. Both rows had
@@ -208,10 +209,17 @@ const renderedMath = mathExpressions.map((item) => ({
 			right. You can see it below.
 		</p>
 		<p>
-			The design also had a box in the center that lined up with the inner edges
-			of each columns. At the time I just played with the percentages until
-			everything lined up. I was pleased to see that as I resized the screen
-			everything lined up.
+			The design also featured a centered box that dynamically aligned with the
+			inner edges of the columns, maintaining its proportions as the screen size
+			changed. At the time I just played with the percentages until everything
+			lined up. I was pleased to see that as I resized the screen everything
+			lined up.
+		</p>
+		<h4>Box Math</h4>
+		<p>
+			I want to write a quick aside about the box in the middle. If you have a
+			div and give it a width of 100% and a padding-bottom of 100% it will
+			create a square.
 		</p>
 		<p class="instruction">
 			Click and drag the resize handle to see how the columns and box adjust.
@@ -230,6 +238,7 @@ const renderedMath = mathExpressions.map((item) => ({
 				/>
 			</div>
 		</div>
+		<h3>The Idea</h3>
 		<p>
 			I had the idea to make a slider that controls the width of all the
 			elements inside. If you change the width of the big column, the rest of
@@ -238,31 +247,34 @@ const renderedMath = mathExpressions.map((item) => ({
 		<blockquote>
 			I admit this math isn't very complicated. But it's still fun.
 		</blockquote>
-		<h4>Big Column Width</h4>
+		<h3>The Math</h3>
+		<h5>Big Column Width</h5>
 		<div class="math">
 			<p set:html={renderedMath.find(({ id }) => id === 'w').html} />
 		</div>
-		<h4>Small Column Width</h4>
+		<h5>Small Column Width</h5>
 		<div class="math">
 			<p
 				set:html={renderedMath.find(({ id }) => id === 'smallColumnWidth').html}
 			/>
 			<p class="result">Result: 40%</p>
 		</div>
-		<h4>Box Width</h4>
+		<h5>Box Width</h5>
 		<div class="math">
 			<p set:html={renderedMath.find(({ id }) => id === 'boxWidth').html} />
 			<p class="result">Result: 20%</p>
 		</div>
 		<p>
-			After figuring out that math above, I wired up a slider to update each of
-			the values as you slide it.
+			After calculating the proportions, I implemented a slider that updates the
+			values in real-time as you adjust it, allowing for an interactive
+			demonstration of the layout.
 		</p>
 		<p>
 			The inner box can get too tall for the container so once the box height is
 			taller than the container I change the amount of padding bottom it gets.
 			This changes it from a square to a rectangle.
 		</p>
+		<h3>The Result</h3>
 	</div>
 	<div class="grid-feature">
 		<div class="controls">
