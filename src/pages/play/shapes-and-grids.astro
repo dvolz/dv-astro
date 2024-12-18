@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
-import AstroImage from '../../components/AstroImage.astro'
-import sampleImage from '../../assets/images/sample.jpeg' // Import the image from src/assets
+import { Icon } from 'astro-icon/components'
+
 export const blogData = {
 	title: 'Shapes and Grids',
 	author: 'David Volz',
@@ -117,44 +117,61 @@ const renderedMath = mathExpressions.map((item) => ({
 
 	// Resize
 	.resize-handle {
-		width: 10px;
-		height: 10px;
-		background-color: #000;
+		width: 3rem;
+		height: 3rem;
+		background-color: var(--background-color);
+		border: 0.1rem solid var(--text-color);
 		position: absolute;
 		top: 0;
 		right: 0;
-		cursor: se-resize; /* Diagonal resize cursor */
+		cursor: col-resize;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 </style>
 
 <script>
-	const resizableBox = document.querySelector('.example-box')
 	const resizeHandle = document.querySelector('.resize-handle')
+	const resizableBox = document.querySelector('.example-box')
+	const body = document.body
 
 	let isResizing = false
 
-	// Mouse down event to start resizing
 	resizeHandle.addEventListener('mousedown', (e) => {
-		e.preventDefault()
 		isResizing = true
 
-		// Track mouse movement
+		// Add mousemove and mouseup listeners to the document
 		document.addEventListener('mousemove', onMouseMove)
-
-		// Stop resizing when mouse is released
-		document.addEventListener('mouseup', () => {
-			isResizing = false
-			document.removeEventListener('mousemove', onMouseMove)
-		})
+		document.addEventListener('mouseup', onMouseUp)
 	})
 
-	// Function to handle mouse movement
 	function onMouseMove(e) {
 		if (isResizing) {
+			// Calculate the new width
 			const width = e.clientX - resizableBox.offsetLeft
 
-			// Set the new width (no change to height)
-			resizableBox.style.width = `${width}px`
+			// Prevent the box from exceeding the viewport width
+			const maxWidth = body.clientWidth
+			if (width <= maxWidth) {
+				resizableBox.style.width = `${width}px`
+			}
+		}
+	}
+
+	function onMouseUp(e) {
+		if (isResizing) {
+			isResizing = false
+
+			// Ensure the box width doesn't exceed the viewport
+			const boxWidth = parseInt(resizableBox.style.width, 10)
+			if (boxWidth > body.clientWidth) {
+				resizableBox.style.width = `${body.clientWidth}px`
+			}
+
+			// Clean up event listeners
+			document.removeEventListener('mousemove', onMouseMove)
+			document.removeEventListener('mouseup', onMouseUp)
 		}
 	}
 </script>
@@ -182,6 +199,9 @@ const renderedMath = mathExpressions.map((item) => ({
 			everything lined up. I was pleased to see that as I resized the screen
 			everything lined up.
 		</p>
+		<p class="instruction">
+			Click and drag the resize handle to see how the columns and box adjust.
+		</p>
 
 		<div class="row example-box">
 			<div class="column example-column"></div>
@@ -189,7 +209,12 @@ const renderedMath = mathExpressions.map((item) => ({
 			<div class="column example-column"></div>
 			<div class="column example-column"></div>
 			<div class="box"></div>
-			<div class="resize-handle"></div>
+			<div class="resize-handle">
+				<Icon
+					name="mdi:arrow-split-vertical"
+					style="stroke: var(--text-color); stroke-width: .3;"
+				/>
+			</div>
 		</div>
 		<p>
 			I had the idea to make a slider that controls the width of all the
@@ -222,6 +247,7 @@ const renderedMath = mathExpressions.map((item) => ({
 		<p>
 			The inner box can get too tall for the container so once the box height is
 			taller than the container I change the amount of padding bottom it gets.
+			This changes it from a square to a rectangle.
 		</p>
 	</div>
 	<div class="grid-feature">
