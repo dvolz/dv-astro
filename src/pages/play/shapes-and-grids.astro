@@ -21,6 +21,37 @@ const theme = 'inverted'
 const fullWidthBody = true
 import '../../styles/themes/_inverted.scss'
 import '../../styles/module/_slider.scss'
+
+// Math
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
+
+// Define your values and calculations
+const w = 60
+const smallColumnWidth = 100 - w
+const boxWidth = 100 - smallColumnWidth * 2
+
+// Define the math expressions and their corresponding descriptions
+const mathExpressions = [
+	{ id: 'w', expression: 'w = 60\\%', description: 'Width percentage' },
+	{
+		id: 'smallColumnWidth',
+		expression: 'smallColumnWidth = 100 - w',
+		description: 'Small column width',
+	},
+	{
+		id: 'boxWidth',
+		expression: 'boxWidth = 100 - (smallColumnWidth \\times 2)',
+		description: 'Box width',
+	},
+]
+
+// Render all math expressions using KaTeX
+const renderedMath = mathExpressions.map((item) => ({
+	id: item.id,
+	html: katex.renderToString(item.expression, { throwOnError: false }),
+	description: item.description,
+}))
 ---
 
 <style lang="scss">
@@ -31,10 +62,16 @@ import '../../styles/module/_slider.scss'
 		width: calc(100vw - 4rem);
 		margin-left: calc(-50vw + 50%); /* Center align the figure */
 		transform: translateX(2rem);
+		margin-bottom: 3rem;
+
 		.column {
 			flex: 1 1 0px;
 			border: 0.1rem solid var(--text-color);
 			height: 25vw;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
 			// Top and Bottom
 			&:nth-child(1),
 			&:nth-child(2) {
@@ -48,21 +85,79 @@ import '../../styles/module/_slider.scss'
 			}
 
 			// 56
-			--width-a: 56.08%;
+			--width-a: 60%;
 			&:nth-child(1),
 			&:nth-child(4) {
 				flex: 0 0 var(--width-a);
 			}
 			// 44
-			--width-b: 43.92%;
+			--width-b: 40%;
 			&:nth-child(2),
 			&:nth-child(3) {
 				flex: 0 0 var(--width-b);
 			}
 		}
+		.box {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			width: 20%;
+			padding-bottom: 20%;
+			border: 0.1rem solid var(--text-color);
+			background: var(--background-color);
+		}
+	}
+	.result {
+		font:
+			normal 2rem KaTeX_Main,
+			Times New Roman,
+			serif;
+	}
+
+	// Resize
+	.resize-handle {
+		width: 10px;
+		height: 10px;
+		background-color: #000;
+		position: absolute;
+		top: 0;
+		right: 0;
+		cursor: se-resize; /* Diagonal resize cursor */
 	}
 </style>
 
+<script>
+	const resizableBox = document.querySelector('.example-box')
+	const resizeHandle = document.querySelector('.resize-handle')
+
+	let isResizing = false
+
+	// Mouse down event to start resizing
+	resizeHandle.addEventListener('mousedown', (e) => {
+		e.preventDefault()
+		isResizing = true
+
+		// Track mouse movement
+		document.addEventListener('mousemove', onMouseMove)
+
+		// Stop resizing when mouse is released
+		document.addEventListener('mouseup', () => {
+			isResizing = false
+			document.removeEventListener('mousemove', onMouseMove)
+		})
+	})
+
+	// Function to handle mouse movement
+	function onMouseMove(e) {
+		if (isResizing) {
+			const width = e.clientX - resizableBox.offsetLeft
+
+			// Set the new width (no change to height)
+			resizableBox.style.width = `${width}px`
+		}
+	}
+</script>
 <BaseLayout
 	pageTitle={blogData.title}
 	{showTypographyHero}
@@ -76,84 +171,58 @@ import '../../styles/module/_slider.scss'
 	<div class="article">
 		<p>
 			A couple years back I was working on building a site that had a layout
-			that stuck in my mind far after completing it. It had two rows. Both rows
-			had two columns with about a 1/3 width and a 2/3 width. The first row had
-			the big column on the left and then the second row had the big column on
-			the right. You can see it below.
+			that stuck in my mind after completing it. It had two rows. Both rows had
+			two columns with about a 3/5 width and a 2/5 width. The first row had the
+			big column on the left and then the second row had the big column on the
+			right. You can see it below.
 		</p>
+		<p>
+			The design also had a box in the center that lined up with the inner edges
+			of each columns. At the time I just played with the percentages until
+			everything lined up. I was pleased to see that as I resized the screen
+			everything lined up.
+		</p>
+
 		<div class="row example-box">
 			<div class="column example-column"></div>
 			<div class="column example-column"></div>
 			<div class="column example-column"></div>
 			<div class="column example-column"></div>
-			<div class="example-box"></div>
+			<div class="box"></div>
+			<div class="resize-handle"></div>
 		</div>
-		<!-- p -->
-		<div class="tip tip-left">
-			<div class="tip-inner">
-				<p>
-					This is a song by
-					<a href="http://levithepoet.net/">Levi The Poet</a>
-				</p>
-			</div>
-		</div>
-		<h3>Subheading</h3>
-		<!-- h3 -->
 		<p>
-			Here's some text with an <em>emphasized</em> word and a <strong
-				>strong</strong
-			> word. (em, strong)
+			I had the idea to make a slider that controls the width of all the
+			elements inside. If you change the width of the big column, the rest of
+			the widths and proportions would update.
 		</p>
-		<!-- p -->
-
 		<blockquote>
-			<!-- blockquote -->
-			"This is a blockquote, typically used for quotes or special attention text."
+			I admit this math isn't very complicated. But it's still fun.
 		</blockquote>
-
-		<p>Here's a list of things:</p>
-		<!-- p -->
-		<ul>
-			<!-- ul -->
-			<li>Item one</li>
-			<!-- li -->
-			<li>Item two</li>
-			<!-- li -->
-			<li>Item three</li>
-			<!-- li -->
-		</ul>
-
-		<p>And here's an ordered list:</p>
-		<!-- p -->
-		<ol>
-			<!-- ol -->
-			<li>First item</li>
-			<!-- li -->
-			<li>Second item</li>
-			<!-- li -->
-			<li>Third item</li>
-			<!-- li -->
-		</ol>
-
-		<figure>
-			<!-- figure -->
-			<AstroImage
-				src={sampleImage}
-				alt="Sample image"
-				width="1600"
-				height="1200"
+		<h4>Big Column Width</h4>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'w').html} />
+		</div>
+		<h4>Small Column Width</h4>
+		<div class="math">
+			<p
+				set:html={renderedMath.find(({ id }) => id === 'smallColumnWidth').html}
 			/>
-			<!-- img -->
-			<figcaption>This is a caption for the image. (figcaption)</figcaption>
-		</figure>
-
-		<p>Code example:</p>
-		<!-- p -->
-
-		<p>Horizontal rule below:</p>
-		<!-- p -->
-		<hr />
-		<!-- hr -->
+			<p class="result">Result: 40%</p>
+		</div>
+		<h4>Box Width</h4>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'boxWidth').html} />
+			<p class="result">Result: 20%</p>
+		</div>
+		<p>
+			After figuring out that math above, I wired up a slider to update each of
+			the values as you slide it.
+		</p>
+		<p>
+			The inner box can get too tall for the container so once the box height is
+			taller than the container I change the amount of padding bottom it gets.
+		</p>
 	</div>
 	<div class="grid-feature">
 		<div class="controls">
