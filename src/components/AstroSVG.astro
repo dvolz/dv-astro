@@ -2,6 +2,7 @@
 import AstroSVGRaw from '../svgs/astro.svg?raw'
 const lastUpdated = import.meta.env.LAST_UPDATED || 'unknown'
 const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
+const astroVersionReal = Astro.generator.replace('Astro ', '')
 ---
 
 <style lang="scss">
@@ -107,7 +108,7 @@ const astroVersion = import.meta.env.ASTRO_VERSION || 'unknown'
 </div>
 <div class="lastUpdated terminal">
 	<div class="inner">
-		<p>Astro Version <span>{astroVersion}</span></p>
+		<p>Astro Version <span>{astroVersionReal}</span></p>
 		<p>
 			Site last updated<br />
 			<span>{lastUpdated}</span>
