@@ -42,13 +42,13 @@ figcaption {
 		top: 0;
 		left: 0;
 	}
-	@media screen and (min-width: 768px) {
+	@media screen and (min-width: 1024px) {
 		font-size: 3.5rem;
-		max-width: 70rem;
+		max-width: 90rem;
 		margin: 0 auto 2.5rem;
 	}
 }
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 1023px) {
 	.article > {
 		figure,
 		blockquote {
@@ -59,9 +59,22 @@ figcaption {
 	}
 }
 
-.tip {
-	background: #fafafa;
-	padding: 10px;
+.tip-inner {
+	padding: 2rem;
+	position: relative;
+	margin: 1rem 0;
+	&:after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: var(--highlight-accent);
+		opacity: 0.6;
+		pointer-events: none;
+		z-index: -1;
+	}
 }
 figure {
 	padding: 1rem;
@@ -76,6 +89,11 @@ figcaption {
 	font-size: 2.2rem;
 	animation: pulse 2s infinite; /* Gentle pulsing animation */
 	padding: 0 2rem;
+}
+.article {
+	li {
+		margin-bottom: 1rem;
+	}
 }
 @keyframes pulse {
 	0% {
@@ -92,7 +110,7 @@ figcaption {
 .instructions {
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 1024px) {
 	.article {
 		grid-template-columns: 1fr 4fr 1fr;
 		grid-gap: 10px 50px;
@@ -108,7 +126,6 @@ figcaption {
 	}
 	.tip {
 		align-self: start;
-		align-self: start; /* Aligns the tip to the top of its grid cell */
 		justify-self: center; /* Center aligns the tip horizontally */
 		position: relative;
 		width: 100%;
@@ -118,6 +135,7 @@ figcaption {
 		top: 0;
 		left: 0;
 		width: 100%;
+		margin: 0;
 	}
 
 	.tip-left {

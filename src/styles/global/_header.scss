@@ -22,12 +22,18 @@ nav {
 		}
 	}
 	a {
-		font-size: 2rem;
+		font-size: 1.8rem;
 		display: inline-block;
 		padding: 0 0.5rem;
 		margin: 0 0.5rem;
 		&.active {
 			text-decoration: underline;
+		}
+	}
+
+	@media screen and (min-width: 420px) {
+		a {
+			font-size: 2rem;
 		}
 	}
 	@media screen and (min-width: 650px) {
@@ -39,7 +45,13 @@ nav {
 		}
 	}
 }
-
-.hamburger {
-	display: none;
+@media screen and (max-width: 480px) {
+	.nav-links {
+		position: relative;
+		li:last-child {
+			position: absolute;
+			bottom: 6.7rem;
+			right: 0.2rem;
+		}
+	}
 }

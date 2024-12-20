@@ -45,7 +45,7 @@ h6 {
 p {
 	margin: 0 0 2rem;
 	&:last-child {
-		margin-bottom: 10;
+		margin-bottom: 0;
 	}
 }
 a {
@@ -55,4 +55,17 @@ a {
 	&:hover {
 		color: var(--link-hover);
 	}
+}
+
+code {
+	font-family: 'Courier New', Courier, monospace;
+	background-color: var(--text-color);
+	// Distinct color for the text
+	color: var(--background-color);
+	// Add some padding for inline code
+	padding: 0.5rem 0.7rem;
+	// Rounded corners for a modern appearance
+	border-radius: 4px;
+	// Slightly smaller font size than surrounding text
+	font-size: 0.9em;
 }

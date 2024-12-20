@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+import IsVisibleExample from '../../components/IsVisibleExample.jsx'
+import { ACTION_ERROR_CODES } from 'astro:actions'
+export const blogData = {
+	title: 'Astro Scripts',
+	author: 'David Volz',
+	description: `Analyzing how Astro handles the script tag`,
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	display: false,
+	pubDate: '2024-12-18',
+	tags: ['astro', 'javascript'],
+	featured: true,
+}
+const processedScriptMessage = 'This script is processed by Astro.'
+---
+
+<BaseLayout
+	pageTitle={blogData.title}
+	description={blogData.description}
+	display={blogData.display}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<div class="article">
+		<p>
+			As I have been developing this site, I have been learning about how Astro
+			compiles and renders my code. One thing in particular that has stood out
+			to me is how Astro handles the script tag.
+		</p>
+		<div class="tip tip-left">
+			<div class="tip-inner">
+				<p>
+					Much of this content is taken from <a
+						href="https://docs.astro.build/en/guides/client-side-scripts/"
+						target="_blank"
+						title="Astro Script Documentation">
+						Astro's Docs.</a
+					>
+				</p>
+			</div>
+		</div>
+		<h3>Processing</h3>
+		<p>
+			Astro works by compiling a lot of different components and pages together
+			to create a site. A common way to include scripts on these components is
+			by using inline script tags.
+		</p>
+		<p>
+			By default, Astro will process every script tag. It automatically does the
+			following on scripts:
+		</p>
+		<ul>
+			<li>Removes whitespace</li>
+			<li>Shortens variable names</li>
+			<li>
+				It adds <code>type="module"</code> to the script. Amongst other things, this
+				allows for scoped variables which will help avoid any conflicts
+			</li>
+			<li>
+				It only injects the script one time if the component is used multiple
+				times on the page
+			</li>
+		</ul>
+		<p>
+			Astro's script processing ensures that your code is optimized for
+			performance by minimizing file sizes and preventing conflicts in the
+			global namespace. This is particularly beneficial for large-scale
+			applications with numerous components.
+		</p>
+
+		<h3>Options</h3>
+		<h4>is:inline</h4>
+		<p>
+			If you use <code>{`<script is:inline>`}</code>, it will remove that script
+			from Astro processing and it will be rendered exactly as written. This can
+			be helpful when dealing with 3rd party code or libraries. For instance, if
+			you're embedding a third-party analytics snippet or a custom script that
+			requires precise formatting, using this ensures the script is injected
+			exactly as written without modification.
+		</p>
+		<h4>Lazy Load JS</h4>
+		<p>
+			There is no built-in way to lazy load Javascript in Astro. Instead, it
+			offers hydration directives like <code>client:visible</code> to control when
+			a component and its associated JavaScript are loaded and executed. Using this
+			directive lazy loads a componenent only when the componenent becomes visible
+			in the viewport. This component has to be using a framework that supports hydration
+			like React or Svelte.
+		</p>
+		<p>
+			In order to lazy load the component you should put <code
+				>client:visible</code
+			> in the inclusion of the component.
+		</p><p>
+			Example <br />
+			<code>{`<ComponentName client:visible />`}</code>
+		</p>
+		<p>
+			If you click the button it will load and reveal a sample component that
+			uses React to leave a console log and to render a div.
+		</p>
+		<p>
+			<a href="#" id="revealButton" class="line-button"
+				>Click here to see the component</a
+			>
+		</p>
+
+		<div class="tip tip-right tip-hidden">
+			<div class="tip-inner" id="tipContainer">
+				<IsVisibleExample client:visible />
+			</div>
+		</div>
+		<h3>Conclusion</h3>
+		<p>
+			I have been enjoying the flexibility of using Astro to develop this site.
+			The way it handles scripts is a great example of how it can be customized
+			to fit the needs of the developer. For example, I just included a script
+			and style tag right next to where I wrote the paragraph that explains it.
+			When I build the site, Astro will process the code and inject it at the
+			exact right place in the DOM. Its a very satisfying process.
+		</p>
+	</div>
+	<style>
+		.tip-hidden {
+			.tip-inner {
+				display: none;
+				transition: opacity 0.3s ease;
+			}
+			.tip-inner.visible {
+				display: block;
+				opacity: 1;
+			}
+		}
+	</style>
+	<script>
+		// JavaScript to toggle visibility on click
+		const revealButton = document.getElementById('revealButton')
+		const tipContainer = document.getElementById('tipContainer')
+
+		revealButton.addEventListener('click', (event) => {
+			event.preventDefault() // Prevent default link behavior
+			tipContainer.classList.toggle('visible') // Toggle visibility
+		})
+	</script>
+</BaseLayout>

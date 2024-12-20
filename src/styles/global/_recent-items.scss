@@ -11,11 +11,28 @@
 		li {
 			flex: 0 0 50%;
 			padding: 2rem;
+			&:nth-child(odd) {
+				padding-right: 1rem;
+			}
+			&:nth-child(even) {
+				padding-left: 1rem;
+			}
 		}
 	}
 	@media screen and (min-width: 1024px) {
 		li {
 			flex: 0 0 33.3333%;
+			&:nth-child(3n + 1) {
+				padding: 0 2rem 0 0; // Right padding for the first in the row
+			}
+
+			&:nth-child(3n + 2) {
+				padding: 0 1rem; // Padding on both sides for the middle item
+			}
+
+			&:nth-child(3n) {
+				padding: 0 0 0 2rem; // Left padding for the last in the row
+			}
 		}
 	}
 	$border-height: 0.5rem;
