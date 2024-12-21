@@ -26,11 +26,6 @@ import '../../styles/module/_slider.scss'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 
-// Define your values and calculations
-const w = 60
-const smallColumnWidth = 100 - w
-const boxWidth = 100 - smallColumnWidth * 2
-
 // Define the math expressions and their corresponding descriptions
 const mathExpressions = [
 	{ id: 'w', expression: 'w = 60\\%', description: 'Width percentage' },
@@ -43,6 +38,11 @@ const mathExpressions = [
 		id: 'boxWidth',
 		expression: 'boxWidth = 100 - (smallColumnWidth \\times 2)',
 		description: 'Box width',
+	},
+	{
+		id: 'gaussianIntegral',
+		expression: '\\int_{-\\infty}^\\infty e^{-x^2} \\, dx = \\sqrt{\\pi}',
+		description: 'Integral of a Gaussian',
 	},
 ]
 
@@ -113,6 +113,9 @@ const renderedMath = mathExpressions.map((item) => ({
 			normal 2rem KaTeX_Main,
 			Times New Roman,
 			serif;
+	}
+	.math {
+		margin: 0 0 3rem;
 	}
 
 	// Resize
@@ -212,8 +215,8 @@ const renderedMath = mathExpressions.map((item) => ({
 			The design also featured a centered square that dynamically aligned with
 			the inner edges of the columns, maintaining its proportions as the screen
 			size changed. At the time I just played with the percentages until
-			everything lined up. I was pleased to see that as I resized the screen
-			everything lined up.
+			everything lined up. I wanted to revisit this design to see if I could
+			make it interactive.
 		</p>
 		<h4>Responsive Squares</h4>
 		<p>
@@ -258,6 +261,10 @@ const renderedMath = mathExpressions.map((item) => ({
 				width: 75%;
 				padding-bottom: 75%;
 			}
+			.box-3 {
+				width: 50%;
+				aspect-ratio: 1/1;
+			}
 		</style>
 		<div class="box-1 width-box">
 			<p>
@@ -271,22 +278,36 @@ const renderedMath = mathExpressions.map((item) => ({
 				padding-bottom = 75%
 			</p>
 		</div>
+		<h4>Aspect Ratio</h4>
+		<p>
+			All this padding-bottom talk isn't really necessary anymore with the
+			advent of <code>aspect-ratio</code>. This is a much cleaner and
+			straightforward approach.
+		</p>
+		<div class="box-3 width-box">
+			<p>
+				width = 50%<br />
+				aspect-ratio = 1/1
+			</p>
+		</div>
 		<h4>Square Positioning</h4>
 		<p>
 			In order to keep the square centered while having its width change I am
-			absolutely positioning the square. I see that at certain widths the border
-			of the square is not perfectly aligned with the column on the right. If I
-			adjust it to look good at one resolution it fails at other resolutions.
+			absolutely positioning the square. I noticed that at certain widths the
+			border of the square is not perfectly aligned with the column on the
+			right. It isn't off by much, but the line looks thicker than the line on
+			the left. If I adjust it to look good at one resolution it glitches at
+			other resolutions.
 		</p>
 		<p>
 			I tried a completely different layout where I use flex to position the
-			square and used aspect-ratio to create the square but it had the same
-			issue. This is an issue I will not go down the rabbit hole to fix as there
-			are no project requirements.
+			square and used aspect-ratio to maintain the square shape but it had the
+			same issue. This is an issue I will not go down the rabbit hole to fix as
+			there are no project requirements.
 		</p>
 		<p>
 			If this was a real project, I would suggest having larger borders to hide
-			the inconsistency if that was an option.
+			the inconsistency as long as that aligned with design's goals.
 		</p>
 		<p class="instruction">
 			Click and drag the resize handle to see how the columns and box adjust.
