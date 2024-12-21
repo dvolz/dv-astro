@@ -202,18 +202,91 @@ const renderedMath = mathExpressions.map((item) => ({
 	<div class="article">
 		<h3>The Design</h3>
 		<p>
-			A couple years back I was working on building a site that had a layout
-			that stuck in my mind after completing it. It had two rows. Both rows had
-			two columns with about a 3/5 width and a 2/5 width. The first row had the
-			big column on the left and then the second row had the big column on the
-			right. You can see it below.
+			A couple years back I was working a site that had a layout that stuck in
+			my mind far after completing it. It had two rows. Both rows had two
+			columns with about a 3/5 width and a 2/5 width. The first row had the big
+			column on the left and then the second row had the big column on the
+			right.
 		</p>
 		<p>
-			The design also featured a centered box that dynamically aligned with the
-			inner edges of the columns, maintaining its proportions as the screen size
-			changed. At the time I just played with the percentages until everything
-			lined up. I was pleased to see that as I resized the screen everything
-			lined up.
+			The design also featured a centered square that dynamically aligned with
+			the inner edges of the columns, maintaining its proportions as the screen
+			size changed. At the time I just played with the percentages until
+			everything lined up. I was pleased to see that as I resized the screen
+			everything lined up.
+		</p>
+		<h4>Responsive Squares</h4>
+		<p>
+			Before encountering this design, I had known that if you give a block
+			element a padding-bottom of 100% it would render as a square as long as it
+			had a 100% width. What I didn't know was that you could give it a width of
+			50% and a padding-bottom of 50% and it would still render as a square. So
+			knowing this, I can resize the square along with the columns and still
+			keep the proportions of a square.
+		</p>
+		<p>
+			Looking into it a little further I learned when you set padding-bottom:
+			100% on a div, the height of the padding becomes 100% of the width of the
+			div. Since padding adds space inside the div without directly affecting
+			its width, this effectively creates a box where the height equals the
+			width.
+		</p>
+		<p>Please humor me while I display this below real quick.</p>
+		<style>
+			.width-box {
+				border: 0.1rem solid var(--text-color);
+				margin: 0 auto 2rem;
+				position: relative;
+				text-align: center;
+				p {
+					position: absolute;
+					top: 50%;
+					transform: translateY(-50%);
+					left: 0;
+					width: 100%;
+					font-style: italic;
+					font-weight: 200;
+					font-size: 2.2rem;
+					padding: 0.5rem;
+				}
+			}
+			.box-1 {
+				width: 50%;
+				padding-bottom: 50%;
+			}
+			.box-2 {
+				width: 75%;
+				padding-bottom: 75%;
+			}
+		</style>
+		<div class="box-1 width-box">
+			<p>
+				width = 50%<br />
+				padding-bottom = 50%
+			</p>
+		</div>
+		<div class="box-2 width-box">
+			<p>
+				width = 75%<br />
+				padding-bottom = 75%
+			</p>
+		</div>
+		<h4>Square Positioning</h4>
+		<p>
+			In order to keep the square centered while having its width change I am
+			absolutely positioning the square. I see that at certain widths the border
+			of the square is not perfectly aligned with the column on the right. If I
+			adjust it to look good at one resolution it fails at other resolutions.
+		</p>
+		<p>
+			I tried a completely different layout where I use flex to position the
+			square and used aspect-ratio to create the square but it had the same
+			issue. This is an issue I will not go down the rabbit hole to fix as there
+			are no project requirements.
+		</p>
+		<p>
+			If this was a real project, I would suggest having larger borders to hide
+			the inconsistency if that was an option.
 		</p>
 		<p class="instruction">
 			Click and drag the resize handle to see how the columns and box adjust.
@@ -267,7 +340,7 @@ const renderedMath = mathExpressions.map((item) => ({
 		</p>
 		<p>
 			The inner box can get too tall for the container so once the box height is
-			taller than the container I change the amount of padding bottom it gets.
+			taller than the container I change the amount of padding-bottom it gets.
 			This changes it from a square to a rectangle.
 		</p>
 		<h3>The Result</h3>
@@ -277,14 +350,14 @@ const renderedMath = mathExpressions.map((item) => ({
 			<label>
 				<p class="sliderLabel">Box Width</p>
 				<p class="sliderValue">
-					<span id="boxWidthValue">56.08</span>%
+					<span id="boxWidthValue">60</span>%
 				</p>
 				<input
 					type="range"
 					id="boxWidthSlider"
 					min="51"
 					max="95"
-					value="56.08"
+					value="60"
 					step="0.01"
 				/>
 			</label>
