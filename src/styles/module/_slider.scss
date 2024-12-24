@@ -17,7 +17,7 @@ input[type='range'] {
 		background: var(--highlight-secondary);
 		border: 0.1rem solid var(--text-color);
 		border-radius: 50%;
-		cursor: pointer;
+		cursor: var(--cursor-hover);
 	}
 
 	&::-moz-range-thumb {
@@ -26,6 +26,6 @@ input[type='range'] {
 		background: var(--highlight-secondary);
 		border: 0.1rem solid var(--text-color);
 		border-radius: 50%;
-		cursor: pointer;
+		cursor: var(--cursor-hover);
 	}
 }
