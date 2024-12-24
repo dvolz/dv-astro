@@ -1,0 +1,27 @@
+.emoji {
+	font-size: 2rem;
+	display: inline-block;
+	animation: sad-fade-bounce 2s infinite ease-in-out;
+}
+@keyframes sad-fade-bounce {
+	0% {
+		transform: translateY(0) rotate(0deg) scale(1);
+		opacity: 1;
+	}
+	25% {
+		transform: translateY(3px) rotate(-2deg) scale(0.98);
+		opacity: 0.7;
+	}
+	50% {
+		transform: translateY(5px) rotate(1deg) scale(0.97);
+		opacity: 0.4;
+	}
+	75% {
+		transform: translateY(3px) rotate(-1deg) scale(0.98);
+		opacity: 0.7;
+	}
+	100% {
+		transform: translateY(0) rotate(0deg) scale(1);
+		opacity: 1;
+	}
+}

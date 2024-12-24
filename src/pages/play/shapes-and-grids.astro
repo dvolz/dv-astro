@@ -44,6 +44,11 @@ const mathExpressions = [
 		expression: '\\int_{-\\infty}^\\infty e^{-x^2} \\, dx = \\sqrt{\\pi}',
 		description: 'Integral of a Gaussian',
 	},
+	{
+		id: 'seriesSum',
+		expression: '\\sum_{n=1}^\\infty \\frac{1}{n^2} = \\frac{\\pi^2}{6}',
+		description: 'Sum of the Basel problem',
+	},
 ]
 
 // Render all math expressions using KaTeX
@@ -337,6 +342,17 @@ const renderedMath = mathExpressions.map((item) => ({
 		<blockquote>
 			I admit this math isn't very complicated. But it's still fun.
 		</blockquote>
+		<div class="tip tip-left tip-hidden">
+			<div class="tip-inner" id="tipContainer">
+				I am using <a
+					href="https://katex.org/"
+					title="Katex Official Site"
+					target="_blank">Katex</a
+				> to render this math. My math here is too simple to look real cool <span
+					class="emoji">💀</span
+				>
+			</div>
+		</div>
 		<h3>The Math</h3>
 		<h5>Big Column Width</h5>
 		<div class="math">

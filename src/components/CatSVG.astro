@@ -3,27 +3,58 @@ import CatSVGFile from '../svgs/cat.svg?raw'
 import '../styles/module/_slider.scss'
 ---
 
-<style>
+<style lang="scss">
 	.catSVG {
 		width: 70px;
 		height: auto;
 		margin: 0 auto;
-		cursor: pointer; /* Indicates the element is clickable */
+		cursor: pointer;
 	}
 	.catControls {
-		max-height: 0; /* Hidden by default */
+		max-height: 0;
 		overflow: hidden;
 		transition: max-height 0.3s ease-in;
 		width: 100%;
 		max-width: 40rem;
 		margin: 0 auto;
-
-		background-color: var(--background-color);
+		padding: 0.1rem;
 	}
+	$border-height: 0.5rem;
 	.catControlsInner {
-		padding: 2rem 2rem 1.5rem;
-		border: 0.1rem solid var(--text-color);
-		margin-bottom: 2rem;
+		margin: 0.2rem 0 2rem;
+		background-color: var(--background-color);
+		position: relative;
+		// middle stroke
+		border: $border-height solid var(--background-color);
+		border-radius: $border-height + 1.1;
+		padding: 2.5rem 2rem 3rem;
+		text-align: center;
+		color: var(--text-color);
+		transition: border-color 0.3s ease;
+		&:before,
+		&:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			pointer-events: none;
+		}
+		// outer stroke
+		&:before {
+			border: 1px solid var(--text-color);
+			left: -($border-height + 0.1);
+			top: -($border-height + 0.1);
+			width: calc(100% + 12px);
+			height: calc(100% + 12px);
+			border-radius: $border-height + 1.2;
+		}
+		// inner stroke
+		&:after {
+			border: 1px solid var(--text-color);
+			border-radius: $border-height + 0.5;
+		}
 	}
 	label,
 	#slider-value {
@@ -47,7 +78,7 @@ import '../styles/module/_slider.scss'
 		<Fragment set:html={CatSVGFile} />
 	</div>
 	<div class="catControls">
-		<div class="catControlsInner">
+		<div class="catControlsInner line-border">
 			<label for="spacing-slider">Adjust Cat Space</label>
 			<input id="spacing-slider" type="range" min="50" max="300" value="100" />
 			<span id="slider-value">100</span>
