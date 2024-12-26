@@ -8,28 +8,146 @@ const description = "David Volz's Personal Site"
 const subTitle = 'I am David Volz, a software manager and engineer'
 ---
 
-<BaseLayout
-	pageTitle={pageTitle}
-	subTitle={subTitle}
-	,
-	description={description}>
-	<div class="content-pmw">
-		<div class="content content-center">
-			<p>
-				Sample paragraph that is about 100 words long. It has a couple sentences
-				that are decent. Then one final sentence that closes the thoughts of the
-				paragraph.
-			</p>
-		</div>
-	</div>
+<script>
+	import { animate } from 'motion'
+	const changingLinks = [
+		{ text: 'play with the grid', href: '/play/shapes-and-grids' },
+		{ text: 'develop with astro', href: '/thoughts/astro-scripts' },
+		{ text: 'experiment with code', href: '/play/code-experiments' },
+	]
+	let currentIndex = 1
 
-	<HomeContent />
-	<style>
-		h3 {
-			text-align: center;
-			margin: 4rem 0 2rem;
+	async function cycleLink() {
+		const textElement = document.querySelector('.changing-link span')
+		const linkElement = document.querySelector('.changing-link')
+
+		// Get the current width before animation, add extra padding
+		const currentWidth = textElement.offsetWidth + 20 // Add small buffer
+
+		// Animate out
+		await animate(
+			textElement,
+			{
+				opacity: [1, 0],
+				transform: ['translateY(0px)', 'translateY(-20px)'],
+			},
+			{
+				duration: 0.4,
+				easing: 'ease-out',
+			}
+		)
+
+		// Update content
+		const { text, href } = changingLinks[currentIndex]
+		textElement.textContent = text
+		linkElement.href = href
+
+		// Get the new width after content update, add extra padding
+		const newWidth = textElement.offsetWidth + 20 // Add small buffer
+
+		// Set initial position for fade in
+		textElement.style.transform = 'translateY(20px)'
+
+		// Animate the container width and text in
+		await Promise.all([
+			animate(
+				textElement,
+				{
+					opacity: [0, 1],
+					transform: ['translateY(20px)', 'translateY(0px)'],
+				},
+				{
+					duration: 0.4,
+					easing: 'ease-out',
+				}
+			),
+			animate(
+				linkElement,
+				{
+					width: [currentWidth + 'px', newWidth + 'px'],
+				},
+				{
+					duration: 0.4,
+					easing: 'ease-out',
+				}
+			),
+		])
+
+		currentIndex = (currentIndex + 1) % changingLinks.length
+	}
+
+	setInterval(cycleLink, 3000)
+</script>
+
+<style lang="scss">
+	.home-blurb {
+		max-width: 60rem;
+		margin: 0 auto;
+		font-size: 2rem;
+		padding: 1rem 0 3rem;
+		@media screen and (min-width: 850px) {
+			font-size: 2.2rem;
+			max-width: 90rem;
 		}
-	</style>
+	}
+	.changing-link {
+		display: inline-block;
+		border: 0.1rem dotted var(--text-color);
+		padding: 0.5rem 0.7rem;
+		font-weight: 300;
+		text-decoration: none;
+		position: relative;
+		width: fit-content;
+	}
+
+	.changing-link span {
+		display: inline-block; // This ensures the span can be animated
+		white-space: nowrap;
+	}
+
+	.changing-link::after {
+		content: '';
+		position: absolute;
+		bottom: -0.2rem;
+		left: 0;
+		width: 100%;
+		height: 0.1rem;
+		background-color: var(--primary-color);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.3s ease;
+	}
+
+	.changing-link:hover::after {
+		transform: scaleX(1);
+	}
+	.join {
+		margin: 3rem 0 1rem;
+		font-size: 2.5rem;
+		text-align: center;
+	}
+</style>
+<BaseLayout pageTitle={pageTitle} subTitle={subTitle} description={description}>
+	<div class="home-blurb">
+		<p>
+			Welcome to my personal site—a space where I share ideas, experiment with
+			code, and explore creativity. With a background in both design and
+			development, I enjoy blending the two to create something unique.
+		</p>
+		<p class="join">
+			Join me as I <a class="changing-link" href="/play/shapes-and-grids">
+				<span>play with the grid</span></a
+			>.
+		</p>
+	</div>
+	<HomeContent />
 	<h3 class="full-line">Recent Posts</h3>
 	<RecentItems featured="true" />
 </BaseLayout>
+
+<style>
+	h3 {
+		text-align: center;
+		margin: 4rem 0 2rem;
+	}
+</style>
