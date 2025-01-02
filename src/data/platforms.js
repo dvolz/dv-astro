@@ -3,8 +3,8 @@ export const platforms = {
 		url: (username) => `https://www.linkedin.com/in/${username}`,
 		icon: 'mdi:linkedin',
 	},
-	twitter: {
-		url: (username) => `https://www.twitter.com/${username}`,
+	bluesky: {
+		url: (username) => `https://bsky.app/profile/${username}.bsky.social`,
 		icon: 'mdi:twitter',
 	},
 	instagram: {
@@ -15,5 +15,5 @@ export const platforms = {
 
 export const defaultPlatform = {
 	url: (platform, username) => `https://www.${platform}.com/${username}`,
-	icon: (platform) => `mdi:${platform}`,
+	icon: (platform) => `${platform}`,
 }

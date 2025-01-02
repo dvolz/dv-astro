@@ -1,5 +1,4 @@
 ---
-import { object } from 'astro:schema'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import HomeContent from '../components/HomeContent.astro'
 import RecentItems from '../components/RecentItems.astro'
@@ -13,7 +12,6 @@ const subTitle = 'I am David Volz, a software manager and engineer'
 	const changingLinks = [
 		{ text: 'play with the grid', href: '/play/shapes-and-grids' },
 		{ text: 'develop with astro', href: '/thoughts/astro-scripts' },
-		{ text: 'experiment with code', href: '/play/code-experiments' },
 	]
 	let currentIndex = 1
 
@@ -87,7 +85,7 @@ const subTitle = 'I am David Volz, a software manager and engineer'
 		padding: 1rem 0 3rem;
 		@media screen and (min-width: 850px) {
 			font-size: 2.2rem;
-			max-width: 90rem;
+			max-width: 73rem;
 		}
 	}
 	.changing-link {

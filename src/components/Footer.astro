@@ -4,9 +4,9 @@ import AstroSVG from '../components/AstroSVG.astro'
 const currentYear = new Date().getFullYear()
 import Social from './Social.astro'
 const socialLinks = [
-	{ platform: 'twitter', username: 'johndoe', mdicon: 'twitter' },
-	{ platform: 'instagram', username: 'penia', mdicon: 'instagram' },
-	{ platform: 'linkedin', username: 'davidtvolz', mdicon: 'linkedin' },
+	{ platform: 'bluesky', username: 'saladjones', icon: 'mdi:twitter' },
+	{ platform: 'instagram', username: 'penia', icon: 'mdi:instagram' },
+	{ platform: 'linkedin', username: 'davidtvolz', icon: 'mdi:linkedin' },
 ]
 ---
 
@@ -75,8 +75,8 @@ const socialLinks = [
 		<div class="column">
 			<ul class="social-footer">
 				{
-					socialLinks.map(({ platform, username, mdicon }) => (
-						<Social platform={platform} username={username} mdicon={mdicon} />
+					socialLinks.map(({ platform, username, icon }) => (
+						<Social platform={platform} username={username} icon={icon} />
 					))
 				}
 			</ul>

@@ -74,6 +74,7 @@ export const blogData = {
 		</p>
 
 		<h3>Options</h3>
+
 		<h4>is:inline</h4>
 		<p>
 			If you use <code>{`<script is:inline>`}</code>, it will remove that script
@@ -83,6 +84,15 @@ export const blogData = {
 			requires precise formatting, using this ensures the script is injected
 			exactly as written without modification.
 		</p>
+		<h4>define:vars</h4>
+		<p>
+			Using <code>{`<script define:vars>`}</code> will allow you to access your frontmatter
+			variables inside your script. The drawback to this if you pass your variables
+			this way, Astro won't process your script, it will be treated as an <code
+				>is:inline</code
+			> script.
+		</p>
+
 		<h4>Lazy Load JS</h4>
 		<p>
 			There is no built-in way to lazy load Javascript in Astro. Instead, it

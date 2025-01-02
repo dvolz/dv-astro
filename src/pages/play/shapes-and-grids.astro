@@ -223,6 +223,25 @@ const renderedMath = mathExpressions.map((item) => ({
 			everything lined up. I wanted to revisit this design to see if I could
 			make it interactive.
 		</p>
+		<p class="instruction">
+			Click and drag the resize handle to see how the columns and box adjust.
+		</p>
+	</div>
+
+	<div class="row example-box">
+		<div class="column example-column"></div>
+		<div class="column example-column"></div>
+		<div class="column example-column"></div>
+		<div class="column example-column"></div>
+		<div class="box"></div>
+		<div class="resize-handle">
+			<Icon
+				name="mdi:arrow-split-vertical"
+				style="stroke: var(--text-color); stroke-width: .3;"
+			/>
+		</div>
+	</div>
+	<div class="article">
 		<h4>Responsive Squares</h4>
 		<p>
 			Before encountering this design, I had known that if you give a block
@@ -314,25 +333,7 @@ const renderedMath = mathExpressions.map((item) => ({
 			If this was a real project, I would suggest having larger borders to hide
 			the inconsistency as long as that aligned with design's goals.
 		</p>
-		<p class="instruction">
-			Click and drag the resize handle to see how the columns and box adjust.
-		</p>
-	</div>
 
-	<div class="row example-box">
-		<div class="column example-column"></div>
-		<div class="column example-column"></div>
-		<div class="column example-column"></div>
-		<div class="column example-column"></div>
-		<div class="box"></div>
-		<div class="resize-handle">
-			<Icon
-				name="mdi:arrow-split-vertical"
-				style="stroke: var(--text-color); stroke-width: .3;"
-			/>
-		</div>
-	</div>
-	<div class="article">
 		<h3>The Idea</h3>
 		<p>
 			I had the idea to make a slider that controls the width of all the

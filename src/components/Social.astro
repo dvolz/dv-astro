@@ -1,14 +1,17 @@
 ---
 import { platforms, defaultPlatform } from '../data/platforms.js'
-const { platform, username, mdicon } = Astro.props
+const { platform, username, icon } = Astro.props
 import { Icon } from 'astro-icon/components' // Centralized mapping for platform-specific settings
 
 // Get platform-specific details
-const { url, icon } = platforms[platform]
-	? { url: platforms[platform].url(username), icon: platforms[platform].icon }
+const { url, socialIcon } = platforms[platform]
+	? {
+			url: platforms[platform].url(username),
+			socialIcon: platforms[platform].icon,
+		}
 	: {
 			url: defaultPlatform.url(platform, username),
-			icon: defaultPlatform.icon(mdicon),
+			socialIcon: defaultPlatform.icon(icon),
 		}
 ---
 
@@ -34,7 +37,7 @@ const { url, icon } = platforms[platform]
 <li class="social-item">
 	<a href={url} title={platform} target="_blank">
 		<Icon
-			name={icon}
+			name={socialIcon}
 			style="stroke: var(--text-color); stroke-width:.7; fill:none;"
 		/>
 	</a>
