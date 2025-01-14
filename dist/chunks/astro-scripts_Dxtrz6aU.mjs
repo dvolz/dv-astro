@@ -1,7 +1,7 @@
-import { c as createAstro, a as createComponent, r as renderTemplate, b as renderComponent, m as maybeRenderHead, e as renderScript } from './astro/server_9QOt-6f6.mjs';
+import { b as createAstro, c as createComponent, r as renderTemplate, a as renderComponent, m as maybeRenderHead, e as renderScript } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { $ as $$BaseLayout } from './BaseLayout_MLDguVh-.mjs';
-import { $ as $$BlogDetails } from './BlogDetails_xNrFzzSq.mjs';
+import { $ as $$BaseLayout } from './BaseLayout_hcN8E3TP.mjs';
+import { $ as $$BlogDetails } from './BlogDetails_BIm46kxo.mjs';
 import { jsx } from 'react/jsx-runtime';
 import { useEffect } from 'react';
 /* empty css                                 */
@@ -91,17 +91,17 @@ Example
 <br data-astro-cid-7hqydfbl> <code data-astro-cid-7hqydfbl>${`<ComponentName client:visible />`}</code> </p> <p data-astro-cid-7hqydfbl>
 If you click the button it will load and reveal a sample component that
 			uses React to leave a console log and to render a div.
-</p> <p data-astro-cid-7hqydfbl> <a href="#" id="revealButton" class="line-button" data-astro-cid-7hqydfbl>Click here to see the component</a> </p> <div class="tip tip-right tip-hidden" data-astro-cid-7hqydfbl> <div class="tip-inner" id="tipContainer" data-astro-cid-7hqydfbl> ${renderComponent($$result2, "IsVisibleExample", IsVisibleExample, { "client:visible": true, "client:component-hydration": "visible", "client:component-path": "/Users/dvolz/Sites/dv/astro-start/src/components/IsVisibleExample.jsx", "client:component-export": "default", "data-astro-cid-7hqydfbl": true })} </div> </div> <h3 data-astro-cid-7hqydfbl>Conclusion</h3> <p data-astro-cid-7hqydfbl>
+</p> <p data-astro-cid-7hqydfbl> <a href="#" id="revealButton" class="line-button" data-astro-cid-7hqydfbl>Click here to see the component</a> </p> <div class="tip tip-right tip-hidden" data-astro-cid-7hqydfbl> <div class="tip-inner" id="tipContainer" data-astro-cid-7hqydfbl> ${renderComponent($$result2, "IsVisibleExample", IsVisibleExample, { "client:visible": true, "client:component-hydration": "visible", "client:component-path": "/Users/dvolz/Sites/dv/dv-astro/src/components/IsVisibleExample.jsx", "client:component-export": "default", "data-astro-cid-7hqydfbl": true })} </div> </div> <h3 data-astro-cid-7hqydfbl>Conclusion</h3> <p data-astro-cid-7hqydfbl>
 I have been enjoying the flexibility of using Astro to develop this site.
 			The way it handles scripts is a great example of how it can be customized
 			to fit the needs of the developer. For example, I just included a script
 			and style tag right next to where I wrote the paragraph that explains it.
 			When I build the site, Astro will process the code and inject it at the
 			exact right place in the DOM. Its a very satisfying process.
-</p> </div>  ${renderScript($$result2, "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts/astro-scripts.astro?astro&type=script&index=0&lang.ts")} ` })}`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts/astro-scripts.astro", void 0);
+</p> </div>  ${renderScript($$result2, "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts/astro-scripts.astro?astro&type=script&index=0&lang.ts")} ` })}`;
+}, "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts/astro-scripts.astro", void 0);
 
-const $$file = "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts/astro-scripts.astro";
+const $$file = "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts/astro-scripts.astro";
 const $$url = "/thoughts/astro-scripts";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

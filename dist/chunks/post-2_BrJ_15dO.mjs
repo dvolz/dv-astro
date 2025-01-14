@@ -1,11 +1,11 @@
-import { g as createComponent, h as renderTemplate, i as renderComponent, u as unescapeHTML } from './astro/server_9QOt-6f6.mjs';
+import { g as createComponent, h as renderTemplate, i as renderComponent, u as unescapeHTML } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { $ as $$MarkdownPostLayout } from './MarkdownPostLayout_C97_hFaa.mjs';
+import { $ as $$MarkdownPostLayout } from './MarkdownPostLayout_jZcsiZwP.mjs';
 
 const html = () => "<p>After a successful first week learning Astro, I decided to try some more. I wrote and imported a small component from memory!</p>";
 
 				const frontmatter = {"layout":"../../layouts/MarkdownPostLayout.astro","title":"My Second Blog Post","author":"Astro Learner","description":"After learning some Astro, I couldn't stop!","image":{"url":"https://docs.astro.build/assets/arc.webp","alt":"The Astro logo on a dark background with a purple gradient arc."},"pubDate":"2022-07-08","tags":["astro","blogging","learning in public","successes"]};
-				const file = "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts/post-2.md";
+				const file = "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts/post-2.md";
 				const url = "/thoughts/post-2";
 				function rawContent() {
 					return "   \n                                              \n                          \n                     \n                                                          \n      \n                                                 \n                                                                        \n                     \n                                                              \n   \n\nAfter a successful first week learning Astro, I decided to try some more. I wrote and imported a small component from memory!\n";

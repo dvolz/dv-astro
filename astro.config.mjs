@@ -21,5 +21,12 @@ export default defineConfig({
 	},
 	experimental: {
 		responsiveImages: true,
+		svg: true,
+	},
+	markdown: {
+		shikiConfig: {
+			// Enable word wrap to prevent horizontal scrolling
+			wrap: true,
+		},
 	},
 })

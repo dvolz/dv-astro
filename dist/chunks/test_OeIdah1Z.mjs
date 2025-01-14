@@ -1,7 +1,7 @@
-import { c as createAstro, a as createComponent, r as renderTemplate, b as renderComponent, m as maybeRenderHead } from './astro/server_9QOt-6f6.mjs';
+import { b as createAstro, c as createComponent, r as renderTemplate, a as renderComponent, m as maybeRenderHead } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { $ as $$BaseLayout } from './BaseLayout_MLDguVh-.mjs';
-import { $ as $$BlogDetails } from './BlogDetails_xNrFzzSq.mjs';
+import { $ as $$BaseLayout } from './BaseLayout_hcN8E3TP.mjs';
+import { $ as $$BlogDetails } from './BlogDetails_BIm46kxo.mjs';
 
 var __freeze = Object.freeze;
 var __defProp = Object.defineProperty;
@@ -106,9 +106,9 @@ Box Width: <span id="boxWidthValue">56.08</span>%
 				updateStyles()
 			})
 		<\/script> </div> `])), maybeRenderHead(), renderComponent($$result2, "BlogDetails", $$BlogDetails, { ...blogData })) })}`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/pages/play/test.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/test.astro", void 0);
 
-const $$file = "/Users/dvolz/Sites/dv/astro-start/src/pages/play/test.astro";
+const $$file = "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/test.astro";
 const $$url = "/play/test";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

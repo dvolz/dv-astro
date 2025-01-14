@@ -1,6 +1,6 @@
-import { c as createAstro, a as createComponent, r as renderTemplate, m as maybeRenderHead, b as renderComponent } from './astro/server_9QOt-6f6.mjs';
+import { b as createAstro, c as createComponent, r as renderTemplate, m as maybeRenderHead, a as renderComponent } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { a as $$Icon } from './BaseLayout_MLDguVh-.mjs';
+import { a as $$Icon } from './BaseLayout_hcN8E3TP.mjs';
 /* empty css                            */
 
 function formatDate(dateString) {
@@ -49,6 +49,6 @@ const $$BlogDetails = createComponent(($$result, $$props, $$slots) => {
 				))
 			}
 		</ul> --> </div> </div> <!-- Display tags -->`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/components/BlogDetails.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/components/BlogDetails.astro", void 0);
 
 export { $$BlogDetails as $ };

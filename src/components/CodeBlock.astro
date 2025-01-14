@@ -1,0 +1,57 @@
+---
+interface Props {
+	code: string
+	lang?: string
+}
+
+const { code, lang = 'typescript' } = Astro.props
+
+import { getHighlighter } from 'shiki'
+
+const theme = 'material-theme-palenight'
+
+const highlighter = await getHighlighter({
+	// Specify themes array
+	themes: [theme],
+	// Specify the languages you need
+	langs: ['typescript', 'javascript', 'jsx', 'tsx', 'html', 'css', 'astro'],
+})
+
+const html = highlighter.codeToHtml(code, {
+	lang,
+	theme: theme,
+})
+highlighter.dispose()
+---
+
+<div class="code-block">
+	<Fragment set:html={html} />
+</div>
+
+<style lang="scss">
+	:global(.shiki) {
+		background-color: #332e2e !important;
+		border-radius: 0.5rem;
+	}
+	:global(.dark .shiki) {
+		border: 0.1rem solid var(--text-color);
+	}
+
+	.code-block {
+		position: relative;
+		margin: 1rem 0;
+
+		overflow: hidden;
+	}
+
+	.code-block :global(pre) {
+		padding: 2rem;
+		margin: 0;
+		overflow-x: auto;
+	}
+	:global(code) {
+		line-height: 1.5;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
+</style>

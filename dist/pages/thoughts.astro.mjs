@@ -1,16 +1,16 @@
-import { a as createComponent, r as renderTemplate, b as renderComponent } from '../chunks/astro/server_9QOt-6f6.mjs';
+import { c as createComponent, r as renderTemplate, a as renderComponent } from '../chunks/astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_MLDguVh-.mjs';
-import { $ as $$RecentItems } from '../chunks/RecentItems_CKHTREov.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_hcN8E3TP.mjs';
+import { $ as $$RecentItems } from '../chunks/RecentItems_DF3WeRxQ.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$Thoughts = createComponent(($$result, $$props, $$slots) => {
   const pageTitle = `Penia's Salad Blog`;
   const description = "Play page that showcases experiments";
   return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "pageTitle": pageTitle, "description": description }, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "RecentItems", $$RecentItems, { "category": "thoughts" })} ` })}`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts.astro", void 0);
 
-const $$file = "/Users/dvolz/Sites/dv/astro-start/src/pages/thoughts.astro";
+const $$file = "/Users/dvolz/Sites/dv/dv-astro/src/pages/thoughts.astro";
 const $$url = "/thoughts";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

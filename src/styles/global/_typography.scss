@@ -58,7 +58,7 @@ a {
 	}
 }
 
-code {
+code:not(.shiki code) {
 	font-family: 'Courier New', Courier, monospace;
 	background-color: var(--text-color);
 	// Distinct color for the text

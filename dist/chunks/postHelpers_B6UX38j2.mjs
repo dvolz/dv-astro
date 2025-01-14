@@ -1,4 +1,4 @@
-import { c as createAstro, a as createComponent, r as renderTemplate, m as maybeRenderHead, b as renderComponent, d as addAttribute } from './astro/server_9QOt-6f6.mjs';
+import { b as createAstro, c as createComponent, r as renderTemplate, m as maybeRenderHead, a as renderComponent, d as addAttribute } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
 
 const $$Astro = createAstro("https://dv-astro.netlify.app/");
@@ -7,7 +7,7 @@ const $$BlogPost = createComponent(($$result, $$props, $$slots) => {
   Astro2.self = $$BlogPost;
   const { title, url, date, display, description, DynamicComponent } = Astro2.props;
   return renderTemplate`${maybeRenderHead()}<li> ${display === true && DynamicComponent ? renderTemplate`${renderComponent($$result, "DynamicComponent", DynamicComponent, { "title": title, "url": url, "description": description })}` : renderTemplate`<a class="blogPost"${addAttribute(url, "href")}> <div class="frame"> <p class="title">${title}</p> </div> </a>`} </li>`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/components/BlogPost.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/components/BlogPost.astro", void 0);
 
 const __variableDynamicImportRuntimeHelper = (glob, path, segs) => {
   const v = glob[path];
@@ -64,7 +64,7 @@ async function loadDynamicComponents(posts) {
 			if (post.display) {
 				try {
 					const formattedTitle = post.title.replace(/\s+/g, '-').toLowerCase();
-					const DynamicComponent = await __variableDynamicImportRuntimeHelper((/* #__PURE__ */ Object.assign({"../components/display/shapes-and-grids-display.astro": () => import('./shapes-and-grids-display_OebnusJC.mjs'),"../components/display/test-thoughts-astro-post-display.astro": () => import('./test-thoughts-astro-post-display_pN58CMj5.mjs')})), `../components/display/${formattedTitle}-display.astro`, 4);
+					const DynamicComponent = await __variableDynamicImportRuntimeHelper((/* #__PURE__ */ Object.assign({"../components/display/shapes-and-grids-display.astro": () => import('./shapes-and-grids-display_DnRVnUq3.mjs'),"../components/display/test-thoughts-astro-post-display.astro": () => import('./test-thoughts-astro-post-display_D8VQQco7.mjs')})), `../components/display/${formattedTitle}-display.astro`, 4);
 					return { ...post, DynamicComponent: DynamicComponent.default }
 				} catch (e) {
 					console.error(

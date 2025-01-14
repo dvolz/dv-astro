@@ -1,7 +1,7 @@
-import { A as AstroError, E as ExpectedImage, L as LocalImageUsedWrongly, k as MissingImageDimension, U as UnsupportedImageFormat, I as IncompatibleDescriptorOptions, l as UnsupportedImageConversion, n as NoImageMetadata, F as FailedToFetchRemoteImageDimensions, o as ExpectedImageOptions, p as ExpectedNotESMImage, q as InvalidImageService, t as toStyleString, c as createAstro, a as createComponent, s as ImageMissingAlt, r as renderTemplate, m as maybeRenderHead, d as addAttribute, v as spreadAttributes, b as renderComponent, w as renderSlot } from './astro/server_9QOt-6f6.mjs';
+import { A as AstroError, E as ExpectedImage, L as LocalImageUsedWrongly, k as MissingImageDimension, U as UnsupportedImageFormat, I as IncompatibleDescriptorOptions, l as UnsupportedImageConversion, n as NoImageMetadata, o as FailedToFetchRemoteImageDimensions, p as ExpectedImageOptions, q as ExpectedNotESMImage, t as InvalidImageService, v as toStyleString, b as createAstro, c as createComponent, w as ImageMissingAlt, r as renderTemplate, m as maybeRenderHead, d as addAttribute, s as spreadAttributes, a as renderComponent, x as renderSlot } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { $ as $$BaseLayout } from './BaseLayout_MLDguVh-.mjs';
-import { $ as $$BlogDetails } from './BlogDetails_xNrFzzSq.mjs';
+import { $ as $$BaseLayout } from './BaseLayout_hcN8E3TP.mjs';
+import { $ as $$BlogDetails } from './BlogDetails_BIm46kxo.mjs';
 import { isRemotePath, joinPaths } from '@astrojs/internal-helpers/path';
 import * as mime from 'mrmime';
 /* empty css                            */
@@ -13,9 +13,9 @@ const sample = new Proxy({"src":"/_astro/sample.DtaG8zmK.jpeg","width":4032,"hei
 								return structuredClone(target);
 							}
 							if (name === 'fsPath') {
-								return "/Users/dvolz/Sites/dv/astro-start/src/assets/images/sample.jpeg";
+								return "/Users/dvolz/Sites/dv/dv-astro/src/assets/images/sample.jpeg";
 							}
-							if (target[name] !== undefined && globalThis.astroAsset) globalThis.astroAsset?.referencedImages.add("/Users/dvolz/Sites/dv/astro-start/src/assets/images/sample.jpeg");
+							if (target[name] !== undefined && globalThis.astroAsset) globalThis.astroAsset?.referencedImages.add("/Users/dvolz/Sites/dv/dv-astro/src/assets/images/sample.jpeg");
 							return target[name];
 						}
 					});
@@ -1262,7 +1262,7 @@ async function getConfiguredImageService() {
   if (!globalThis?.astroAsset?.imageService) {
     const { default: service } = await import(
       // @ts-expect-error
-      './sharp_45_BwdGc.mjs'
+      './sharp_uukBMsw4.mjs'
     ).catch((e) => {
       const error = new AstroError(InvalidImageService);
       error.cause = e;
@@ -1458,7 +1458,7 @@ const $$Image = createComponent(async ($$result, $$props, $$slots) => {
     additionalAttributes
   }) : { ...additionalAttributes, ...image.attributes };
   return renderTemplate`${maybeRenderHead()}<img${addAttribute(image.src, "src")}${spreadAttributes(attributes)}${addAttribute(className, "class")}>`;
-}, "/Users/dvolz/Sites/dv/astro-start/node_modules/astro/components/Image.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/node_modules/astro/components/Image.astro", void 0);
 
 const $$Astro$2 = createAstro("https://dv-astro.netlify.app/");
 const $$Picture = createComponent(async ($$result, $$props, $$slots) => {
@@ -1531,7 +1531,7 @@ const $$Picture = createComponent(async ($$result, $$props, $$slots) => {
     const srcsetAttribute = props.densities || !props.densities && !props.widths && !useResponsive ? `${image.src}${image.srcSet.values.length > 0 ? ", " + image.srcSet.attribute : ""}` : image.srcSet.attribute;
     return renderTemplate`<source${addAttribute(srcsetAttribute, "srcset")}${addAttribute(mime.lookup(image.options.format ?? image.src) ?? `image/${image.options.format}`, "type")}${spreadAttributes(sourceAdditionalAttributes)}>`;
   })}  <img${addAttribute(fallbackImage.src, "src")}${spreadAttributes(attributes)}${addAttribute(className, "class")}> </picture>`;
-}, "/Users/dvolz/Sites/dv/astro-start/node_modules/astro/components/Picture.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/node_modules/astro/components/Picture.astro", void 0);
 
 const imageConfig = {"endpoint":{"route":"/_image"},"service":{"entrypoint":"astro/assets/services/sharp","config":{}},"domains":[],"remotePatterns":[],"experimentalLayout":"responsive","experimentalResponsiveImages":true};
 					const getImage = async (options) => await getImage$1(options, imageConfig);
@@ -1558,7 +1558,7 @@ const $$AstroImage = createComponent(($$result, $$props, $$slots) => {
     throw new Error(`Image not found for the path: ${src}`);
   }
   return renderTemplate`${renderComponent($$result, "Image", $$Image, { "src": resolvedSrc, "alt": alt, "width": width, "height": height, "format": format, "quality": quality, "layout": layout })}`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/components/AstroImage.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/components/AstroImage.astro", void 0);
 
 const $$Astro = createAstro("https://dv-astro.netlify.app/");
 const $$MarkdownPostLayout = createComponent(($$result, $$props, $$slots) => {
@@ -1566,6 +1566,6 @@ const $$MarkdownPostLayout = createComponent(($$result, $$props, $$slots) => {
   Astro2.self = $$MarkdownPostLayout;
   const { frontmatter } = Astro2.props;
   return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "pageTitle": frontmatter.title, "description": frontmatter.description, "data-astro-cid-5grsw2hi": true }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="article" data-astro-cid-5grsw2hi> ${renderComponent($$result2, "BlogDetails", $$BlogDetails, { ...frontmatter, "data-astro-cid-5grsw2hi": true })} <p data-astro-cid-5grsw2hi> <em data-astro-cid-5grsw2hi>${frontmatter.description}</em> </p> ${renderComponent($$result2, "AstroImage", $$AstroImage, { "src": frontmatter.image.url, "width": "300", "height": "300", "fit": "cover", "alt": frontmatter.image.alt, "data-astro-cid-5grsw2hi": true })} <div class="tags" data-astro-cid-5grsw2hi> ${frontmatter.tags.map((tag) => renderTemplate`<p class="tag" data-astro-cid-5grsw2hi> <a${addAttribute(`/tags/${tag}`, "href")} data-astro-cid-5grsw2hi>${tag}</a> </p>`)} </div> ${renderSlot($$result2, $$slots["default"])} </div> ` })} `;
-}, "/Users/dvolz/Sites/dv/astro-start/src/layouts/MarkdownPostLayout.astro", void 0);
+}, "/Users/dvolz/Sites/dv/dv-astro/src/layouts/MarkdownPostLayout.astro", void 0);
 
 export { $$MarkdownPostLayout as $, baseService as b, parseQuality as p };

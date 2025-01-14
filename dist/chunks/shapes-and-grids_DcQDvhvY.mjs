@@ -1,7 +1,7 @@
-import { c as createAstro, a as createComponent, r as renderTemplate, e as renderScript, b as renderComponent, m as maybeRenderHead, j as unescapeHTML } from './astro/server_9QOt-6f6.mjs';
+import { b as createAstro, c as createComponent, r as renderTemplate, e as renderScript, a as renderComponent, m as maybeRenderHead, j as unescapeHTML } from './astro/server_BdFrvQ4H.mjs';
 import 'kleur/colors';
-import { a as $$Icon, $ as $$BaseLayout } from './BaseLayout_MLDguVh-.mjs';
-import { $ as $$BlogDetails } from './BlogDetails_xNrFzzSq.mjs';
+import { a as $$Icon, $ as $$BaseLayout } from './BaseLayout_hcN8E3TP.mjs';
+import { $ as $$BlogDetails } from './BlogDetails_BIm46kxo.mjs';
 /* empty css                                    */
 /* empty css                            */
 import katex from 'katex';
@@ -54,7 +54,7 @@ const $$ShapesAndGrids = createComponent(($$result, $$props, $$slots) => {
     html: katex.renderToString(item.expression, { throwOnError: false }),
     description: item.description
   }));
-  return renderTemplate`${renderScript($$result, "/Users/dvolz/Sites/dv/astro-start/src/pages/play/shapes-and-grids.astro?astro&type=script&index=0&lang.ts")}${renderComponent($$result, "BaseLayout", $$BaseLayout, { "pageTitle": blogData.title, "showTypographyHero": showTypographyHero, "description": blogData.description, "theme": theme, "fullWidthBody": fullWidthBody, "display": blogData.display, "data-astro-cid-2aax352x": true }, { "default": ($$result2) => renderTemplate`${maybeRenderHead()}<div class="details-width" data-astro-cid-2aax352x>${renderComponent($$result2, "BlogDetails", $$BlogDetails, { ...blogData, "data-astro-cid-2aax352x": true })}</div><div class="article" data-astro-cid-2aax352x><h3 data-astro-cid-2aax352x>The Design</h3><p data-astro-cid-2aax352x>
+  return renderTemplate`${renderScript($$result, "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/shapes-and-grids.astro?astro&type=script&index=0&lang.ts")}${renderComponent($$result, "BaseLayout", $$BaseLayout, { "pageTitle": blogData.title, "showTypographyHero": showTypographyHero, "description": blogData.description, "theme": theme, "fullWidthBody": fullWidthBody, "display": blogData.display, "data-astro-cid-2aax352x": true }, { "default": ($$result2) => renderTemplate`${maybeRenderHead()}<div class="details-width" data-astro-cid-2aax352x>${renderComponent($$result2, "BlogDetails", $$BlogDetails, { ...blogData, "data-astro-cid-2aax352x": true })}</div><div class="article" data-astro-cid-2aax352x><h3 data-astro-cid-2aax352x>The Design</h3><p data-astro-cid-2aax352x>
 A couple years back I was working a site that had a layout that stuck in
 			my mind far after completing it. It had two rows. Both rows had two
 			columns with about a 3/5 width and a 2/5 width. The first row had the big
@@ -66,7 +66,9 @@ The design also featured a centered square that dynamically aligned with
 			size changed. At the time I just played with the percentages until
 			everything lined up. I wanted to revisit this design to see if I could
 			make it interactive.
-</p><h4 data-astro-cid-2aax352x>Responsive Squares</h4><p data-astro-cid-2aax352x>
+</p><p class="instruction" data-astro-cid-2aax352x>
+Click and drag the resize handle to see how the columns and box adjust.
+</p></div><div class="row example-box" data-astro-cid-2aax352x><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="box" data-astro-cid-2aax352x></div><div class="resize-handle" data-astro-cid-2aax352x>${renderComponent($$result2, "Icon", $$Icon, { "name": "mdi:arrow-split-vertical", "style": "stroke: var(--text-color); stroke-width: .3;", "data-astro-cid-2aax352x": true })}</div></div><div class="article" data-astro-cid-2aax352x><h4 data-astro-cid-2aax352x>Responsive Squares</h4><p data-astro-cid-2aax352x>
 Before encountering this design, I had known that if you give a block
 			element a padding-bottom of 100% it would render as a square as long as it
 			had a 100% width. What I didn't know was that you could give it a width of
@@ -107,9 +109,7 @@ I tried a completely different layout where I use flex to position the
 </p><p data-astro-cid-2aax352x>
 If this was a real project, I would suggest having larger borders to hide
 			the inconsistency as long as that aligned with design's goals.
-</p><p class="instruction" data-astro-cid-2aax352x>
-Click and drag the resize handle to see how the columns and box adjust.
-</p></div><div class="row example-box" data-astro-cid-2aax352x><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="column example-column" data-astro-cid-2aax352x></div><div class="box" data-astro-cid-2aax352x></div><div class="resize-handle" data-astro-cid-2aax352x>${renderComponent($$result2, "Icon", $$Icon, { "name": "mdi:arrow-split-vertical", "style": "stroke: var(--text-color); stroke-width: .3;", "data-astro-cid-2aax352x": true })}</div></div><div class="article" data-astro-cid-2aax352x><h3 data-astro-cid-2aax352x>The Idea</h3><p data-astro-cid-2aax352x>
+</p><h3 data-astro-cid-2aax352x>The Idea</h3><p data-astro-cid-2aax352x>
 I had the idea to make a slider that controls the width of all the
 			elements inside. If you change the width of the big column, the rest of
 			the widths and proportions would update.
@@ -125,10 +125,10 @@ The inner box can get too tall for the container so once the box height is
 			taller than the container I change the amount of padding-bottom it gets.
 			This changes it from a square to a rectangle.
 </p><h3 data-astro-cid-2aax352x>The Result</h3></div><div class="grid-feature" data-astro-cid-2aax352x><div class="controls" data-astro-cid-2aax352x><label data-astro-cid-2aax352x><p class="sliderLabel" data-astro-cid-2aax352x>Box Width</p><p class="sliderValue" data-astro-cid-2aax352x><span id="boxWidthValue" data-astro-cid-2aax352x>60</span>%
-</p><input type="range" id="boxWidthSlider" min="51" max="95" value="60" step="0.01" data-astro-cid-2aax352x></label></div><div class="row box-lines" data-astro-cid-2aax352x><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="box" data-astro-cid-2aax352x><div class="box-height" data-astro-cid-2aax352x></div></div></div></div>${renderScript($$result2, "/Users/dvolz/Sites/dv/astro-start/src/pages/play/shapes-and-grids.astro?astro&type=script&index=1&lang.ts")}` })}`;
-}, "/Users/dvolz/Sites/dv/astro-start/src/pages/play/shapes-and-grids.astro", void 0);
+</p><input type="range" id="boxWidthSlider" min="51" max="95" value="60" step="0.01" data-astro-cid-2aax352x></label></div><div class="row box-lines" data-astro-cid-2aax352x><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="column column-box-lines" data-astro-cid-2aax352x></div><div class="box" data-astro-cid-2aax352x><div class="box-height" data-astro-cid-2aax352x></div></div></div></div>${renderScript($$result2, "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/shapes-and-grids.astro?astro&type=script&index=1&lang.ts")}` })}`;
+}, "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/shapes-and-grids.astro", void 0);
 
-const $$file = "/Users/dvolz/Sites/dv/astro-start/src/pages/play/shapes-and-grids.astro";
+const $$file = "/Users/dvolz/Sites/dv/dv-astro/src/pages/play/shapes-and-grids.astro";
 const $$url = "/play/shapes-and-grids";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
