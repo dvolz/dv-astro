@@ -7,7 +7,9 @@ const { title, url, description } = Astro.props
 		display: flex;
 		flex-flow: row wrap;
 		position: relative;
-		border: none !important;
+		border: 0.1rem solid var(--text-color);
+		overflow: hidden;
+		border-radius: 1.6rem;
 		padding: 0 !important;
 		.column {
 			flex: 1 1 0px;
@@ -17,12 +19,18 @@ const { title, url, description } = Astro.props
 			&:nth-child(1),
 			&:nth-child(2) {
 				border-bottom: none;
+				border-top: none;
+			}
+			&:nth-child(3),
+			&:nth-child(4) {
+				border-bottom: none;
 			}
 
 			// Left
 			&:nth-child(1),
 			&:nth-child(3) {
 				border-right: none;
+				border-bottom: 0;
 			}
 
 			// 56
@@ -36,6 +44,16 @@ const { title, url, description } = Astro.props
 			&:nth-child(2),
 			&:nth-child(3) {
 				flex: 0 0 var(--width-b);
+			}
+			// left
+			&:nth-child(1),
+			&:nth-child(3) {
+				border-left: none;
+			}
+			// right
+			&:nth-child(2),
+			&:nth-child(4) {
+				border-right: none;
 			}
 		}
 
