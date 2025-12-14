@@ -30,6 +30,7 @@ let beatInterval = 0
 let updateInterval: number
 let activeNoteTimeout: number
 let currentActiveNote: number | null = null
+let lastDisplayedBeat: number | null = null
 let isScrubbing = false
 let scrubbingInterval: number
 
@@ -248,13 +249,34 @@ function displayNotesList(): void {
     notesList.innerHTML = timingNotes
         .map(
             (note, index) => `
-		<div class="note-item" data-index="${index}">
+		<div class="note-item" data-index="${index}" style="cursor: pointer;" title="Click to jump to time">
 			<strong>${formatTime(note.time)}</strong> - ${note.countTo ? '🎵 COUNT-TO' : note.message}
 			${note.duration ? ` (${note.duration}s)` : ''}
 		</div>
 	`
         )
         .join('')
+
+    // Add click listeners
+    const items = notesList.querySelectorAll('.note-item')
+    items.forEach((item) => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.getAttribute('data-index') || '0')
+            const note = timingNotes[index]
+            if (player && note) {
+                let seekTime = note.time
+
+                // For count-to notes, jump to the start of the count-in
+                if (note.countTo && beatInterval > 0) {
+                    const countInDuration = beatInterval * beatsPerMeasure
+                    seekTime = Math.max(startTime, note.time - countInDuration)
+                }
+
+                player.seekTo(seekTime, true)
+                updatePlaybackUI()
+            }
+        })
+    })
 }
 
 // ============================================================================
@@ -293,7 +315,32 @@ function checkTimingNotes(currentTime: number): void {
                     }
                     noteDisplay.classList.add('active')
                     noteDisplay.textContent = currentBeat.toString()
-                    noteDisplay.style.borderColor = note.color || '#E8A87C'
+
+                    // Set color variable for CSS
+                    const color = note.color || '#E8A87C'
+                    noteDisplay.style.setProperty('--note-color', color)
+                    noteDisplay.style.removeProperty('border-color')
+
+                    // Set parent background
+                    if (noteDisplay.parentElement) {
+                        noteDisplay.parentElement.style.backgroundColor = `color-mix(in srgb, ${color}, transparent 85%)`
+                    }
+
+                    // Beat animation
+                    if (currentBeat !== lastDisplayedBeat) {
+                        lastDisplayedBeat = currentBeat
+
+                        // Reset animation
+                        noteDisplay.classList.remove('beat-pop')
+                        noteDisplay.classList.remove('downbeat')
+                        void noteDisplay.offsetWidth // Trigger reflow
+
+                        noteDisplay.classList.add('beat-pop')
+                        if (currentBeat === 1) {
+                            noteDisplay.classList.add('downbeat')
+                        }
+                    }
+
                     foundActive = true
                 }
             } else {
@@ -352,7 +399,17 @@ function checkTimingNotes(currentTime: number): void {
                     currentActiveNote = index
                     noteDisplay.classList.add('active')
                     noteDisplay.textContent = note.message
-                    noteDisplay.style.borderColor = note.color || '#E8A87C'
+
+                    // Set color variable for CSS
+                    const color = note.color || '#E8A87C'
+                    noteDisplay.style.setProperty('--note-color', color)
+                    noteDisplay.style.removeProperty('border-color')
+
+                    // Set parent background
+                    if (noteDisplay.parentElement) {
+                        noteDisplay.parentElement.style.backgroundColor = `color-mix(in srgb, ${color}, transparent 85%)`
+                    }
+
                     noteItem?.classList.add('active')
                 }
                 foundActive = true
@@ -364,9 +421,18 @@ function checkTimingNotes(currentTime: number): void {
 
     if (!foundActive && currentActiveNote !== null) {
         currentActiveNote = null
+        lastDisplayedBeat = null
         noteDisplay.classList.remove('active')
+        noteDisplay.classList.remove('beat-pop')
+        noteDisplay.classList.remove('downbeat')
         noteDisplay.textContent = 'No note active'
-        noteDisplay.style.borderColor = 'var(--text-color)'
+        noteDisplay.style.removeProperty('--note-color')
+        noteDisplay.style.removeProperty('border-color') // Let CSS handle the default state
+
+        // Reset parent background
+        if (noteDisplay.parentElement) {
+            noteDisplay.parentElement.style.removeProperty('background-color')
+        }
     }
 }
 
