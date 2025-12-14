@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+import timingNotesData from '../../data/timing-notes.json'
+
+export const blogData = {
+	title: 'YouTube Timing Controller',
+	author: 'David Volz',
+	description: `A tool to control YouTube playback with timed text annotations and BPM-based counting.`,
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2025-12-6',
+	tags: ['javascript', 'code', 'tools'],
+	featured: true,
+}
+
+const showTypographyHero = true
+const fullWidthBody = true
+---
+
+<BaseLayout
+	pageTitle={blogData.title}
+	{showTypographyHero}
+	description={blogData.description}
+	fullWidthBody={fullWidthBody}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<div class="article">
+		<p class="intro-text">
+			This tool allows you to control YouTube video playback with precise timing
+			annotations. Set start times, add timed text notes, and sync with BPM for
+			musical analysis or learning.
+		</p>
+	</div>
+
+	<div class="youtube-timer-container">
+		<!-- Configuration Panel -->
+		<div class="config-panel">
+			<h3>Configuration</h3>
+
+			<div class="config-inputs">
+				<div class="input-group">
+					<label for="videoUrl">YouTube Video ID or URL</label>
+					<input
+						type="text"
+						id="videoUrl"
+						placeholder="dQw4w9WgXcQ or full URL"
+					/>
+				</div>
+
+				<div class="input-group">
+					<label for="startTime">Start Time (seconds)</label>
+					<input
+						type="number"
+						id="startTime"
+						placeholder="0"
+						step="any"
+						value="0"
+					/>
+					<small
+						>Time in seconds where video should start (61 = 1 minute 1 second)</small
+					>
+				</div>
+
+				<div class="input-group">
+					<label for="duration">Duration (seconds)</label>
+					<input
+						type="number"
+						id="duration"
+						placeholder="60"
+						step="any"
+						value="60"
+					/>
+					<small
+						>How long to play from start time (only this section will be
+						controllable)</small
+					>
+				</div>
+
+				<div class="input-group">
+					<label for="bpm">BPM (optional)</label>
+					<input type="number" id="bpm" placeholder="120" min="1" />
+					<small>Beat interval <span id="beatInterval">0</span>s</small>
+				</div>
+
+				<div class="input-group">
+					<label for="timeSignature">Time Signature</label>
+					<select id="timeSignature">
+						<option value="4">4/4</option>
+						<option value="3">3/4</option>
+						<option value="2">2/4</option>
+						<option value="5">5/4</option>
+						<option value="6">6/8</option>
+						<option value="7">7/4</option>
+					</select>
+					<small>Number of beats per measure for count-in</small>
+				</div>
+			</div>
+
+			<div class="input-group" style="margin-top: 1.5rem;">
+				<label for="timingNotes" id="timingNotesLabel"
+					>Timing Notes (JSON)</label
+				>
+				<textarea
+					id="timingNotes"
+					rows="8"
+					set:text={JSON.stringify(timingNotesData, null, 2)}
+				/>
+				<small>
+					Times are absolute video seconds (e.g. 133 = 2min 13sec in the video).
+					Add "countTo": true where time is the target (count starts one measure
+					before)
+				</small>
+				<div id="jsonStatus" class="json-status"></div>
+			</div>
+
+			<button id="loadVideo" class="btn-primary">Load Video</button>
+			<button id="validateJson" class="btn-secondary">Validate JSON</button>
+			<button id="loadExample" class="btn-secondary">Load Example Song</button>
+		</div>
+
+		<div class="main-content">
+			<!-- Video Player -->
+			<div class="player-section">
+				<button id="toggleVideo" class="btn-toggle-video">▼ Show Video</button>
+				<div class="player-wrapper" id="playerWrapper" style="display: none;">
+					<div id="player"></div>
+				</div>
+
+				<div class="timing-display">
+					<div id="currentNote" class="note-display">No note active</div>
+				</div>
+
+				<div class="controls">
+					<div class="time-display">
+						<span id="currentTime">0:00</span> / <span id="totalTime">0:00</span
+						>
+					</div>
+					<div class="controls-buttons">
+						<button id="playBtn" class="btn-control" disabled>▶</button>
+						<button id="pauseBtn" class="btn-control" disabled>⏸</button>
+						<button id="resetBtn" class="btn-control" disabled>↻</button>
+					</div>
+				</div>
+
+				<!-- Scrubber -->
+				<div class="scrubber-container">
+					<input
+						type="range"
+						id="scrubber"
+						min="0"
+						max="100"
+						value="0"
+						step="0.1"
+						disabled
+					/>
+					<div class="scrubber-markers" id="markers"></div>
+				</div>
+			</div>
+
+			<!-- Timing Notes Sidebar -->
+			<div class="notes-list">
+				<h4>All Timing Notes:</h4>
+				<div id="notesList">No notes loaded</div>
+			</div>
+		</div>
+	</div>
+
+	<link
+		rel="stylesheet"
+		href={`/src/styles/youtube-timer.css?v=${Date.now()}`}
+	/>
+	<script src="../../scripts/youtube-timer.ts"></script>
+</BaseLayout>

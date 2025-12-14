@@ -1,0 +1,21 @@
+[
+  {"time": 133, "message": "Build Up", "duration": 4.5, "color": "#D8A7B1"},
+  {"time": 139.5, "countTo": true, "color": "#E8A87C"},
+  {"time": 139.5, "message": "No Fill Coming Up", "showAfterCountTo": true, "color": "#D8A7B1"},
+  {"time": 145.6, "countTo": true, "color": "#E8A87C"},
+  {"time": 145.6, "message": "Simple Lead-in Fill Coming Up", "showAfterCountTo": true, "color": "#D4B483"},
+  {"time": 151.6, "countTo": true, "color": "#E8A87C"},
+  {"time": 151.6, "message": "No Fill Coming Up", "showAfterCountTo": true, "color": "#D8A7B1"},
+  {"time": 157.5, "countTo": true, "color": "#E8A87C"},
+  {"time": 157.5, "message": "Easy Transition Fill", "showAfterCountTo": true, "color": "#A3B18A"},
+  {"time": 163.7, "countTo": true, "color": "#E8A87C"},
+  {"time": 163.7, "message": "Easy Transition Fill With Bass Start", "showAfterCountTo": true, "color": "#A3B18A"},
+  {"time": 169.5, "countTo": true, "color": "#E8A87C"},
+  {"time": 169.5, "message": "Longer Bass Crash Fill", "showAfterCountTo": true, "color": "#E5989B"},
+  {"time": 175.6, "countTo": true, "color": "#E8A87C"},
+  {"time": 175.6, "message": "Finale", "showAfterCountTo": true, "color": "#B8A9C9"},
+  {"time": 181.5, "countTo": true, "color": "#E8A87C"},
+  {"time": 181.5, "message": "Burn Down", "showAfterCountTo": true, "color": "#C97C5D"},
+  {"time": 187.4, "countTo": true, "color": "#E8A87C"},
+  {"time": 187.4, "message": "Done", "showAfterCountTo": true, "color": "#7D9BA6"}
+]

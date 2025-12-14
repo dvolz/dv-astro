@@ -1,0 +1,423 @@
+/* YouTube Timer Styles */
+
+/* Layout */
+.intro-text {
+    max-width: 650px;
+    margin: 0 auto 3rem;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+.youtube-timer-container {
+    max-width: 1600px;
+    width: 95%;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 2rem;
+    align-items: start;
+    min-height: 100vh;
+}
+
+/* Configuration Panel */
+.config-panel {
+    background: var(--background-color);
+    border: 2px solid var(--text-color);
+    padding: 1.5rem;
+    border-radius: 0;
+    width: 100%;
+}
+
+.config-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.config-inputs {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.config-inputs .input-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 150px;
+}
+
+.config-inputs .input-group small {
+    display: none;
+}
+
+.config-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* Form Inputs */
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.input-group input,
+.input-group textarea,
+.input-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--text-color);
+    border-radius: 0;
+    background: var(--background-color);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 1.1rem;
+    box-sizing: border-box;
+}
+
+.input-group textarea {
+    font-family: "Courier New", monospace;
+    resize: vertical;
+}
+
+.input-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* JSON Validation Status */
+.json-status {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.json-status.valid {
+    display: flex;
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+}
+
+.json-status.invalid {
+    display: flex;
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+}
+
+.json-status::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.json-status.valid::before {
+    background: #28a745;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
+}
+
+.json-status.invalid::before {
+    background: #dc3545;
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--text-color);
+    background: var(--text-color);
+    color: var(--background-color);
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+    opacity: 0.8;
+}
+
+.btn-secondary {
+    background: var(--background-color);
+    color: var(--text-color);
+    margin-left: 0.5rem;
+    border-radius: 0;
+}
+
+.btn-control {
+    width: 80px;
+    height: 80px;
+    padding: 0;
+    border: 2px solid var(--text-color);
+    background: var(--background-color);
+    color: var(--text-color);
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    font-size: 2.5rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-control:hover:not(:disabled) {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.btn-control:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-toggle-video {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--text-color);
+    background: var(--background-color);
+    color: var(--text-color);
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-toggle-video:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.btn-toggle-video.expanded {
+    margin-bottom: 1rem;
+}
+
+/* Player Section */
+.player-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+.player-wrapper {
+    width: 100%;
+    max-width: 888px;
+    height: 500px;
+    margin: 0 auto;
+    background: #000;
+    border: 2px solid var(--text-color);
+    border-radius: 0;
+    overflow: hidden;
+}
+
+#player {
+    width: 100%;
+    height: 100%;
+}
+
+/* Playback Controls */
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.controls-buttons {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.time-display {
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+    font-size: 2.5rem;
+    color: var(--text-color);
+    text-align: center;
+}
+
+/* Scrubber / Timeline */
+.scrubber-container {
+    position: relative;
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+}
+
+#scrubber {
+    width: 100%;
+    cursor: pointer;
+}
+
+#scrubber:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.scrubber-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    pointer-events: none;
+}
+
+.marker {
+    position: absolute;
+    width: 3px;
+    height: 20px;
+    background: #ff6b6b;
+    transform: translateX(-50%);
+    opacity: 0.7;
+}
+
+/* Timing Display */
+.timing-display {
+    background: var(--background-color);
+    padding: 2rem;
+    border: 2px solid var(--text-color);
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.timing-display h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+}
+
+.note-display {
+    position: relative;
+    font-family: var(--a-font);
+    font-size: 5rem;
+    font-weight: 900;
+    padding: 2.5rem 3rem;
+    background: var(--background-color);
+    /* Middle thick colored border */
+    border: 6px solid var(--text-color);
+    border-radius: 7.1px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    transition: all 0.3s ease;
+    letter-spacing: 0.02em;
+    -webkit-text-stroke: 2px var(--text-color);
+    color: transparent;
+    margin: 0 auto;
+}
+
+/* Outer thin dark stroke */
+.note-display::before {
+    content: "";
+    position: absolute;
+    top: -7.1px;
+    left: -7.1px;
+    right: -7.1px;
+    bottom: -7.1px;
+    border: 1px solid var(--text-color);
+    border-radius: 7.2px;
+    pointer-events: none;
+}
+
+/* Inner thin dark stroke */
+.note-display::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid var(--text-color);
+    border-radius: 1.5px;
+    pointer-events: none;
+}
+
+.note-display.active {
+    animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+/* Notes List */
+.notes-list {
+    background: var(--background-color);
+    padding: 1.5rem;
+    border: 2px solid var(--text-color);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    align-self: start;
+}
+
+.notes-list h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+}
+
+.note-item {
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background: var(--background-color);
+    border: 2px solid var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.note-item.active {
+    background: var(--text-color);
+    color: var(--background-color);
+    font-weight: bold;
+    border: 2px solid var(--text-color);
+}
+
+@media (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
