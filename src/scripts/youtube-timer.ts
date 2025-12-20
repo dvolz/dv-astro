@@ -586,15 +586,49 @@ function initializeEventListeners(): void {
     const slowBtn = document.getElementById('slowBtn')
     slowBtn?.addEventListener('click', () => {
         if (player && player.setPlaybackRate) {
-            const isSlowMode = slowBtn.classList.contains('active')
-            if (isSlowMode) {
-                // Turn off slow mode - return to normal speed
-                player.setPlaybackRate(1)
-                slowBtn.classList.remove('active')
+            // Get current state (default is null/empty means 'off' with speed 1)
+            const currentState = slowBtn.getAttribute('data-speed')
+
+            // Cycle through states: null -> slow-1 (0.8) -> slow-2 (0.6) -> slow-3 (0.4) -> null
+            let newState: string | null
+            let newSpeed: number
+
+            if (!currentState || currentState === 'off') {
+                newState = 'slow-1'
+                newSpeed = 0.9
+            } else if (currentState === 'slow-1') {
+                newState = 'slow-2'
+                newSpeed = 0.7
+            } else if (currentState === 'slow-2') {
+                newState = 'slow-3'
+                newSpeed = 0.5
             } else {
-                // Turn on slow mode
-                player.setPlaybackRate(0.5)
-                slowBtn.classList.add('active')
+                // slow-3 or anything else goes back to off
+                newState = null
+                newSpeed = 1
+            }
+
+            // Update playback speed
+            player.setPlaybackRate(newSpeed)
+
+            // Update button state and classes
+            slowBtn.classList.remove('active', 'slow-1', 'slow-2', 'slow-3')
+
+            if (newState) {
+                slowBtn.setAttribute('data-speed', newState)
+                slowBtn.classList.add('active', newState)
+            } else {
+                slowBtn.removeAttribute('data-speed')
+            }
+
+            // Update speed display
+            const speedDisplay = document.getElementById('speedDisplay')
+            if (speedDisplay) {
+                if (newSpeed === 1) {
+                    speedDisplay.textContent = ''
+                } else {
+                    speedDisplay.textContent = `${newSpeed}x`
+                }
             }
         }
     })
