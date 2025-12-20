@@ -504,6 +504,7 @@ function updatePlaybackUI(): void {
 function enableControls(): void {
     document.getElementById('playBtn')?.removeAttribute('disabled')
     document.getElementById('pauseBtn')?.removeAttribute('disabled')
+    document.getElementById('slowBtn')?.removeAttribute('disabled')
     document.getElementById('resetBtn')?.removeAttribute('disabled')
     document.getElementById('scrubber')?.removeAttribute('disabled')
 }
@@ -581,6 +582,23 @@ function initializeEventListeners(): void {
     // Playback controls
     document.getElementById('playBtn')?.addEventListener('click', () => player?.playVideo())
     document.getElementById('pauseBtn')?.addEventListener('click', () => player?.pauseVideo())
+
+    const slowBtn = document.getElementById('slowBtn')
+    slowBtn?.addEventListener('click', () => {
+        if (player && player.setPlaybackRate) {
+            const isSlowMode = slowBtn.classList.contains('active')
+            if (isSlowMode) {
+                // Turn off slow mode - return to normal speed
+                player.setPlaybackRate(1)
+                slowBtn.classList.remove('active')
+            } else {
+                // Turn on slow mode
+                player.setPlaybackRate(0.5)
+                slowBtn.classList.add('active')
+            }
+        }
+    })
+
     document.getElementById('resetBtn')?.addEventListener('click', () => player?.seekTo(startTime, true))
 
     // Load Example Song button

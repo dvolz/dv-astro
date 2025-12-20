@@ -195,6 +195,11 @@
     color: var(--background-color);
 }
 
+.btn-control.active {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
 .btn-control:disabled {
     opacity: 0.5;
     cursor: not-allowed;
