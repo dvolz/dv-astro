@@ -355,20 +355,10 @@
 .note-display::before {
     content: "";
     position: absolute;
-    top: -7.1px;
-    left: -7.1px;
-    right: -7.1px;
-    bottom: -7.1px;
-    border: 1px solid var(--text-color);
-    border-radius: 7.2px;
-    pointer-events: none;
-}
-    position: absolute;
     top: -13px;
     left: -13px;
     right: -13px;
     bottom: -13px;
-    border: 1px solid var(--text-color);
     border-radius: 13px;
     pointer-events: none;
 }
@@ -452,16 +442,15 @@
 .note-item {
     padding: 0.75rem;
     margin: 0.5rem 0;
-    background: var(--background-color);
     border: 2px solid var(--text-color);
     transition: all 0.2s ease;
 }
 
 .note-item.active {
-    background: var(--text-color);
-    color: var(--background-color);
+    background: var(--note-color, var(--text-color)) !important;
+    color: #000;
     font-weight: bold;
-    border: 2px solid var(--text-color);
+    border: 2px solid #000;
 }
 
 @media (max-width: 1200px) {

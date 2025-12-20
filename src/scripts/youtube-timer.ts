@@ -248,12 +248,36 @@ function displayNotesList(): void {
 
     notesList.innerHTML = timingNotes
         .map(
-            (note, index) => `
-		<div class="note-item" data-index="${index}" style="cursor: pointer;" title="Click to jump to time">
-			<strong>${formatTime(note.time)}</strong> - ${note.countTo ? '🎵 COUNT-TO' : note.message}
+            (note, index) => {
+                const color = note.color || '#E8A87C'
+                const bgColor = `color-mix(in srgb, ${color}, transparent 70%)`
+
+                // Calculate display time
+                let displayTime = note.time
+
+                // For COUNT-TO notes, show when the count STARTS (one measure before target)
+                if (note.countTo && beatInterval > 0) {
+                    const countInDuration = beatInterval * beatsPerMeasure
+                    displayTime = note.time - countInDuration
+                }
+                // For notes after count-in, show when they actually appear (at the countTo end time)
+                else if (note.showAfterCountTo && beatInterval > 0) {
+                    // Find the previous countTo note
+                    for (let i = index - 1; i >= 0; i--) {
+                        if (timingNotes[i].countTo && timingNotes[i].time <= note.time) {
+                            displayTime = timingNotes[i].time
+                            break
+                        }
+                    }
+                }
+
+                return `
+		<div class="note-item" data-index="${index}" data-note-color="${color}" style="cursor: pointer; background-color: ${bgColor};" title="Click to jump to time">
+			<strong>${formatTime(displayTime)}</strong> - ${note.countTo ? '🎵 COUNT-TO' : note.message}
 			${note.duration ? ` (${note.duration}s)` : ''}
 		</div>
 	`
+            }
         )
         .join('')
 
@@ -312,6 +336,10 @@ function checkTimingNotes(currentTime: number): void {
                     if (currentActiveNote !== index) {
                         currentActiveNote = index
                         noteItem?.classList.add('active')
+                        // Set color variable for active styling
+                        if (noteItem instanceof HTMLElement) {
+                            noteItem.style.setProperty('--note-color', note.color || '#E8A87C')
+                        }
                     }
                     noteDisplay.classList.add('active')
                     noteDisplay.textContent = currentBeat.toString()
@@ -411,6 +439,10 @@ function checkTimingNotes(currentTime: number): void {
                     }
 
                     noteItem?.classList.add('active')
+                    // Set color variable for active styling
+                    if (noteItem instanceof HTMLElement) {
+                        noteItem.style.setProperty('--note-color', color)
+                    }
                 }
                 foundActive = true
             } else {
