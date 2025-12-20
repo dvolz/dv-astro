@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
 import IsVisibleExample from '../../components/IsVisibleExample.jsx'
-import { ACTION_ERROR_CODES } from 'astro:actions'
+
 export const blogData = {
 	title: 'Astro Scripts',
 	author: 'David Volz',
@@ -77,19 +77,19 @@ export const blogData = {
 
 		<h4>is:inline</h4>
 		<p>
-			If you use <code>{`<script is:inline>`}</code>, it will remove that script
-			from Astro processing and it will be rendered exactly as written. This can
-			be helpful when dealing with 3rd party code or libraries. For instance, if
-			you're embedding a third-party analytics snippet or a custom script that
-			requires precise formatting, using this ensures the script is injected
-			exactly as written without modification.
+			If you use <code>&lt;script is:inline&gt;</code>, it will remove that
+			script from Astro processing and it will be rendered exactly as written.
+			This can be helpful when dealing with 3rd party code or libraries. For
+			instance, if you're embedding a third-party analytics snippet or a custom
+			script that requires precise formatting, using this ensures the script is
+			injected exactly as written without modification.
 		</p>
 		<h4>define:vars</h4>
 		<p>
 			Using <code>&lt;script define:vars&gt;</code> will allow you to access your
-			frontmatter variables inside your script. The drawback to this if you pass
-			your variables this way, Astro won't process your script, it will be treated
-			as an <code>is:inline</code> script.
+			frontmatter variables inside your script. The drawback to this if you pass your
+			variables this way, Astro won't process your script, it will be treated as an
+			<code>is:inline</code> script.
 		</p>
 
 		<h4>Lazy Load JS</h4>
@@ -108,7 +108,7 @@ export const blogData = {
 		</p><p>
 			Example
 			<br />
-			<code>{`<ComponentName client:visible />`}</code>
+			<code>&lt;ComponentName client:visible /&gt;</code>
 		</p>
 		<p>
 			If you click the button it will load and reveal a sample component that

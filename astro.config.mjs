@@ -16,13 +16,6 @@ export default defineConfig({
 	site: 'https://dv-astro.netlify.app/',
 	integrations: [react({ fastRefresh: false }), icon()],
 
-	image: {
-		experimentalLayout: 'responsive',
-	},
-	experimental: {
-		responsiveImages: true,
-		svg: true,
-	},
 	markdown: {
 		shikiConfig: {
 			// Enable word wrap to prevent horizontal scrolling
