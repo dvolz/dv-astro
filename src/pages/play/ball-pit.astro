@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+import BallPitTracker from '../../components/BallPitTracker.jsx'
+
+export const blogData = {
+	title: 'Ball Pit Upgrade Tracker',
+	author: 'David Volz',
+	description:
+		'Track your Ball Pit special balls and discover all possible evolutions and fusions',
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'Ball Pit game tracker interface',
+	},
+	display: true,
+	pubDate: '2025-12-21',
+	tags: ['javascript', 'tools', 'games'],
+	featured: true,
+}
+
+const pageTitle = blogData.title
+const description = blogData.description
+---
+
+<BaseLayout
+	pageTitle={pageTitle}
+	description={description}
+	display={blogData.display}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<BallPitTracker client:load />
+</BaseLayout>
