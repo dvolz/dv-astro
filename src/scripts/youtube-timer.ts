@@ -370,7 +370,7 @@ function checkTimingNotes(currentTime: number): void {
                 const countStartTime = note.time - countInDuration
                 const timeIntoCountIn = currentTime - countStartTime
 
-                // If we're in the count-in phase
+                // If we're in the count-in phase (before the actual note time)
                 if (timeIntoCountIn >= 0 && timeIntoCountIn < countInDuration) {
                     const totalBeats = Math.floor(timeIntoCountIn / beatInterval) + 1
                     const currentMeasureUp = Math.floor((totalBeats - 1) / beatsPerMeasure) + 1
@@ -378,16 +378,7 @@ function checkTimingNotes(currentTime: number): void {
                     // Count measures down from measuresToCount to 1
                     const currentMeasure = measuresToCount - currentMeasureUp + 1
 
-                    if (currentActiveNote !== index) {
-                        currentActiveNote = index
-                    }
-                    
-                    // Always set active class (since we clear all at the start)
-                    noteItem?.classList.add('active')
-                    if (noteItem instanceof HTMLElement) {
-                        noteItem.style.setProperty('--note-color', note.color || '#E8A87C')
-                    }
-                    
+                    // Show countdown in the current note display
                     noteDisplay.classList.add('active', 'counting')
                     // Show count-up: measure.beat format (e.g., 1.1, 1.2, 1.3, 1.4, 2.1, 2.2...)
                     if (measuresToCount > 1) {
@@ -416,8 +407,23 @@ function checkTimingNotes(currentTime: number): void {
                         }
                     }
 
-                    // During count-in, show the current note being counted into
+                    // During count-in, show this note in "Up Next"
                     nextNoteIndex = index
+
+                    // Keep previous note highlighted in the list
+                    if (index > 0) {
+                        // Find the previous visible note with a message
+                        for (let i = index - 1; i >= 0; i--) {
+                            if (!timingNotes[i].invisible && timingNotes[i].message) {
+                                const prevNoteItem = document.querySelector(`[data-index="${i}"]`)
+                                prevNoteItem?.classList.add('active')
+                                if (prevNoteItem instanceof HTMLElement) {
+                                    prevNoteItem.style.setProperty('--note-color', timingNotes[i].color || '#E8A87C')
+                                }
+                                break
+                            }
+                        }
+                    }
 
                     foundActive = true
                 }
