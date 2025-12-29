@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
 import timingNotesData from '../../data/timing-notes.json'
+import mightyToSaveTimingData from '../../data/mighty-to-save-timing.json'
 import { Icon } from 'astro-icon/components'
 import '../../styles/youtube-timer.css'
 
@@ -55,42 +56,41 @@ const fullWidthBody = true
 				</div>
 
 				<div class="input-group">
-					<label for="startTime">Start Time (seconds)</label>
+					<label for="startTime">Start Time (seconds) - Optional</label>
 					<input
 						type="number"
 						id="startTime"
-						placeholder="0"
+						placeholder="Leave empty for start"
 						step="any"
-						value="0"
 					/>
 					<small
-						>Time in seconds where video should start (61 = 1 minute 1 second)</small
+						>Time in seconds where video should start (61 = 1 minute 1 second).
+						Leave empty to start from beginning.</small
 					>
 				</div>
 
 				<div class="input-group">
-					<label for="duration">Duration (seconds)</label>
+					<label for="duration">Duration (seconds) - Optional</label>
 					<input
 						type="number"
 						id="duration"
-						placeholder="60"
+						placeholder="Leave empty for full video"
 						step="any"
-						value="60"
 					/>
 					<small
-						>How long to play from start time (only this section will be
-						controllable)</small
+						>How long to play from start time. Leave empty to play the entire
+						video.</small
 					>
 				</div>
 
 				<div class="input-group">
-					<label for="bpm">BPM (optional)</label>
+					<label for="bpm">BPM - Optional</label>
 					<input type="number" id="bpm" placeholder="120" min="1" />
 					<small>Beat interval <span id="beatInterval">0</span>s</small>
 				</div>
 
 				<div class="input-group">
-					<label for="timeSignature">Time Signature</label>
+					<label for="timeSignature">Time Signature - Optional</label>
 					<select id="timeSignature">
 						<option value="4">4/4</option>
 						<option value="3">3/4</option>
@@ -114,15 +114,24 @@ const fullWidthBody = true
 				/>
 				<small>
 					Times are absolute video seconds (e.g. 133 = 2min 13sec in the video).
-					Add "countTo": true where time is the target (count starts one measure
-					before)
+					Add "countTo": true to any entry to enable count-in (count starts one
+					measure before the time). Add "countMeasures": 2 (or more) to count-in
+					multiple measures instead of just 1. Add "resetBpm": true with
+					"newBpm": 120 to change tempo at that point (resets beat counting to
+					1). Add "invisible": true to hide an entry from display (useful for
+					BPM resets or setting the scene).
 				</small>
 				<div id="jsonStatus" class="json-status"></div>
 			</div>
 
 			<button id="loadVideo" class="btn-primary">Load Video</button>
 			<button id="validateJson" class="btn-secondary">Validate JSON</button>
-			<button id="loadExample" class="btn-secondary">Load Example Song</button>
+			<button id="loadExample2" class="btn-secondary"
+				>Load Example: Mighty to Save</button
+			>
+			<button id="loadExample" class="btn-secondary"
+				>Load Example: See You Later Alligator</button
+			>
 		</div>
 
 		<div class="main-content">
@@ -135,6 +144,9 @@ const fullWidthBody = true
 
 				<div class="timing-display">
 					<div id="currentNote" class="note-display">No note active</div>
+					<div id="nextNote" class="note-display next-note">
+						Up next: <span id="nextNoteText">--</span>
+					</div>
 				</div>
 
 				<div class="controls">
@@ -178,5 +190,9 @@ const fullWidthBody = true
 		</div>
 	</div>
 
+	<script define:vars={{ timingNotesData, mightyToSaveTimingData }}>
+		window.timingNotesData = timingNotesData
+		window.mightyToSaveTimingData = mightyToSaveTimingData
+	</script>
 	<script src="../../scripts/youtube-timer.ts"></script>
 </BaseLayout>

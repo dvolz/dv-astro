@@ -1,0 +1,199 @@
+[
+	{
+		"time": 0.0,
+		"message": "Guitar Intro",
+		"color": "#D8A7B1"
+	},
+	{ "time": 8.8, "resetBpm": true, "newBpm": 73, "invisible": true },
+	{
+		"time": 15.4,
+		"resetBpm": true,
+		"message": "Drums Start",
+		"countTo": true,
+		"color": "#E8A87C",
+		"countMeasures": 2
+	},
+	{
+		"time": 21.7,
+		"message": "Guitar Starts",
+		"countTo": true,
+		"resetBpm": true,
+		"countMeasures": 1,
+		"color": "#D4B483"
+	},
+	{
+		"time": 48.2,
+		"message": "Verse 1",
+		"countTo": true,
+		"resetBpm": true,
+		"countMeasures": 1,
+		"color": "#A3B18A"
+	},
+
+	{
+		"time": 74.5,
+		"message": "Pre-chorus Build",
+		"color": "#E5989B",
+		"countTo": true,
+		"resetBpm": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 81,
+		"resetBpm": true,
+		"message": "Chorus No Drums",
+		"color": "#B8A9C9",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 107.3,
+		"resetBpm": true,
+		"message": "Repeat Intro with Drums",
+		"color": "#C97C5D",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 120.5,
+		"resetBpm": true,
+		"message": "Verse 2",
+		"color": "#7D9BA6",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 146.8,
+		"resetBpm": true,
+		"message": "Pre-chorus Build",
+		"color": "#D8A7B1",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 153.4,
+		"resetBpm": true,
+		"message": "Chorus Drums",
+		"color": "#E8A87C",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 179.6,
+		"resetBpm": true,
+		"message": "Repeat Chorus",
+		"color": "#D4B483",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 205.9,
+		"resetBpm": true,
+		"message": "Bridge Instrumental",
+		"color": "#A3B18A",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 219.1,
+		"resetBpm": true,
+		"message": "Bridge Vocal",
+		"color": "#E5989B",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 232.35,
+		"resetBpm": true,
+		"message": "Repeat Bridge Vocal",
+		"color": "#B8A9C9",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 245.4,
+		"resetBpm": true,
+		"message": "Verse 3 No Drums",
+		"color": "#C97C5D",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 258.6,
+		"resetBpm": true,
+		"message": "Verse 3 Drums In",
+		"color": "#7D9BA6",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 271.6,
+		"resetBpm": true,
+		"message": "Chorus Big",
+		"color": "#D8A7B1",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 284.9,
+		"resetBpm": true,
+		"message": "Chorus Repeat",
+		"color": "#E8A87C",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 298,
+		"resetBpm": true,
+		"message": "Bridge Big",
+		"color": "#D4B483",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 311.2,
+		"resetBpm": true,
+		"message": "Bridge Repeat",
+		"color": "#A3B18A",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 324.4,
+		"resetBpm": true,
+		"message": "Bridge Just Drums",
+		"color": "#E5989B",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 337.4,
+		"resetBpm": true,
+		"message": "Guitar Starts",
+		"color": "#B8A9C9",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 350.7,
+		"resetBpm": true,
+		"message": "Bridge Big",
+		"color": "#C97C5D",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 363.9,
+		"resetBpm": true,
+		"message": "Bridge Repeat",
+		"color": "#7D9BA6",
+		"countTo": true,
+		"countMeasures": 1
+	},
+	{
+		"time": 371,
+		"resetBpm": true,
+		"message": "Slow Down End",
+		"color": "#D8A7B1"
+	}
+]

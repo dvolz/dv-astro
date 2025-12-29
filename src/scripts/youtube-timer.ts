@@ -12,8 +12,12 @@ interface TimingNote {
     message?: string
     duration?: number
     countTo?: boolean
+    countMeasures?: number
     showAfterCountTo?: boolean
     color?: string
+    resetBpm?: boolean
+    newBpm?: number
+    invisible?: boolean
 }
 
 // ============================================================================
@@ -27,6 +31,8 @@ let duration = 60
 let endTime = 60
 let beatsPerMeasure = 4
 let beatInterval = 0
+let baseBeatInterval = 0 // Store the original/base beat interval
+let currentBpm = 0 // Track current BPM for dynamic changes
 let updateInterval: number
 let activeNoteTimeout: number
 let currentActiveNote: number | null = null
@@ -131,9 +137,13 @@ function updateBeatInterval(): void {
         const bpm = parseFloat(bpmInput.value)
         if (bpm > 0) {
             beatInterval = 60 / bpm
+            baseBeatInterval = beatInterval
+            currentBpm = bpm
             beatIntervalSpan.textContent = beatInterval.toFixed(3)
         } else {
             beatInterval = 0
+            baseBeatInterval = 0
+            currentBpm = 0
             beatIntervalSpan.textContent = '0'
         }
     }
@@ -179,8 +189,9 @@ function validateTimingNotes(): boolean {
             if (typeof note.time !== 'number') {
                 throw new Error('Each note must have a "time" number property')
             }
-            if (!note.countTo && typeof note.message !== 'string') {
-                throw new Error('Each note must have either "message" or "countTo" property')
+            // Allow invisible entries with just resetBpm, or entries with message or countTo
+            if (!note.invisible && !note.resetBpm && !note.countTo && typeof note.message !== 'string') {
+                throw new Error('Each note must have either "message", "countTo", "resetBpm", or "invisible" property')
             }
             if (note.duration && typeof note.duration !== 'number') {
                 throw new Error('Duration must be a number')
@@ -225,13 +236,13 @@ function createMarkers(): void {
     markersContainer.innerHTML = ''
 
     timingNotes.forEach((note) => {
-        // Only show markers within the current viewing window
-        if (note.time >= startTime && note.time <= endTime) {
+        // Only show markers within the current viewing window and not invisible
+        if (!note.invisible && note.time >= startTime && note.time <= endTime) {
             const marker = document.createElement('div')
             marker.className = 'marker'
             const position = ((note.time - startTime) / duration) * 100
             marker.style.left = `${position}%`
-            marker.title = `${formatTime(note.time)}: ${note.countTo ? 'COUNT-TO' : note.message}`
+            marker.title = `${formatTime(note.time)}: ${note.message}${note.countTo ? ' (count-in)' : ''}`
             markersContainer.appendChild(marker)
         }
     })
@@ -247,33 +258,20 @@ function displayNotesList(): void {
     }
 
     notesList.innerHTML = timingNotes
+        .filter((note) => !note.invisible)
         .map(
             (note, index) => {
+                // Get the original index from timingNotes array
+                const originalIndex = timingNotes.indexOf(note)
                 const color = note.color || '#E8A87C'
                 const bgColor = `color-mix(in srgb, ${color}, transparent 70%)`
 
-                // Calculate display time
-                let displayTime = note.time
-
-                // For COUNT-TO notes, show when the count STARTS (one measure before target)
-                if (note.countTo && beatInterval > 0) {
-                    const countInDuration = beatInterval * beatsPerMeasure
-                    displayTime = note.time - countInDuration
-                }
-                // For notes after count-in, show when they actually appear (at the countTo end time)
-                else if (note.showAfterCountTo && beatInterval > 0) {
-                    // Find the previous countTo note
-                    for (let i = index - 1; i >= 0; i--) {
-                        if (timingNotes[i].countTo && timingNotes[i].time <= note.time) {
-                            displayTime = timingNotes[i].time
-                            break
-                        }
-                    }
-                }
+                // Always display the actual note time (not the countdown start)
+                const displayTime = note.time
 
                 return `
-		<div class="note-item" data-index="${index}" data-note-color="${color}" style="cursor: pointer; background-color: ${bgColor};" title="Click to jump to time">
-			<strong>${formatTime(displayTime)}</strong> - ${note.countTo ? '🎵 COUNT-TO' : note.message}
+		<div class="note-item" data-index="${originalIndex}" data-note-color="${color}" style="cursor: pointer; background-color: ${bgColor};" title="Click to jump to time">
+			<strong>${formatTime(displayTime)}</strong> - ${note.message}${note.countTo ? ' 🎵' : ''}
 			${note.duration ? ` (${note.duration}s)` : ''}
 		</div>
 	`
@@ -288,15 +286,8 @@ function displayNotesList(): void {
             const index = parseInt(item.getAttribute('data-index') || '0')
             const note = timingNotes[index]
             if (player && note) {
-                let seekTime = note.time
-
-                // For count-to notes, jump to the start of the count-in
-                if (note.countTo && beatInterval > 0) {
-                    const countInDuration = beatInterval * beatsPerMeasure
-                    seekTime = Math.max(startTime, note.time - countInDuration)
-                }
-
-                player.seekTo(seekTime, true)
+                // Always jump to the actual note time, not the count-in
+                player.seekTo(note.time, true)
                 updatePlaybackUI()
             }
         })
@@ -309,159 +300,226 @@ function displayNotesList(): void {
 
 function checkTimingNotes(currentTime: number): void {
     const noteDisplay = document.getElementById('currentNote')
+    const nextNoteText = document.getElementById('nextNoteText')
     if (!noteDisplay) return
 
     let foundActive = false
+    let nextNoteIndex = -1
+
+    // Clear all active states first
+    document.querySelectorAll('.note-item').forEach(item => {
+        item.classList.remove('active')
+    })
+
+    // Check for BPM resets at current time
+    for (const note of timingNotes) {
+        if (note.resetBpm && Math.abs(note.time - currentTime) < 0.1) {
+            if (note.newBpm && note.newBpm > 0) {
+                currentBpm = note.newBpm
+                beatInterval = 60 / note.newBpm
+            }
+            // Reset beat tracking
+            lastDisplayedBeat = null
+            break
+        }
+    }
 
     for (let index = 0; index < timingNotes.length; index++) {
         const note = timingNotes[index]
         const noteItem = document.querySelector(`[data-index="${index}"]`)
 
-        // Handle count-to: count starts one measure BEFORE the target time
-        if (note.countTo) {
-            if (beatInterval <= 0) {
-                noteItem?.classList.remove('active')
+        // Skip invisible notes - they shouldn't affect display
+        if (note.invisible) {
+            continue
+        }
+
+        // Determine show and hide times for this note
+        let showTime = note.time
+        let hideTime = Infinity
+
+        // If countTo is enabled and we have BPM, count starts before the time
+        if (note.countTo && beatInterval > 0) {
+            const measuresToCount = note.countMeasures || 1
+            const countInDuration = beatInterval * beatsPerMeasure * measuresToCount
+            showTime = note.time - countInDuration
+        }
+
+        // Find when this note should hide (when next note starts)
+        for (let i = index + 1; i < timingNotes.length; i++) {
+            const nextNote = timingNotes[i]
+            // Skip invisible notes when calculating hide time
+            if (nextNote.invisible) {
                 continue
             }
+            let nextShowTime = nextNote.time
+            if (nextNote.countTo && beatInterval > 0) {
+                const nextMeasuresToCount = nextNote.countMeasures || 1
+                const nextCountInDuration = beatInterval * beatsPerMeasure * nextMeasuresToCount
+                nextShowTime = nextNote.time - nextCountInDuration
+            }
+            hideTime = nextShowTime
+            break
+        }
 
-            const countInDuration = beatInterval * beatsPerMeasure
-            const countStartTime = note.time - countInDuration
-            const timeIntoCountIn = currentTime - countStartTime
+        // Check if this note is currently active
+        if (currentTime >= showTime && currentTime < hideTime) {
+            // Handle count-in display
+            if (note.countTo && beatInterval > 0) {
+                const measuresToCount = note.countMeasures || 1
+                const countInDuration = beatInterval * beatsPerMeasure * measuresToCount
+                const countStartTime = note.time - countInDuration
+                const timeIntoCountIn = currentTime - countStartTime
 
-            // Count starts one measure before target, ends at target
-            if (timeIntoCountIn >= 0 && timeIntoCountIn < countInDuration) {
-                const currentBeat = Math.floor(timeIntoCountIn / beatInterval) + 1
+                // If we're in the count-in phase
+                if (timeIntoCountIn >= 0 && timeIntoCountIn < countInDuration) {
+                    const totalBeats = Math.floor(timeIntoCountIn / beatInterval) + 1
+                    const currentMeasureUp = Math.floor((totalBeats - 1) / beatsPerMeasure) + 1
+                    const beatInMeasure = ((totalBeats - 1) % beatsPerMeasure) + 1
+                    // Count measures down from measuresToCount to 1
+                    const currentMeasure = measuresToCount - currentMeasureUp + 1
 
-                if (currentBeat <= beatsPerMeasure) {
                     if (currentActiveNote !== index) {
                         currentActiveNote = index
-                        noteItem?.classList.add('active')
-                        // Set color variable for active styling
-                        if (noteItem instanceof HTMLElement) {
-                            noteItem.style.setProperty('--note-color', note.color || '#E8A87C')
-                        }
                     }
-                    noteDisplay.classList.add('active')
-                    noteDisplay.textContent = currentBeat.toString()
+                    
+                    // Always set active class (since we clear all at the start)
+                    noteItem?.classList.add('active')
+                    if (noteItem instanceof HTMLElement) {
+                        noteItem.style.setProperty('--note-color', note.color || '#E8A87C')
+                    }
+                    
+                    noteDisplay.classList.add('active', 'counting')
+                    // Show count-up: measure.beat format (e.g., 1.1, 1.2, 1.3, 1.4, 2.1, 2.2...)
+                    if (measuresToCount > 1) {
+                        noteDisplay.textContent = `${currentMeasure}.${beatInMeasure}`
+                    } else {
+                        noteDisplay.textContent = beatInMeasure.toString()
+                    }
 
-                    // Set color variable for CSS
                     const color = note.color || '#E8A87C'
                     noteDisplay.style.setProperty('--note-color', color)
                     noteDisplay.style.removeProperty('border-color')
 
-                    // Set parent background
                     if (noteDisplay.parentElement) {
                         noteDisplay.parentElement.style.backgroundColor = `color-mix(in srgb, ${color}, transparent 85%)`
                     }
 
                     // Beat animation
-                    if (currentBeat !== lastDisplayedBeat) {
-                        lastDisplayedBeat = currentBeat
-
-                        // Reset animation
-                        noteDisplay.classList.remove('beat-pop')
-                        noteDisplay.classList.remove('downbeat')
-                        void noteDisplay.offsetWidth // Trigger reflow
-
+                    if (totalBeats !== lastDisplayedBeat) {
+                        lastDisplayedBeat = totalBeats
+                        noteDisplay.classList.remove('beat-pop', 'downbeat')
+                        void noteDisplay.offsetWidth
                         noteDisplay.classList.add('beat-pop')
-                        if (currentBeat === 1) {
+                        // Emphasize first beat of each measure
+                        if (beatInMeasure === 1) {
                             noteDisplay.classList.add('downbeat')
                         }
                     }
 
+                    // During count-in, show the current note being counted into
+                    nextNoteIndex = index
+
                     foundActive = true
                 }
-            } else {
-                noteItem?.classList.remove('active')
-            }
+                // After count-in, show the message
+                else if (currentTime >= note.time) {
+                    if (currentActiveNote !== index || noteDisplay.classList.contains('counting')) {
+                        currentActiveNote = index
+                        noteDisplay.classList.remove('counting')
+                        noteDisplay.classList.add('active')
+                        noteDisplay.textContent = note.message || 'Now'
 
-            if (foundActive) continue
-        }
+                        const color = note.color || '#E8A87C'
+                        noteDisplay.style.setProperty('--note-color', color)
+                        noteDisplay.style.removeProperty('border-color')
 
-        // Handle regular message notes
-        if (note.message) {
-            let showTime = note.time
-            let hideTime = Infinity
-
-            // If showAfterCountTo, start showing right when the previous countTo ends
-            if (note.showAfterCountTo) {
-                for (let i = index - 1; i >= 0; i--) {
-                    if (timingNotes[i].countTo && timingNotes[i].time <= note.time) {
-                        showTime = timingNotes[i].time
-                        break
-                    }
-                }
-            }
-
-            // Find the next note (countTo or message) to determine when to hide
-            for (let i = index + 1; i < timingNotes.length; i++) {
-                const nextNote = timingNotes[i]
-
-                // If next note is a countTo, hide when its count-in starts
-                if (nextNote.countTo && beatInterval > 0) {
-                    const nextCountInDuration = beatInterval * beatsPerMeasure
-                    const nextCountStartTime = nextNote.time - nextCountInDuration
-                    hideTime = nextCountStartTime
-                    break
-                }
-
-                // If next note is a message, hide when it starts
-                if (nextNote.message) {
-                    let nextShowTime = nextNote.time
-                    if (nextNote.showAfterCountTo) {
-                        // Find when it actually shows (at the previous countTo)
-                        for (let j = i - 1; j >= 0; j--) {
-                            if (timingNotes[j].countTo && timingNotes[j].time <= nextNote.time) {
-                                nextShowTime = timingNotes[j].time
-                                break
-                            }
+                        if (noteDisplay.parentElement) {
+                            noteDisplay.parentElement.style.backgroundColor = `color-mix(in srgb, ${color}, transparent 85%)`
                         }
                     }
-                    hideTime = nextShowTime
-                    break
+                    
+                    // Always set active class (since we clear all at the start)
+                    const color = note.color || '#E8A87C'
+                    noteItem?.classList.add('active')
+                    if (noteItem instanceof HTMLElement) {
+                        noteItem.style.setProperty('--note-color', color)
+                    }
+                    
+                    foundActive = true
                 }
             }
-
-            if (currentTime >= showTime && currentTime < hideTime) {
+            // No count-in, just show the message
+            else if (note.message) {
                 if (currentActiveNote !== index) {
                     currentActiveNote = index
                     noteDisplay.classList.add('active')
+                    noteDisplay.classList.remove('counting')
                     noteDisplay.textContent = note.message
 
-                    // Set color variable for CSS
                     const color = note.color || '#E8A87C'
                     noteDisplay.style.setProperty('--note-color', color)
                     noteDisplay.style.removeProperty('border-color')
 
-                    // Set parent background
                     if (noteDisplay.parentElement) {
                         noteDisplay.parentElement.style.backgroundColor = `color-mix(in srgb, ${color}, transparent 85%)`
                     }
+                }
+                
+                // Always set active class (since we clear all at the start)
+                const color = note.color || '#E8A87C'
+                noteItem?.classList.add('active')
+                if (noteItem instanceof HTMLElement) {
+                    noteItem.style.setProperty('--note-color', color)
+                }
+                
+                foundActive = true
+            }
 
-                    noteItem?.classList.add('active')
-                    // Set color variable for active styling
-                    if (noteItem instanceof HTMLElement) {
-                        noteItem.style.setProperty('--note-color', color)
+            // Find next note for display (only if not already set during count-in)
+            if (nextNoteIndex === -1 && index + 1 < timingNotes.length) {
+                // Find the next visible note with a message
+                for (let i = index + 1; i < timingNotes.length; i++) {
+                    if (!timingNotes[i].invisible && timingNotes[i].message) {
+                        nextNoteIndex = i
+                        break
                     }
                 }
-                foundActive = true
-            } else {
-                noteItem?.classList.remove('active')
             }
+        } else {
+            noteItem?.classList.remove('active')
+        }
+    }
+
+    // Update next note display
+    if (nextNoteText) {
+        if (nextNoteIndex >= 0 && nextNoteIndex < timingNotes.length) {
+            const nextNote = timingNotes[nextNoteIndex]
+            // Find the next visible note with a message if current one doesn't have it
+            let displayNote = nextNote
+            if (!displayNote.message || displayNote.invisible) {
+                for (let i = nextNoteIndex + 1; i < timingNotes.length; i++) {
+                    if (!timingNotes[i].invisible && timingNotes[i].message) {
+                        displayNote = timingNotes[i]
+                        break
+                    }
+                }
+            }
+            nextNoteText.textContent = displayNote.message || 'Next section'
+            nextNoteText.parentElement?.classList.add('visible')
+        } else {
+            nextNoteText.textContent = '--'
+            nextNoteText.parentElement?.classList.remove('visible')
         }
     }
 
     if (!foundActive && currentActiveNote !== null) {
         currentActiveNote = null
         lastDisplayedBeat = null
-        noteDisplay.classList.remove('active')
-        noteDisplay.classList.remove('beat-pop')
-        noteDisplay.classList.remove('downbeat')
+        noteDisplay.classList.remove('active', 'beat-pop', 'downbeat', 'counting')
         noteDisplay.textContent = 'No note active'
         noteDisplay.style.removeProperty('--note-color')
-        noteDisplay.style.removeProperty('border-color') // Let CSS handle the default state
+        noteDisplay.style.removeProperty('border-color')
 
-        // Reset parent background
         if (noteDisplay.parentElement) {
             noteDisplay.parentElement.style.removeProperty('background-color')
         }
@@ -520,9 +578,13 @@ function loadVideo(): void {
         return
     }
 
-    startTime = parseFloat(startTimeInput.value) || 0
-    duration = parseFloat(durationInput.value) || 60
-    endTime = startTime + duration
+    // Handle optional start time and duration
+    const hasStartTime = startTimeInput.value.trim() !== ''
+    const hasDuration = durationInput.value.trim() !== ''
+
+    startTime = hasStartTime ? parseFloat(startTimeInput.value) : 0
+    // Duration will be set after we know video duration if not specified
+    const userDuration = hasDuration ? parseFloat(durationInput.value) : null
 
     updateTimeSignature()
     updateBeatInterval()
@@ -532,8 +594,6 @@ function loadVideo(): void {
     const bpmValue = bpmInput.value ? parseFloat(bpmInput.value) : undefined
     const timeSigValue = timeSigSelect.value ? parseInt(timeSigSelect.value) : undefined
 
-    updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
-
     if (!validateTimingNotes()) return
 
     // Create or update player
@@ -542,6 +602,18 @@ function loadVideo(): void {
             videoId: videoId,
             startSeconds: startTime,
         })
+        // Wait for video to load to get duration
+        const checkDuration = setInterval(() => {
+            if (player.getDuration && player.getDuration() > 0) {
+                clearInterval(checkDuration)
+                const videoDuration = player.getDuration()
+                duration = userDuration !== null ? userDuration : (videoDuration - startTime)
+                endTime = startTime + duration
+                updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
+                createMarkers()
+                updatePlaybackUI() // Update current note display immediately
+            }
+        }, 100)
     } else {
         player = new (window as any).YT.Player('player', {
             height: '100%',
@@ -555,8 +627,13 @@ function loadVideo(): void {
             events: {
                 onReady: () => {
                     console.log('Player ready')
+                    const videoDuration = player.getDuration()
+                    duration = userDuration !== null ? userDuration : (videoDuration - startTime)
+                    endTime = startTime + duration
+                    updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
                     enableControls()
                     createMarkers()
+                    updatePlaybackUI() // Update current note display immediately
                     updateInterval = window.setInterval(updatePlaybackUI, 100)
                 },
                 onStateChange: (event: any) => {
@@ -635,13 +712,14 @@ function initializeEventListeners(): void {
 
     document.getElementById('resetBtn')?.addEventListener('click', () => player?.seekTo(startTime, true))
 
-    // Load Example Song button
+    // Load Example Song button - Funk #49
     document.getElementById('loadExample')?.addEventListener('click', () => {
         const videoUrlInput = document.getElementById('videoUrl') as HTMLInputElement
         const startTimeInput = document.getElementById('startTime') as HTMLInputElement
         const durationInput = document.getElementById('duration') as HTMLInputElement
         const bpmInput = document.getElementById('bpm') as HTMLInputElement
         const timeSigSelect = document.getElementById('timeSignature') as HTMLSelectElement
+        const timingNotesTextarea = document.getElementById('timingNotes') as HTMLTextAreaElement
 
         if (videoUrlInput) videoUrlInput.value = 'uOm-ccnhrjk'
         if (startTimeInput) startTimeInput.value = '133'
@@ -649,8 +727,40 @@ function initializeEventListeners(): void {
         if (bpmInput) bpmInput.value = '149'
         if (timeSigSelect) timeSigSelect.value = '3'
 
+        // Load the See You Later Alligator timing notes
+        if (timingNotesTextarea && (window as any).timingNotesData) {
+            timingNotesTextarea.value = JSON.stringify((window as any).timingNotesData, null, 2)
+        }
+
         updateBeatInterval()
         updateTimeSignature()
+        validateTimingNotes()
+        loadVideo()
+    })
+
+    // Load Example Song 2 - Mighty to Save
+    document.getElementById('loadExample2')?.addEventListener('click', () => {
+        const videoUrlInput = document.getElementById('videoUrl') as HTMLInputElement
+        const startTimeInput = document.getElementById('startTime') as HTMLInputElement
+        const durationInput = document.getElementById('duration') as HTMLInputElement
+        const bpmInput = document.getElementById('bpm') as HTMLInputElement
+        const timeSigSelect = document.getElementById('timeSignature') as HTMLSelectElement
+        const timingNotesTextarea = document.getElementById('timingNotes') as HTMLTextAreaElement
+
+        if (videoUrlInput) videoUrlInput.value = 'GEAcs2B-kNc'
+        if (startTimeInput) startTimeInput.value = ''
+        if (durationInput) durationInput.value = ''
+        if (bpmInput) bpmInput.value = '73'
+        if (timeSigSelect) timeSigSelect.value = '4'
+
+        // Load the Mighty to Save timing notes
+        if (timingNotesTextarea && (window as any).mightyToSaveTimingData) {
+            timingNotesTextarea.value = JSON.stringify((window as any).mightyToSaveTimingData, null, 2)
+        }
+
+        updateBeatInterval()
+        updateTimeSignature()
+        validateTimingNotes()
         loadVideo()
     })
 

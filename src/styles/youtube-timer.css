@@ -342,11 +342,14 @@
 
 /* Timing Display */
 .timing-display {
+    position: relative;
     background: var(--background-color);
     padding: 2rem;
     border: 2px solid var(--text-color);
     margin-top: 2rem;
     display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     justify-content: center;
     align-items: center;
     min-height: 300px;
@@ -378,6 +381,37 @@
     -webkit-text-stroke: 2px var(--text-color);
     color: transparent;
     margin: 0 auto;
+}
+
+/* Next Note Display - Clean and readable at bottom */
+.note-display.next-note {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    border: 2px solid var(--text-color);
+    border-radius: 12px;
+    -webkit-text-stroke: 0;
+    color: var(--text-color);
+    opacity: 0.9;
+    margin: 0;
+    background: color-mix(in srgb, var(--background-color), var(--text-color) 8%);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.note-display.next-note #nextNoteText {
+    font-weight: 800;
+    margin-left: 0.6rem;
+}
+
+.note-display.next-note:not(.visible) {
+    opacity: 0;
 }
 
 .note-display.active {
