@@ -184,7 +184,16 @@ const fullWidthBody = true
 
 			<!-- Timing Notes Sidebar -->
 			<div class="notes-list">
-				<h4>All Timing Notes:</h4>
+				<div
+					style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+					<h4 style="margin: 0;">All Timing Notes:</h4>
+					<button
+						id="toggleActiveMode"
+						class="btn-secondary"
+						style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">
+						Active Mode: OFF
+					</button>
+				</div>
 				<div id="notesList">No notes loaded</div>
 			</div>
 		</div>

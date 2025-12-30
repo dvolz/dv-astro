@@ -39,6 +39,8 @@ let currentActiveNote: number | null = null
 let lastDisplayedBeat: number | null = null
 let isScrubbing = false
 let scrubbingInterval: number
+let isActiveMode = false // Track active mode state
+let lastActiveNoteForReorder: number | null = null // Track when to rebuild list
 
 // ============================================================================
 // URL MANAGEMENT
@@ -257,10 +259,41 @@ function displayNotesList(): void {
         return
     }
 
-    notesList.innerHTML = timingNotes
-        .filter((note) => !note.invisible)
+    let visibleNotes = timingNotes.filter((note) => !note.invisible)
+
+    // If active mode is enabled and there's a current active note, reorder the list
+    if (isActiveMode && currentActiveNote !== null) {
+        const activeIndex = visibleNotes.findIndex((note) => timingNotes.indexOf(note) === currentActiveNote)
+        
+        if (activeIndex !== -1) {
+            // Create a reordered array: previous, current, next, then the rest
+            const reordered = []
+            
+            // Add previous note if exists
+            if (activeIndex > 0) {
+                reordered.push(visibleNotes[activeIndex - 1])
+            }
+            
+            // Add current note
+            reordered.push(visibleNotes[activeIndex])
+            
+            // Add next notes
+            for (let i = activeIndex + 1; i < visibleNotes.length; i++) {
+                reordered.push(visibleNotes[i])
+            }
+            
+            // Add earlier notes at the end
+            for (let i = 0; i < activeIndex - 1; i++) {
+                reordered.push(visibleNotes[i])
+            }
+            
+            visibleNotes = reordered
+        }
+    }
+
+    notesList.innerHTML = visibleNotes
         .map(
-            (note, index) => {
+            (note) => {
                 // Get the original index from timingNotes array
                 const originalIndex = timingNotes.indexOf(note)
                 const color = note.color || '#E8A87C'
@@ -530,6 +563,27 @@ function checkTimingNotes(currentTime: number): void {
             noteDisplay.parentElement.style.removeProperty('background-color')
         }
     }
+    
+    // Update notes list if active mode is enabled
+    if (isActiveMode) {
+        // Only rebuild the list if the active note has changed
+        if (lastActiveNoteForReorder !== currentActiveNote) {
+            lastActiveNoteForReorder = currentActiveNote
+            displayNotesList()
+        }
+        
+        // Re-apply active class to the current note only
+        if (currentActiveNote !== null) {
+            const activeNoteItem = document.querySelector(`[data-index="${currentActiveNote}"]`)
+            if (activeNoteItem) {
+                activeNoteItem.classList.add('active')
+                if (activeNoteItem instanceof HTMLElement) {
+                    const note = timingNotes[currentActiveNote]
+                    activeNoteItem.style.setProperty('--note-color', note.color || '#E8A87C')
+                }
+            }
+        }
+    }
 }
 
 // ============================================================================
@@ -792,6 +846,22 @@ function initializeEventListeners(): void {
             }
         })
     }
+
+    // Toggle Active Mode
+    document.getElementById('toggleActiveMode')?.addEventListener('click', () => {
+        isActiveMode = !isActiveMode
+        const toggleActiveModeBtn = document.getElementById('toggleActiveMode')
+        if (toggleActiveModeBtn) {
+            toggleActiveModeBtn.textContent = `Active Mode: ${isActiveMode ? 'ON' : 'OFF'}`
+            toggleActiveModeBtn.classList.toggle('active', isActiveMode)
+        }
+        // Redisplay the notes list with new mode
+        displayNotesList()
+        // Update the highlighting
+        if (player && player.getCurrentTime) {
+            checkTimingNotes(player.getCurrentTime())
+        }
+    })
 
     // Time signature
     document.getElementById('timeSignature')?.addEventListener('change', updateTimeSignature)
