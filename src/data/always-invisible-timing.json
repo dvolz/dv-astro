@@ -1,0 +1,46 @@
+[
+	{
+		"time": 150,
+		"message": "Chorus",
+		"countTo": false,
+		"countMeasures": 2,
+		"resetBpm": false,
+		"invisible": false,
+		"color": "#D8A7B1"
+	},
+	{
+		"time": 162.5,
+		"message": "Breakdown Begins",
+		"countTo": true,
+		"countMeasures": 2,
+		"resetBpm": true,
+		"invisible": false,
+		"color": "#D8A7B1"
+	},
+	{
+		"time": 175,
+		"message": "",
+		"countTo": false,
+		"countMeasures": 1,
+		"resetBpm": true,
+		"newBpm": 76,
+		"invisible": true
+	},
+	{
+		"time": 184.2,
+		"message": "",
+		"countTo": true,
+		"countMeasures": 1,
+		"resetBpm": true,
+		"invisible": false
+	},
+	{
+		"time": 190.8,
+		"message": "",
+		"countTo": true,
+		"countMeasures": 2,
+		"resetBpm": true,
+		"newBpm": 77,
+		"invisible": false
+	}
+]

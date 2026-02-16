@@ -21,6 +21,21 @@ interface TimingNote {
 }
 
 // ============================================================================
+// COLOR PALETTE
+// ============================================================================
+
+const COLOR_PALETTE = [
+    '#D8A7B1',
+    '#E8A87C',
+    '#D4B483',
+    '#A3B18A',
+    '#E5989B',
+    '#B8A9C9',
+    '#C97C5D',
+    '#7D9BA6',
+]
+
+// ============================================================================
 // STATE MANAGEMENT
 // ============================================================================
 
@@ -91,17 +106,69 @@ function loadFromURL(): void {
         if (timeSigSelect) timeSigSelect.value = timeSig
     }
 
+    // Parse config values immediately so BPM/time signature are available
+    // without needing to click "Load Video"
+    updateTimeSignature()
+    updateBeatInterval()
+
     // Auto-load if all params present
     if (videoId && start && dur) {
         setTimeout(() => {
             document.getElementById('loadVideo')?.click()
         }, 1000)
     }
+
+    // Restore saved notes from localStorage
+    if (loadNotesFromStorage()) {
+        const textarea = document.getElementById('timingNotes') as HTMLTextAreaElement
+        if (textarea) {
+            textarea.value = JSON.stringify(timingNotes, null, 2)
+        }
+        displayNotesList()
+        createMarkers()
+    }
 }
 
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
+
+function saveNotesToStorage(): void {
+    try {
+        localStorage.setItem('yt-timer-notes', JSON.stringify(timingNotes))
+    } catch (e) {
+        // Storage full or unavailable
+    }
+}
+
+function loadNotesFromStorage(): boolean {
+    try {
+        const saved = localStorage.getItem('yt-timer-notes')
+        if (saved) {
+            const parsed = JSON.parse(saved)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                timingNotes = parsed.sort((a: TimingNote, b: TimingNote) => a.time - b.time)
+                assignColors(timingNotes)
+                return true
+            }
+        }
+    } catch (e) {
+        // Invalid data, ignore
+    }
+    return false
+}
+
+function assignColors(notes: TimingNote[]): void {
+    let colorIndex = 0
+    for (const note of notes) {
+        // Only assign color if the note doesn't already have one
+        // and if it's visible and has a message
+        if (!note.color && !note.invisible && note.message) {
+            note.color = COLOR_PALETTE[colorIndex % COLOR_PALETTE.length]
+            colorIndex++
+        }
+    }
+}
 
 function getVideoId(input: string): string | null {
     if (!input) return null
@@ -172,7 +239,6 @@ function validateTimingNotes(): boolean {
         timingNotes = []
         if (statusDiv) {
             statusDiv.className = 'json-status'
-            statusDiv.style.display = 'none'
         }
         if (label) {
             label.textContent = 'Timing Notes (JSON)'
@@ -204,8 +270,10 @@ function validateTimingNotes(): boolean {
         }
 
         timingNotes = parsed.sort((a, b) => a.time - b.time)
+        assignColors(timingNotes)
         displayNotesList()
         createMarkers()
+        saveNotesToStorage()
 
         if (statusDiv) {
             statusDiv.className = 'json-status valid'
@@ -321,7 +389,7 @@ function displayNotesList(): void {
             if (player && note) {
                 // Always jump to the actual note time, not the count-in
                 player.seekTo(note.time, true)
-                updatePlaybackUI()
+                updatePlaybackUI(note.time)
             }
         })
     })
@@ -344,18 +412,18 @@ function checkTimingNotes(currentTime: number): void {
         item.classList.remove('active')
     })
 
-    // Check for BPM resets at current time
+    // Apply the most recent BPM reset that we've passed
+    // Start from the base BPM and apply resets in order
+    let effectiveBpm = baseBeatInterval > 0 ? 60 / baseBeatInterval : 0
+    let effectiveBeatInterval = baseBeatInterval
     for (const note of timingNotes) {
-        if (note.resetBpm && Math.abs(note.time - currentTime) < 0.1) {
-            if (note.newBpm && note.newBpm > 0) {
-                currentBpm = note.newBpm
-                beatInterval = 60 / note.newBpm
-            }
-            // Reset beat tracking
-            lastDisplayedBeat = null
-            break
+        if (note.resetBpm && note.newBpm && note.newBpm > 0 && currentTime >= note.time) {
+            effectiveBpm = note.newBpm
+            effectiveBeatInterval = 60 / note.newBpm
         }
     }
+    currentBpm = effectiveBpm
+    beatInterval = effectiveBeatInterval
 
     for (let index = 0; index < timingNotes.length; index++) {
         const note = timingNotes[index]
@@ -590,10 +658,10 @@ function checkTimingNotes(currentTime: number): void {
 // PLAYBACK MANAGEMENT
 // ============================================================================
 
-function updatePlaybackUI(): void {
+function updatePlaybackUI(overrideTime?: number): void {
     if (!player || typeof player.getCurrentTime !== 'function') return
 
-    const currentTime = player.getCurrentTime()
+    const currentTime = overrideTime !== undefined ? overrideTime : player.getCurrentTime()
 
     // Stop at end time
     if (currentTime >= endTime) {
@@ -770,7 +838,10 @@ function initializeEventListeners(): void {
         }
     })
 
-    document.getElementById('resetBtn')?.addEventListener('click', () => player?.seekTo(startTime, true))
+    document.getElementById('resetBtn')?.addEventListener('click', () => {
+        player?.seekTo(startTime, true)
+        updatePlaybackUI(startTime)
+    })
 
     // Load Example Song button - Funk #49
     document.getElementById('loadExample')?.addEventListener('click', () => {
@@ -795,6 +866,7 @@ function initializeEventListeners(): void {
         updateBeatInterval()
         updateTimeSignature()
         validateTimingNotes()
+        renderNotesBuilder()
         loadVideo()
     })
 
@@ -821,7 +893,262 @@ function initializeEventListeners(): void {
         updateBeatInterval()
         updateTimeSignature()
         validateTimingNotes()
+        renderNotesBuilder()
         loadVideo()
+    })
+
+    // Load Example Song 3 - Always Invisible
+    document.getElementById('loadExample3')?.addEventListener('click', () => {
+        const videoUrlInput = document.getElementById('videoUrl') as HTMLInputElement
+        const startTimeInput = document.getElementById('startTime') as HTMLInputElement
+        const durationInput = document.getElementById('duration') as HTMLInputElement
+        const bpmInput = document.getElementById('bpm') as HTMLInputElement
+        const timeSigSelect = document.getElementById('timeSignature') as HTMLSelectElement
+        const timingNotesTextarea = document.getElementById('timingNotes') as HTMLTextAreaElement
+
+        if (videoUrlInput) videoUrlInput.value = '-BQOzXUchS4'
+        if (startTimeInput) startTimeInput.value = '150'
+        if (durationInput) durationInput.value = '93'
+        if (bpmInput) bpmInput.value = '154'
+        if (timeSigSelect) timeSigSelect.value = '4'
+
+        // Load the Always Invisible timing notes
+        if (timingNotesTextarea && (window as any).alwaysInvisibleTimingData) {
+            timingNotesTextarea.value = JSON.stringify((window as any).alwaysInvisibleTimingData, null, 2)
+        }
+
+        updateBeatInterval()
+        updateTimeSignature()
+        validateTimingNotes()
+        renderNotesBuilder()
+        loadVideo()
+    })
+
+    // ============================================================================
+    // BUILDER MODE
+    // ============================================================================
+
+    let currentEditIndex: number | null = null
+    let isBuilderMode = true
+
+    function formatTime(seconds: number): string {
+        const mins = Math.floor(seconds / 60)
+        const secs = Math.floor(seconds % 60)
+        return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    function renderNotesBuilder() {
+        const builderDiv = document.getElementById('notesBuilder')
+        if (!builderDiv) return
+
+        if (timingNotes.length === 0) {
+            builderDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No notes yet. Click "Add Note at Current Time" to get started.</p>'
+            return
+        }
+
+        const html = timingNotes.map((note, index) => {
+            const badges = []
+            if (note.countTo) badges.push('<span class="badge badge-count">Count-in</span>')
+            if (note.resetBpm) badges.push('<span class="badge badge-bpm">BPM Reset</span>')
+            if (note.invisible) badges.push('<span class="badge badge-hidden">Hidden</span>')
+            
+            const colorDot = note.color ? `<span class="color-dot" style="background: ${note.color}"></span>` : ''
+            
+            return `
+                <div class="note-builder-item" data-index="${index}">
+                    <div class="note-builder-main">
+                        <span class="note-time">${note.time}s</span>
+                        ${colorDot}
+                        <span class="note-message">${note.message || '(no message)'}</span>
+                    </div>
+                    <div class="note-builder-badges">${badges.join(' ')}</div>
+                    <div class="note-builder-actions">
+                        <button class="btn-edit" data-index="${index}">Edit</button>
+                        <button class="btn-duplicate" data-index="${index}">Duplicate</button>
+                    </div>
+                </div>
+            `
+        }).join('')
+
+        builderDiv.innerHTML = html
+
+        // Add click handlers
+        builderDiv.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt((e.target as HTMLElement).dataset.index!)
+                openEditPanel(index)
+            })
+        })
+
+        builderDiv.querySelectorAll('.btn-duplicate').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt((e.target as HTMLElement).dataset.index!)
+                const note = { ...timingNotes[index] }
+                note.time += 5 // Add 5 seconds
+                timingNotes.push(note)
+                timingNotes.sort((a, b) => a.time - b.time)
+                assignColors(timingNotes)
+                renderNotesBuilder()
+                displayNotesList()
+                createMarkers()
+                saveNotesToStorage()
+            })
+        })
+    }
+
+    function openEditPanel(index: number) {
+        currentEditIndex = index
+        const note = timingNotes[index]
+        const panel = document.getElementById('editPanel')
+        if (!panel) return
+
+        // Fill form
+        (document.getElementById('editTime') as HTMLInputElement).value = note.time.toString();
+        (document.getElementById('editMessage') as HTMLInputElement).value = note.message || '';
+        (document.getElementById('editCountTo') as HTMLInputElement).checked = note.countTo || false;
+        (document.getElementById('editCountMeasures') as HTMLInputElement).value = (note.countMeasures || 1).toString();
+        (document.getElementById('editResetBpm') as HTMLInputElement).checked = note.resetBpm || false;
+        (document.getElementById('editNewBpm') as HTMLInputElement).value = (note.newBpm || '').toString();
+        (document.getElementById('editInvisible') as HTMLInputElement).checked = note.invisible || false;
+        (document.getElementById('editColor') as HTMLSelectElement).value = note.color || ''
+
+        updateTimeFormatted()
+        panel.classList.remove('hidden')
+        panel.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    function closeEditPanel() {
+        const panel = document.getElementById('editPanel')
+        if (panel) {
+            panel.classList.add('hidden')
+            // Scroll back to top of the notes builder to prevent whitespace
+            const builderDiv = document.getElementById('notesBuilder')
+            if (builderDiv) {
+                builderDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+            }
+        }
+        currentEditIndex = null
+    }
+
+    function updateTimeFormatted() {
+        const timeInput = document.getElementById('editTime') as HTMLInputElement
+        const formatted = document.getElementById('editTimeFormatted')
+        if (timeInput && formatted) {
+            const time = parseFloat(timeInput.value) || 0
+            formatted.textContent = `(${time}s)`
+        }
+    }
+
+    function syncToJSON() {
+        const textarea = document.getElementById('timingNotes') as HTMLTextAreaElement
+        if (textarea) {
+            textarea.value = JSON.stringify(timingNotes, null, 2)
+        }
+    }
+
+    // Toggle between builder and JSON mode
+    document.getElementById('toggleBuilderMode')?.addEventListener('click', () => {
+        isBuilderMode = !isBuilderMode
+        const builderDiv = document.getElementById('builderMode')
+        const jsonDiv = document.getElementById('jsonMode')
+        const toggleBtn = document.getElementById('toggleBuilderMode')
+        const validateBtn = document.getElementById('validateJson')
+
+        if (isBuilderMode) {
+            builderDiv!.classList.remove('hidden')
+            jsonDiv!.classList.add('hidden')
+            toggleBtn!.textContent = 'JSON Editor'
+            renderNotesBuilder()
+        } else {
+            builderDiv!.classList.add('hidden')
+            jsonDiv!.classList.remove('hidden')
+            toggleBtn!.textContent = 'Builder'
+            syncToJSON()
+        }
+    })
+
+    // Add note at current time
+    document.getElementById('addNoteAtTime')?.addEventListener('click', () => {
+        const currentTime = player ? player.getCurrentTime() : 0
+        const newNote: TimingNote = {
+            time: Math.round(currentTime * 10) / 10,
+            message: ''
+        }
+        timingNotes.push(newNote)
+        timingNotes.sort((a, b) => a.time - b.time)
+        assignColors(timingNotes)
+        renderNotesBuilder()
+        displayNotesList()
+        createMarkers()
+        saveNotesToStorage()
+        
+        // Open edit panel for the new note
+        const newIndex = timingNotes.findIndex(n => n.time === newNote.time && n.message === newNote.message)
+        openEditPanel(newIndex)
+    })
+
+    // Save note edits
+    document.getElementById('saveNote')?.addEventListener('click', () => {
+        if (currentEditIndex === null) return
+
+        const note = timingNotes[currentEditIndex]
+        note.time = parseFloat((document.getElementById('editTime') as HTMLInputElement).value)
+        note.message = (document.getElementById('editMessage') as HTMLInputElement).value
+        note.countTo = (document.getElementById('editCountTo') as HTMLInputElement).checked
+        note.countMeasures = parseInt((document.getElementById('editCountMeasures') as HTMLInputElement).value)
+        note.resetBpm = (document.getElementById('editResetBpm') as HTMLInputElement).checked
+        note.newBpm = parseInt((document.getElementById('editNewBpm') as HTMLInputElement).value) || undefined
+        note.invisible = (document.getElementById('editInvisible') as HTMLInputElement).checked
+        note.color = (document.getElementById('editColor') as HTMLSelectElement).value || undefined
+
+        timingNotes.sort((a, b) => a.time - b.time)
+        assignColors(timingNotes)
+        renderNotesBuilder()
+        displayNotesList()
+        createMarkers()
+        saveNotesToStorage()
+        closeEditPanel()
+    })
+
+    // Cancel edit
+    document.getElementById('cancelEdit')?.addEventListener('click', closeEditPanel)
+
+    // Delete note
+    document.getElementById('deleteNote')?.addEventListener('click', () => {
+        if (currentEditIndex === null) return
+        if (confirm('Delete this note?')) {
+            timingNotes.splice(currentEditIndex, 1)
+            assignColors(timingNotes)
+            renderNotesBuilder()
+            displayNotesList()
+            createMarkers()
+            saveNotesToStorage()
+            closeEditPanel()
+        }
+    })
+
+    // Update formatted time on input
+    document.getElementById('editTime')?.addEventListener('input', updateTimeFormatted)
+
+    // Toggle Sidebar Mode (Play vs Edit)
+    let isSidebarEditMode = false
+    document.getElementById('toggleSidebarMode')?.addEventListener('click', function () {
+        isSidebarEditMode = !isSidebarEditMode
+        const playMode = document.getElementById('playMode')
+        const editMode = document.getElementById('editMode')
+        const btn = this as HTMLButtonElement
+
+        if (isSidebarEditMode) {
+            playMode!.classList.add('hidden')
+            editMode!.classList.remove('hidden')
+            btn.textContent = 'Edit Mode'
+            renderNotesBuilder()
+        } else {
+            playMode!.classList.remove('hidden')
+            editMode!.classList.add('hidden')
+            btn.textContent = 'Play Mode'
+            closeEditPanel()
+        }
     })
 
     // Toggle Video Player
@@ -831,8 +1158,8 @@ function initializeEventListeners(): void {
             const playerWrapper = document.getElementById('playerWrapper')
 
             if (playerWrapper) {
-                const isHidden = playerWrapper.style.display === 'none'
-                playerWrapper.style.display = isHidden ? 'block' : 'none'
+                const isHidden = playerWrapper.classList.contains('hidden')
+                playerWrapper.classList.toggle('hidden')
                 toggleBtn.textContent = isHidden ? '▲ Hide Video' : '▼ Show Video'
                 toggleBtn.classList.toggle('expanded', isHidden)
 
@@ -852,7 +1179,7 @@ function initializeEventListeners(): void {
         isActiveMode = !isActiveMode
         const toggleActiveModeBtn = document.getElementById('toggleActiveMode')
         if (toggleActiveModeBtn) {
-            toggleActiveModeBtn.textContent = `Active Mode: ${isActiveMode ? 'ON' : 'OFF'}`
+            toggleActiveModeBtn.textContent = `Active: ${isActiveMode ? 'ON' : 'OFF'}`
             toggleActiveModeBtn.classList.toggle('active', isActiveMode)
         }
         // Redisplay the notes list with new mode
@@ -882,10 +1209,10 @@ function initializeEventListeners(): void {
         const handleScrub = (event: MouseEvent) => {
             if (player) {
                 const scrubberRect = scrubber.getBoundingClientRect()
-                const clickPosition = (event.clientX - scrubberRect.left) / scrubberRect.width
+                const clickPosition = Math.max(0, Math.min(1, (event.clientX - scrubberRect.left) / scrubberRect.width))
                 const seekTime = startTime + clickPosition * duration
                 player.seekTo(seekTime, true)
-                updatePlaybackUI() // Manually update UI immediately for responsiveness
+                updatePlaybackUI(seekTime) // Use seekTime directly since player hasn't updated yet
             }
         }
 
@@ -934,7 +1261,7 @@ function alignNotesWithTimingDisplay() {
 
         // Determine what to align with
         // If video is visible, align with video player
-        if (playerWrapper && playerWrapper.style.display !== 'none') {
+        if (playerWrapper && !playerWrapper.classList.contains('hidden')) {
             targetElement = playerWrapper
         } else if (timingDisplay) {
             // If video is hidden, align with current note display

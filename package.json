@@ -12,10 +12,11 @@
 		"clean": "rm -rf .astro/ dist/ node_modules/.vite && npm cache clean --force"
 	},
 	"dependencies": {
+		"@astrojs/check": "^0.9.6",
 		"@astrojs/react": "^4.4.2",
-		"@astrojs/rss": "^4.0.8",
+		"@astrojs/rss": "^4.0.15",
 		"@iconify-json/mdi": "^1.2.1",
-		"astro": "^5.1.0",
+		"astro": "^5.17.2",
 		"astro-icon": "^1.1.2",
 		"katex": "^0.16.18",
 		"modern-normalize": "^3.0.1",
@@ -24,7 +25,8 @@
 		"react-dom": "^18.3.1",
 		"scss": "^0.2.4",
 		"sharp": "^0.33.5",
-		"simple-icons": "^14.0.0"
+		"simple-icons": "^14.0.0",
+		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
 		"sass-embedded": "^1.79.3",

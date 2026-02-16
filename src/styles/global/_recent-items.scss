@@ -83,7 +83,7 @@
 	}
 	a:hover {
 		.frame {
-			border-color: var(--accent-color);
+			border-color: var(--next-note-color, var(--accent-color));
 		}
 	}
 	.title {
