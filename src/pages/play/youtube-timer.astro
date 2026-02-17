@@ -30,6 +30,10 @@ const fullWidthBody = true
 	{showTypographyHero}
 	description={blogData.description}
 	fullWidthBody={fullWidthBody}>
+	<Fragment slot="head">
+		<link rel="preconnect" href="https://www.youtube.com" />
+		<link rel="preconnect" href="https://i.ytimg.com" />
+	</Fragment>
 	<div class="details-width">
 		<BlogDetails {...blogData} />
 	</div>

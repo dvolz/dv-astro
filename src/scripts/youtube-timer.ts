@@ -724,6 +724,13 @@ function loadVideo(): void {
 
     if (!validateTimingNotes()) return
 
+    // Immediately reset and update the note display for the new song
+    clearInterval(updateInterval)
+    currentActiveNote = null
+    lastDisplayedBeat = null
+    displayNotesList()
+    checkTimingNotes(startTime)
+
     // Create or update player
     if (player) {
         player.loadVideoById({
@@ -739,39 +746,42 @@ function loadVideo(): void {
                 endTime = startTime + duration
                 updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
                 createMarkers()
-                updatePlaybackUI() // Update current note display immediately
+                updatePlaybackUI(startTime)
+                updateInterval = window.setInterval(updatePlaybackUI, 100)
             }
         }, 100)
     } else {
-        player = new (window as any).YT.Player('player', {
-            height: '100%',
-            width: '100%',
-            videoId: videoId,
-            playerVars: {
-                start: startTime,
-                controls: 1,
-                modestbranding: 1,
-            },
-            events: {
-                onReady: () => {
-                    console.log('Player ready')
-                    const videoDuration = player.getDuration()
-                    duration = userDuration !== null ? userDuration : (videoDuration - startTime)
-                    endTime = startTime + duration
-                    updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
-                    enableControls()
-                    createMarkers()
-                    updatePlaybackUI() // Update current note display immediately
-                    updateInterval = window.setInterval(updatePlaybackUI, 100)
+        ensureYouTubeAPI(() => {
+            player = new (window as any).YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    start: startTime,
+                    controls: 1,
+                    modestbranding: 1,
                 },
-                onStateChange: (event: any) => {
-                    if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                events: {
+                    onReady: () => {
+                        console.log('Player ready')
+                        const videoDuration = player.getDuration()
+                        duration = userDuration !== null ? userDuration : (videoDuration - startTime)
+                        endTime = startTime + duration
+                        updateURL(videoId, startTime, duration, bpmValue, timeSigValue)
+                        enableControls()
+                        createMarkers()
+                        updatePlaybackUI() // Update current note display immediately
                         updateInterval = window.setInterval(updatePlaybackUI, 100)
-                    } else {
-                        clearInterval(updateInterval)
-                    }
+                    },
+                    onStateChange: (event: any) => {
+                        if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                            updateInterval = window.setInterval(updatePlaybackUI, 100)
+                        } else {
+                            clearInterval(updateInterval)
+                        }
+                    },
                 },
-            },
+            })
         })
     }
 }
@@ -1285,16 +1295,30 @@ function alignNotesWithTimingDisplay() {
 // INITIALIZATION
 // ============================================================================
 
-// Load YouTube IFrame API
-const tag = document.createElement('script')
-tag.src = 'https://www.youtube.com/iframe_api'
-const firstScriptTag = document.getElementsByTagName('script')[0]
-firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+// Defer YouTube IFrame API loading until user clicks Load Video
+let ytApiLoaded = false
+let ytApiReady = false
+let ytApiReadyCallback: (() => void) | null = null
 
-    // YouTube API Ready callback
-    ; (window as any).onYouTubeIframeAPIReady = function () {
-        console.log('YouTube API Ready')
+function ensureYouTubeAPI(callback: () => void): void {
+    if (ytApiReady) {
+        callback()
+        return
     }
+    ytApiReadyCallback = callback
+    if (!ytApiLoaded) {
+        ytApiLoaded = true
+        const tag = document.createElement('script')
+        tag.src = 'https://www.youtube.com/iframe_api'
+        const firstScriptTag = document.getElementsByTagName('script')[0]
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+        ;(window as any).onYouTubeIframeAPIReady = function () {
+            console.log('YouTube API Ready')
+            ytApiReady = true
+            if (ytApiReadyCallback) ytApiReadyCallback()
+        }
+    }
+}
 
 function init() {
     loadFromURL()
