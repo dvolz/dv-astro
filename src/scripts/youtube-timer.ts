@@ -371,7 +371,7 @@ function displayNotesList(): void {
                 const displayTime = note.time
 
                 return `
-		<div class="note-item" data-index="${originalIndex}" data-note-color="${color}" style="cursor: pointer; background-color: ${bgColor};" title="Click to jump to time">
+		<div class="note-item" role="listitem" tabindex="0" data-index="${originalIndex}" data-note-color="${color}" style="cursor: pointer; background-color: ${bgColor};" aria-label="Jump to ${formatTime(displayTime)}: ${note.message || 'note'}">
 			<strong>${formatTime(displayTime)}</strong> - ${note.message}${note.countTo ? ' 🎵' : ''}
 			${note.duration ? ` (${note.duration}s)` : ''}
 		</div>
@@ -380,16 +380,23 @@ function displayNotesList(): void {
         )
         .join('')
 
-    // Add click listeners
+    // Add click and keyboard listeners
     const items = notesList.querySelectorAll('.note-item')
     items.forEach((item) => {
-        item.addEventListener('click', () => {
+        const jumpToNote = () => {
             const index = parseInt(item.getAttribute('data-index') || '0')
             const note = timingNotes[index]
             if (player && note) {
                 // Always jump to the actual note time, not the count-in
                 player.seekTo(note.time, true)
                 updatePlaybackUI(note.time)
+            }
+        }
+        item.addEventListener('click', jumpToNote)
+        item.addEventListener('keydown', (e) => {
+            if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+                e.preventDefault()
+                jumpToNote()
             }
         })
     })

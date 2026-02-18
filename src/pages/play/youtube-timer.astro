@@ -130,9 +130,21 @@ const fullWidthBody = true
 						<div id="player"></div>
 					</div>
 
-					<div class="timing-display">
-						<div id="currentNote" class="note-display">No note active</div>
-						<div id="nextNote" class="note-display next-note">
+					<div
+						class="timing-display"
+						role="region"
+						aria-label="Current timing note">
+						<div
+							id="currentNote"
+							class="note-display"
+							aria-live="polite"
+							aria-atomic="true">
+							No note active
+						</div>
+						<div
+							id="nextNote"
+							class="note-display next-note"
+							aria-live="polite">
 							Up next: <span id="nextNoteText">--</span>
 						</div>
 					</div>
@@ -144,20 +156,42 @@ const fullWidthBody = true
 							>
 						</div>
 						<div class="controls-buttons">
-							<button id="playBtn" class="btn-control" disabled>▶</button>
-							<button id="pauseBtn" class="btn-control" disabled>⏸</button>
+							<button
+								id="playBtn"
+								class="btn-control"
+								disabled
+								aria-label="Play">▶</button
+							>
+							<button
+								id="pauseBtn"
+								class="btn-control"
+								disabled
+								aria-label="Pause">⏸</button
+							>
 							<div class="btn-control-wrapper">
-								<button id="slowBtn" class="btn-control" disabled>
-									<Icon name="mdi:snail" />
+								<button
+									id="slowBtn"
+									class="btn-control"
+									disabled
+									aria-label="Slow down playback">
+									<Icon name="mdi:snail" aria-hidden="true" />
 								</button>
-								<div id="speedDisplay" class="speed-display"></div>
+								<div id="speedDisplay" class="speed-display" aria-live="polite">
+								</div>
 							</div>
-							<button id="resetBtn" class="btn-control" disabled>↻</button>
+							<button
+								id="resetBtn"
+								class="btn-control"
+								disabled
+								aria-label="Reset to start">↻</button
+							>
 						</div>
 					</div>
 
 					<!-- Scrubber -->
 					<div class="scrubber-container">
+						<label for="scrubber" class="sr-only">Video timeline scrubber</label
+						>
 						<input
 							type="range"
 							id="scrubber"
@@ -184,9 +218,13 @@ const fullWidthBody = true
 					</div>
 
 					<!-- Play Mode -->
-					<div id="playMode" class="play-mode">
+					<div
+						id="playMode"
+						class="play-mode"
+						role="region"
+						aria-label="Timing notes list">
 						<h4>All Timing Notes:</h4>
-						<div id="notesList">No notes loaded</div>
+						<div id="notesList" role="list">No notes loaded</div>
 					</div>
 
 					<!-- Edit Mode -->
@@ -218,7 +256,7 @@ const fullWidthBody = true
 							<div id="editPanel" class="edit-panel hidden">
 								<h4>Edit Note</h4>
 								<div class="form-group">
-									<label>Time</label>
+									<label for="editTime">Time</label>
 									<input
 										type="number"
 										id="editTime"
@@ -228,7 +266,7 @@ const fullWidthBody = true
 									<small id="editTimeFormatted"></small>
 								</div>
 								<div class="form-group">
-									<label>Message</label>
+									<label for="editMessage">Message</label>
 									<input
 										type="text"
 										id="editMessage"
@@ -272,7 +310,7 @@ const fullWidthBody = true
 										</label>
 									</div>
 									<div class="form-group">
-										<label>Color</label>
+										<label for="editColor">Color</label>
 										<select id="editColor">
 											<option value="">Auto-assign</option>
 											<option value="#D8A7B1">Pink</option>
@@ -297,6 +335,7 @@ const fullWidthBody = true
 
 						<!-- JSON Mode -->
 						<div id="jsonMode" class="hidden">
+							<label for="timingNotes" class="sr-only">Timing notes JSON</label>
 							<textarea id="timingNotes" rows="15"></textarea>
 							<small>
 								Times are absolute video seconds (e.g. 133 = 2min 13sec in the

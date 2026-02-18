@@ -18,6 +18,25 @@ body {
 	box-sizing: border-box;
 }
 
+/* Skip to main content link */
+.skip-link {
+	position: absolute;
+	top: -100%;
+	left: 1rem;
+	z-index: 10000;
+	padding: 1rem 2rem;
+	background: var(--text-color);
+	color: var(--background-color);
+	font-weight: 700;
+	border-radius: 0 0 8px 8px;
+	text-decoration: none;
+	transition: top 0.2s ease;
+
+	&:focus {
+		top: 0;
+	}
+}
+
 @media screen and (min-width: 768px) {
 	body {
 		font-size: 1.8rem;

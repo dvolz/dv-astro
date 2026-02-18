@@ -7,7 +7,7 @@
     text-align: center;
     font-size: 1.1rem;
     line-height: 1.6;
-    color: #666;
+    color: #595959;
 }
 
 .youtube-timer-container {
@@ -260,9 +260,18 @@
     transition: all 0.2s ease;
 }
 
-.form-group input[type="number"]:focus,
-.form-group input[type="text"]:focus,
-.form-group select:focus {
+.form-group input[type="number"]:focus-visible,
+.form-group input[type="text"]:focus-visible,
+.form-group select:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+    box-shadow: 4px 4px 0 var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.form-group input[type="number"]:focus:not(:focus-visible),
+.form-group input[type="text"]:focus:not(:focus-visible),
+.form-group select:focus:not(:focus-visible) {
     outline: none;
     box-shadow: 4px 4px 0 var(--accent-color);
     border-color: var(--accent-color);
@@ -334,9 +343,18 @@
     transition: all 0.2s ease;
 }
 
-.input-group input:focus,
-.input-group textarea:focus,
-.input-group select:focus {
+.input-group input:focus-visible,
+.input-group textarea:focus-visible,
+.input-group select:focus-visible {
+    outline: 3px solid var(--accent-color, #ff6b6b);
+    outline-offset: 2px;
+    box-shadow: 4px 4px 0 var(--accent-color, #ff6b6b);
+    border-color: var(--accent-color, #ff6b6b);
+}
+
+.input-group input:focus:not(:focus-visible),
+.input-group textarea:focus:not(:focus-visible),
+.input-group select:focus:not(:focus-visible) {
     outline: none;
     box-shadow: 4px 4px 0 var(--accent-color, #ff6b6b);
     border-color: var(--accent-color, #ff6b6b);
@@ -570,10 +588,21 @@
 }
 
 .btn-control:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
-    border-color: #ccc;
-    color: #ccc;
+    border-color: #999;
+    color: #999;
+}
+
+/* Global focus-visible for buttons */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-accent:focus-visible,
+.btn-control:focus-visible,
+.btn-delete:focus-visible,
+.btn-toggle-video:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 .btn-toggle-video {
@@ -891,6 +920,13 @@
     border-color: var(--accent-color);
 }
 
+.note-item:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+    transform: translateX(4px);
+    border-color: var(--accent-color);
+}
+
 .note-item.active {
     background: var(--note-color, var(--text-color)) !important;
     color: #000;
@@ -909,6 +945,18 @@
 /* Utilities */
 .hidden {
     display: none !important;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .input-inline-sm {

@@ -53,6 +53,7 @@ const {
 		<Variables />
 	</head>
 	<body class={`${fullWidthBody ? 'full-width-body' : ''} ${theme}`}>
+		<a href="#main-content" class="skip-link">Skip to main content</a>
 		<div
 			class={[
 				'site',
@@ -62,7 +63,7 @@ const {
 				.filter(Boolean)
 				.join(' ')}>
 			<Header />
-			<main>
+			<main id="main-content">
 				{
 					showTypographyHero && (
 						<TypographyHero
