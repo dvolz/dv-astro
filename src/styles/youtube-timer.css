@@ -263,18 +263,17 @@
 .form-group input[type="number"]:focus-visible,
 .form-group input[type="text"]:focus-visible,
 .form-group select:focus-visible {
-    outline: 3px solid var(--accent-color);
-    outline-offset: 2px;
-    box-shadow: 4px 4px 0 var(--accent-color);
+    outline: none;
     border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .form-group input[type="number"]:focus:not(:focus-visible),
 .form-group input[type="text"]:focus:not(:focus-visible),
 .form-group select:focus:not(:focus-visible) {
     outline: none;
-    box-shadow: 4px 4px 0 var(--accent-color);
     border-color: var(--accent-color);
+    box-shadow: 4px 4px 0 var(--accent-color);
 }
 
 .form-group input[type="checkbox"] {
@@ -346,18 +345,17 @@
 .input-group input:focus-visible,
 .input-group textarea:focus-visible,
 .input-group select:focus-visible {
-    outline: 3px solid var(--accent-color, #ff6b6b);
-    outline-offset: 2px;
-    box-shadow: 4px 4px 0 var(--accent-color, #ff6b6b);
+    outline: none;
     border-color: var(--accent-color, #ff6b6b);
+    box-shadow: 0 0 0 2px var(--accent-color, #ff6b6b);
 }
 
 .input-group input:focus:not(:focus-visible),
 .input-group textarea:focus:not(:focus-visible),
 .input-group select:focus:not(:focus-visible) {
     outline: none;
-    box-shadow: 4px 4px 0 var(--accent-color, #ff6b6b);
     border-color: var(--accent-color, #ff6b6b);
+    box-shadow: 4px 4px 0 var(--accent-color, #ff6b6b);
 }
 
 .input-group textarea {
@@ -601,7 +599,7 @@
 .btn-control:focus-visible,
 .btn-delete:focus-visible,
 .btn-toggle-video:focus-visible {
-    outline: 3px solid var(--accent-color);
+    outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
 
@@ -921,7 +919,7 @@
 }
 
 .note-item:focus-visible {
-    outline: 3px solid var(--accent-color);
+    outline: 2px solid var(--accent-color);
     outline-offset: 2px;
     transform: translateX(4px);
     border-color: var(--accent-color);
