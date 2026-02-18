@@ -324,8 +324,11 @@ function displayNotesList(): void {
 
     if (timingNotes.length === 0) {
         notesList.innerHTML = 'No notes loaded'
+        notesList.removeAttribute('role')
         return
     }
+
+    notesList.setAttribute('role', 'list')
 
     let visibleNotes = timingNotes.filter((note) => !note.invisible)
 
