@@ -9,7 +9,10 @@ import {
 } from '../../scripts/postHelpers'
 
 export async function getStaticPaths() {
-	const mdPlay = await Astro.glob('../play/*.md')
+	let mdPlay = []
+	try {
+		mdPlay = await Astro.glob('../play/*.md')
+	} catch {}
 	const astroPlay = await Astro.glob('../play/*.astro')
 	const mdThoughts = await Astro.glob('../thoughts/*.md')
 	const astroThoughts = await Astro.glob('../thoughts/*.astro')
@@ -35,7 +38,10 @@ export async function getStaticPaths() {
 }
 
 // Use Astro.glob to load posts
-const mdPlay = await Astro.glob('../play/*.md')
+let mdPlay = []
+try {
+	mdPlay = await Astro.glob('../play/*.md')
+} catch {}
 const astroPlay = await Astro.glob('../play/*.astro')
 const mdThoughts = await Astro.glob('../thoughts/*.md')
 const astroThoughts = await Astro.glob('../thoughts/*.astro')

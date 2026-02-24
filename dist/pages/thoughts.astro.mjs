@@ -1,7 +1,7 @@
-import { c as createComponent, r as renderTemplate, a as renderComponent } from '../chunks/astro/server_DHeFfUaE.mjs';
+import { c as createComponent, r as renderComponent, a as renderTemplate } from '../chunks/astro/server_BDmygan7.mjs';
 import 'piccolore';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_Cfyy66sH.mjs';
-import { $ as $$RecentItems } from '../chunks/RecentItems_DbEY2HsM.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_DaOo42CO.mjs';
+import { $ as $$RecentItems } from '../chunks/RecentItems_DHrAlstg.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$Thoughts = createComponent(($$result, $$props, $$slots) => {

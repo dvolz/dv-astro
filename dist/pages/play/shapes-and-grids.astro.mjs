@@ -1,4 +1,4 @@
-import { _ as _page } from '../../chunks/shapes-and-grids_B7byB4mK.mjs';
+import { _ as _page } from '../../chunks/shapes-and-grids_EgIp3LpU.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const page = () => _page;

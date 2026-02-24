@@ -1,4 +1,4 @@
-import { _ as _page } from '../../chunks/svgs-and-astro_C21vHa1U.mjs';
+import { _ as _page } from '../../chunks/svgs-and-astro_Cl94cajF.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const page = () => _page;

@@ -1,0 +1,679 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import BlogDetails from '../components/BlogDetails.astro'
+
+export const blogData = {
+	title: 'Style Guide',
+	author: 'David Volz',
+	description: `A living reference of every visual element on this site.`,
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2026-2-21',
+	tags: ['design', 'css', 'reference'],
+	featured: true,
+}
+
+const showTypographyHero = true
+const fullWidthBody = true
+---
+
+<BaseLayout
+	pageTitle={blogData.title}
+	{showTypographyHero}
+	description={blogData.description}
+	fullWidthBody={fullWidthBody}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<div class="article">
+		<p>
+			This page is a living style guide — a single place to see every visual
+			element used across the site. It's meant to keep things consistent and
+			serve as a reference when building new pages. If you add a new pattern,
+			drop it here too.
+		</p>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- COLORS -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Colors</h3>
+		<p>The core palette is defined as CSS custom properties on the body.</p>
+		<div class="sg-swatches">
+			<div class="sg-swatch" style="--sw: var(--primary-color);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label"
+					>--primary-color<br /><em>#29435c</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--secondary-color);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label"
+					>--secondary-color<br /><em>#568091</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--accent-color);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label">--accent-color<br /><em>#5bb598</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--highlight-secondary);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label"
+					>--highlight-secondary<br /><em>#4a97b8</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--highlight-accent);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label"
+					>--highlight-accent<br /><em>#55c892</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--text-color);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label">--text-color<br /><em>#332e2e</em></span>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--background-color);">
+				<div class="sg-swatch-block sg-swatch-block--light"></div>
+				<span class="sg-swatch-label"
+					>--background-color<br /><em>#fff7f2</em></span
+				>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--link-color);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label">--link-color<br /><em>#2f5362</em></span>
+			</div>
+			<div class="sg-swatch" style="--sw: var(--link-hover);">
+				<div class="sg-swatch-block"></div>
+				<span class="sg-swatch-label">--link-hover<br /><em>#16688b</em></span>
+			</div>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- TYPOGRAPHY -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Typography</h3>
+		<p>
+			Two font families are used: <strong>Source Serif 4</strong> (<code
+				>--p-font</code
+			>) for body copy and <strong>Poppins</strong> (<code>--a-font</code>) for
+			headings and accents.
+		</p>
+
+		<div class="sg-type-specimen">
+			<div class="sg-type-row">
+				<span class="sg-type-label">h1</span>
+				<h1 class="sg-inline">The quick brown fox</h1>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">h2</span>
+				<h2 class="sg-inline">The quick brown fox</h2>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">h3</span>
+				<h3 class="sg-inline">The quick brown fox</h3>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">h4</span>
+				<h4 class="sg-inline">The quick brown fox</h4>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">h5</span>
+				<h5 class="sg-inline">The quick brown fox</h5>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">h6</span>
+				<h6 class="sg-inline">The quick brown fox</h6>
+			</div>
+			<div class="sg-type-row">
+				<span class="sg-type-label">p</span>
+				<p class="sg-inline">
+					Body text at 1.7rem / 1.8rem on tablet+. Source Serif 4, weight 400.
+					This is what most of the content on the site looks like.
+				</p>
+			</div>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- LINKS -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Links</h3>
+		<p>
+			Internal links use the default <code>--link-color</code> and transition to <code
+				>--link-hover</code
+			>
+			on hover.
+		</p>
+		<p>
+			<a href="/about/">Internal link example</a>
+		</p>
+
+		<h4>External Links</h4>
+		<p>
+			Outbound links get the gradient accent bar, bold weight, and ↗ arrow
+			treatment automatically.
+		</p>
+		<p>
+			<a href="https://astro.build" target="_blank">Astro</a> ·
+			<a href="https://developer.mozilla.org" target="_blank">MDN Web Docs</a> ·
+			<a href="https://fonts.google.com" target="_blank">Google Fonts</a>
+		</p>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- BUTTONS -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Buttons</h3>
+		<p>
+			The <code>.line-button</code> is the primary interactive element — a double-border
+			pill that highlights on hover.
+		</p>
+		<div class="sg-button-row">
+			<a href="#" class="line-button">Default</a>
+			<a href="#" class="line-button">Another Action</a>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- INLINE CODE -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Inline Code</h3>
+		<p>
+			Inline code uses a reversed color scheme: <code
+				>background: --text-color</code
+			>
+			and <code>color: --background-color</code> with a 4px border-radius.
+		</p>
+		<p>
+			Example: Use <code>&lt;script is:inline&gt;</code> to bypass processing.
+		</p>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- BLOCKQUOTE -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Blockquotes</h3>
+		<p>
+			Blockquotes are large, italic, with a left accent bar using <code
+				>--contrast-background-color</code
+			>.
+		</p>
+		<blockquote>
+			Design is not just what it looks like and feels like. Design is how it
+			works.
+		</blockquote>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- TIPS -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Tips</h3>
+		<p>
+			Tips are sidebar callouts that attach to the left or right gutter on
+			desktop. They use <code>--highlight-accent</code> as a translucent backdrop.
+		</p>
+		<div class="tip tip-left">
+			<div class="tip-inner">
+				<p>
+					This is a <strong>left-aligned tip</strong>. On wide screens it floats
+					in the left gutter alongside the content.
+				</p>
+			</div>
+		</div>
+		<p>
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+			tempor incididunt ut labore et dolore. This paragraph sits next to the tip
+			on desktop and gives it context.
+		</p>
+		<div class="tip tip-right">
+			<div class="tip-inner">
+				<p>
+					This is a <strong>right-aligned tip</strong>. On wide screens it
+					floats in the right gutter.
+				</p>
+			</div>
+		</div>
+		<p>
+			And this paragraph sits beside the right-side tip. On mobile, tips stack
+			normally in flow.
+		</p>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- LISTS -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Lists</h3>
+
+		<h4>Unordered List</h4>
+		<ul>
+			<li>First list item with some content</li>
+			<li>Second list item — a bit longer to see how wrapping behaves</li>
+			<li>Third item</li>
+		</ul>
+
+		<h4>Ordered List</h4>
+		<ol>
+			<li>Step one: set up the project</li>
+			<li>Step two: add styles</li>
+			<li>Step three: ship it</li>
+		</ol>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- FIGURES / IMAGES -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Figures</h3>
+		<p>
+			Figures use a thin border with <code>--text-color</code> and centered content.
+			On desktop, they break out to span the full article grid.
+		</p>
+		<figure>
+			<div class="sg-placeholder-image">960 × 320 image placeholder</div>
+			<figcaption>
+				A descriptive caption rendered in italic at 1.6rem.
+			</figcaption>
+		</figure>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- SOLO LINE (DECORATIVE BAR) -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Solo Line</h3>
+		<p>
+			The <code>.solo-line</code> class adds a decorative accent bar beneath an element
+			that fills on hover. Used on the header nav and footer.
+		</p>
+		<div class="sg-solo-line-demo solo-line">
+			<p>Hover me to see the accent bar fill</p>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- DOUBLE-BORDER FRAME -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Double-Border Frame</h3>
+		<p>
+			The card frame used in <code>.recentItems</code> — an outer stroke, a color-gap
+			border, and an inner stroke. Hover changes the gap color.
+		</p>
+		<div class="sg-frame-demo">
+			<div class="sg-frame-card">
+				<p class="sg-frame-title">Card Title</p>
+				<p class="sg-frame-desc">
+					A short description that sits inside the double-border frame.
+				</p>
+			</div>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- TYPOGRAPHY HERO -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Typography Hero</h3>
+		<p>
+			Every page starts with a hero block: page title in <strong
+				>Poppins 700</strong
+			>
+			at 5rem (7.5rem on desktop), an optional subtitle, and a green accent bar bordered
+			by <code>--text-color</code>.
+		</p>
+		<div class="sg-hero-demo">
+			<p class="sg-hero-title">Page Title</p>
+			<p class="sg-hero-sub">An optional subtitle line</p>
+			<div class="sg-hero-bar"></div>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- SPACING & LAYOUT -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Spacing &amp; Layout</h3>
+		<p>
+			The site uses a 3-column CSS grid (<code>.site</code>) with areas for
+			header, main, sidebar, and footer. Content sits in <code>.content</code>
+			with <code>3rem 2.5rem</code> padding, and articles max at <code
+				>55rem</code
+			>
+			(or <code>120rem</code> with the 3-col grid on desktop).
+		</p>
+		<div class="sg-spacing-grid">
+			<div class="sg-spacing-box"><span>header</span></div>
+			<div class="sg-spacing-box sg-spacing-main"><span>main</span></div>
+			<div class="sg-spacing-box"><span>sidebar</span></div>
+			<div class="sg-spacing-box sg-spacing-full"><span>footer</span></div>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- ANIMATION -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>Animation</h3>
+		<p>
+			Transitions default to <code>0.3s ease</code>. Accent-specific animations
+			include a gentle pulse for instructional elements and the sad bounce on
+			emoji. Custom cursor on hover.
+		</p>
+		<div class="sg-anim-row">
+			<p class="instruction">↕ Pulse animation</p>
+			<span class="emoji">😢</span>
+		</div>
+
+		<!-- ════════════════════════════════════════════ -->
+		<!-- CSS VARIABLES REFERENCE -->
+		<!-- ════════════════════════════════════════════ -->
+		<h3>CSS Custom Properties Reference</h3>
+		<p>All variables defined on <code>:global(body)</code>:</p>
+		<div class="sg-var-table">
+			<div class="sg-var-row sg-var-header">
+				<span>Property</span><span>Value</span><span>Usage</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--p-font</code></span>
+				<span>Source Serif 4</span>
+				<span>Body text</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--a-font</code></span>
+				<span>Poppins</span>
+				<span>Headings, accents</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--primary-color</code></span>
+				<span>#29435c</span>
+				<span>Deep brand tone</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--secondary-color</code></span>
+				<span>#568091</span>
+				<span>Muted complement</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--accent-color</code></span>
+				<span>#5bb598</span>
+				<span>Hero bars, accents</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--highlight-secondary</code></span>
+				<span>#4a97b8</span>
+				<span>Blue highlights</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--highlight-accent</code></span>
+				<span>#55c892</span>
+				<span>Green highlights</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--text-color</code></span>
+				<span>#332e2e</span>
+				<span>Default text</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--background-color</code></span>
+				<span>#fff7f2</span>
+				<span>Page background</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--link-color</code></span>
+				<span>#2f5362</span>
+				<span>Link default</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--link-hover</code></span>
+				<span>#16688b</span>
+				<span>Link hover</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--contrast-background-color</code></span>
+				<span>var(--primary-color)</span>
+				<span>Blockquote bar</span>
+			</div>
+			<div class="sg-var-row">
+				<span><code>--tablet</code></span>
+				<span>768px</span>
+				<span>Breakpoint</span>
+			</div>
+		</div>
+	</div>
+</BaseLayout>
+
+<style lang="scss">
+	/* ──────────────────────────────────────────────
+	   STYLE GUIDE – SCOPED STYLES
+	   ────────────────────────────────────────────── */
+
+	/* ── Swatches ── */
+	.sg-swatches {
+		display: flex;
+		flex-flow: row wrap;
+		gap: 1.5rem;
+		margin: 2rem 0 3rem;
+	}
+	.sg-swatch {
+		flex: 0 0 calc(33.333% - 1rem);
+		text-align: center;
+		@media screen and (max-width: 640px) {
+			flex: 0 0 calc(50% - 1rem);
+		}
+	}
+	.sg-swatch-block {
+		height: 7rem;
+		border-radius: 0.6rem;
+		background: var(--sw);
+		border: 1px solid var(--text-color);
+		margin-bottom: 0.5rem;
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
+		&:hover {
+			transform: translateY(-0.3rem);
+			box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.12);
+		}
+	}
+	.sg-swatch-block--light {
+		border: 1px solid var(--text-color);
+	}
+	.sg-swatch-label {
+		font-size: 1.3rem;
+		line-height: 1.4;
+		em {
+			font-style: normal;
+			opacity: 0.6;
+		}
+	}
+
+	/* ── Type Specimen ── */
+	.sg-type-specimen {
+		margin: 2rem 0 3rem;
+	}
+	.sg-type-row {
+		display: flex;
+		align-items: baseline;
+		padding: 1rem 0;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+		gap: 1.5rem;
+	}
+	.sg-type-label {
+		flex: 0 0 4rem;
+		font-family: var(--a-font);
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		opacity: 0.5;
+	}
+	.sg-inline {
+		margin: 0 !important;
+	}
+
+	/* ── Button row ── */
+	.sg-button-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		margin: 1.5rem 0 3rem;
+	}
+
+	/* ── Solo-line demo ── */
+	.sg-solo-line-demo {
+		position: relative;
+		display: inline-block;
+		padding: 1.5rem 3rem 2rem;
+		margin: 1rem 0 3rem;
+		p {
+			margin: 0;
+		}
+	}
+
+	/* ── Frame card demo ── */
+	$sg-bh: 0.5rem;
+	.sg-frame-demo {
+		margin: 1.5rem 0 3rem;
+		max-width: 36rem;
+	}
+	.sg-frame-card {
+		position: relative;
+		border: $sg-bh solid var(--background-color);
+		border-radius: $sg-bh + 1.1;
+		padding: 2.5rem 2rem 3rem;
+		text-align: center;
+		transition: border-color 0.3s ease;
+
+		&:before,
+		&:after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+		&:before {
+			border: 1px solid var(--text-color);
+			left: -($sg-bh + 0.1);
+			top: -($sg-bh + 0.1);
+			width: calc(100% + 1.2rem);
+			height: calc(100% + 1.2rem);
+			border-radius: $sg-bh + 1.2;
+		}
+		&:after {
+			border: 1px solid var(--text-color);
+			border-radius: $sg-bh + 0.5;
+		}
+		&:hover {
+			border-color: var(--accent-color);
+		}
+	}
+	.sg-frame-title {
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-size: 2.4rem;
+		margin: 0 0 0.5rem;
+	}
+	.sg-frame-desc {
+		font-weight: 300;
+	}
+
+	/* ── Hero demo ── */
+	.sg-hero-demo {
+		text-align: center;
+		padding: 2rem 0 1rem;
+		margin: 1rem 0 3rem;
+		border: 1px dashed rgba(0, 0, 0, 0.12);
+		border-radius: 0.6rem;
+	}
+	.sg-hero-title {
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-size: 5rem;
+		line-height: 1;
+		margin: 0 0 0.5rem;
+	}
+	.sg-hero-sub {
+		font-size: 2.5rem;
+		line-height: 1.3;
+		margin: 0 0 1.5rem;
+	}
+	.sg-hero-bar {
+		width: 80%;
+		max-width: 50rem;
+		height: 0.7rem;
+		background: var(--accent-color);
+		border: 0.1rem solid var(--text-color);
+		margin: 0 auto;
+		border-radius: 0.5rem;
+	}
+
+	/* ── Placeholder image ── */
+	.sg-placeholder-image {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(
+			135deg,
+			var(--highlight-secondary),
+			var(--highlight-accent)
+		);
+		color: white;
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-size: 1.6rem;
+		height: 20rem;
+		border-radius: 0.4rem;
+	}
+
+	/* ── Spacing grid ── */
+	.sg-spacing-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 0.6rem;
+		margin: 1.5rem 0 3rem;
+	}
+	.sg-spacing-box {
+		background: rgba(0, 0, 0, 0.04);
+		border: 1px solid var(--text-color);
+		border-radius: 0.4rem;
+		padding: 1.5rem;
+		text-align: center;
+		font-family: var(--a-font);
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.sg-spacing-main {
+		grid-column: span 2;
+	}
+	.sg-spacing-full {
+		grid-column: 1 / -1;
+	}
+
+	/* ── Animation row ── */
+	.sg-anim-row {
+		display: flex;
+		align-items: center;
+		gap: 3rem;
+		margin: 1.5rem 0 3rem;
+	}
+
+	/* ── Variable reference table ── */
+	.sg-var-table {
+		margin: 1.5rem 0 3rem;
+		font-size: 1.5rem;
+		border: 1px solid var(--text-color);
+		border-radius: 0.6rem;
+		overflow: hidden;
+	}
+	.sg-var-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 0 1.5rem;
+		padding: 0.8rem 1.5rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+	.sg-var-header {
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-size: 1.3rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		background: var(--text-color);
+		color: var(--background-color);
+		span {
+			padding: 0.3rem 0;
+		}
+	}
+</style>

@@ -11,7 +11,10 @@ const { featured = 'false', category = 'both' } = Astro.props
 const isFeatured = featured === 'true'
 
 // Use Astro.glob to load posts
-const mdPlay = await Astro.glob('../pages/play/*.md')
+let mdPlay = []
+try {
+	mdPlay = await Astro.glob('../pages/play/*.md')
+} catch {}
 const astroPlay = await Astro.glob('../pages/play/*.astro')
 const mdThoughts = await Astro.glob('../pages/thoughts/*.md')
 const astroThoughts = await Astro.glob('../pages/thoughts/*.astro')
