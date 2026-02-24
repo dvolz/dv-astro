@@ -1,6 +1,7 @@
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "rm -rf node_modules && npm install && npm run build"
 
 [build.environment]
   NODE_VERSION = "20.19.0"
+  NPM_FLAGS = "--prefer-offline=false"
