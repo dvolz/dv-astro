@@ -1,0 +1,50 @@
+---
+import CatSVGFile from '../../svgs/cat.svg?raw'
+const { title, url, description } = Astro.props
+---
+
+<style lang="scss">
+	.cat-bg-frame {
+		position: relative;
+		overflow: hidden;
+		background-color: var(--background-color);
+	}
+	.cat-bg-title {
+		position: relative;
+		z-index: 1;
+		font-family: var(--a-font);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin: 0;
+		color: var(--text-color);
+	}
+</style>
+
+<a class="blogPost" href={url}>
+	<div class="frame cat-bg-frame cat-bg-animated" data-svg={CatSVGFile}>
+		<p class="cat-bg-title">{title}</p>
+	</div>
+</a>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const frames = document.querySelectorAll('.cat-bg-animated')
+
+		frames.forEach((frame) => {
+			const rawSVG = frame.getAttribute('data-svg')
+			if (!rawSVG) return
+
+			const svgWithOpacity = rawSVG.replace(
+				/<svg([^>]*)>/,
+				'<svg$1 opacity="0.15">'
+			)
+			const encodedSVG = `data:image/svg+xml,${encodeURIComponent(svgWithOpacity)}`
+
+			const el = frame as HTMLElement
+			el.style.backgroundImage = `url('${encodedSVG}')`
+			el.style.backgroundSize = '60%'
+			el.style.backgroundRepeat = 'no-repeat'
+			el.style.backgroundPosition = 'center'
+		})
+	})
+</script>

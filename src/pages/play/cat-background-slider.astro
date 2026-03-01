@@ -1,0 +1,401 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+import CodeBlock from '../../components/CodeBlock.astro'
+import CatSVGFile from '../../svgs/cat.svg?raw'
+import '../../styles/module/_slider.scss'
+
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
+
+const mathExpressions = [
+	{
+		id: 'scaleFactor',
+		expression: 's = 1 + \\frac{\\text{slider} - 100}{100}',
+		description: 'Scale factor from slider value',
+	},
+	{
+		id: 'scaleExample',
+		expression: 's = 1 + \\frac{250 - 100}{100} = 2.5',
+		description: 'Example with slider at 250',
+	},
+	{
+		id: 'newWidth',
+		expression: '\\text{newWidth} = 500 \\times 2.5 = 1250',
+		description: 'New tile width',
+	},
+	{
+		id: 'newHeight',
+		expression: '\\text{newHeight} = 300 \\times 2.5 = 750',
+		description: 'New tile height',
+	},
+	{
+		id: 'centerX',
+		expression: 'x = 75 - \\frac{1250 - 500}{2} = -300',
+		description: 'Centering offset X',
+	},
+	{
+		id: 'centerY',
+		expression: 'y = 75 - \\frac{750 - 300}{2} = -150',
+		description: 'Centering offset Y',
+	},
+	{
+		id: 'bgSize',
+		expression:
+			'\\text{bgSize} = \\frac{1250}{5} \\times \\frac{750}{5} = 250 \\times 150 \\text{ px}',
+		description: 'Background tile pixel size',
+	},
+]
+
+const renderedMath = mathExpressions.map((item) => ({
+	id: item.id,
+	html: katex.renderToString(item.expression, {
+		throwOnError: false,
+		displayMode: true,
+	}),
+	description: item.description,
+}))
+
+export const blogData = {
+	title: 'Cat Background Slider',
+	author: 'David Volz',
+	description: `How I built a tiled SVG background with adjustable spacing using vanilla JavaScript.`,
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2026-3-1',
+	tags: ['javascript', 'svg', 'css', 'code'],
+	featured: true,
+	display: true,
+}
+const showTypographyHero = true
+const fullWidthBody = true
+
+const importCode = `---
+import CatSVGFile from '../svgs/cat.svg?raw'
+---
+
+<div id="cat-svg" data-svg={CatSVGFile}>
+  <Fragment set:html={CatSVGFile} />
+</div>`
+
+const encodeCode = `function encodeSVG(svg: string): string {
+  return \`data:image/svg+xml,\${encodeURIComponent(svg)}\`
+}`
+
+const viewBoxCode = `const BASE_WIDTH = 500
+const BASE_HEIGHT = 300
+const BASE_X = 75
+const BASE_Y = 75
+
+function updateSVGViewBox(spacing: number): void {
+  // Scale factor: slider 100 = 1x, slider 600 = 6x
+  const scaleFactor = 1 + (spacing - 100) / 100
+
+  // Expand viewBox to add transparent padding around cat
+  const newWidth = BASE_WIDTH * scaleFactor
+  const newHeight = BASE_HEIGHT * scaleFactor
+
+  // Center the cat in the expanded viewBox
+  const newX = BASE_X - (newWidth - BASE_WIDTH) / 2
+  const newY = BASE_Y - (newHeight - BASE_HEIGHT) / 2
+
+  const updatedViewBox = \`\${newX} \${newY} \${newWidth} \${newHeight}\`
+
+  const updatedSVG = rawSVG.replace(
+    /<svg[^>]+>/,
+    \`<svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="\${updatedViewBox}" opacity="0.2">\`
+  )
+
+  body.style.backgroundImage = \`url('\${encodeSVG(updatedSVG)}')\`
+  body.style.backgroundSize = \`\${newWidth / 5}px \${newHeight / 5}px\`
+}`
+
+const sliderCode = `<input id="spacing-slider" type="range"
+  min="100" max="600" value="250" />
+
+<script>
+  slider.addEventListener('input', (event) => {
+    const target = event.target as HTMLInputElement
+    spacing = parseInt(target.value, 10)
+    updateSVGViewBox(spacing)
+    localStorage.setItem('backgroundSpacing',
+      JSON.stringify(spacing))
+  })
+</script>`
+
+const localStorageCode = `// Restore state on page load
+let isBackgroundSet =
+  JSON.parse(localStorage.getItem('isBackgroundSet')) || false
+let spacing =
+  JSON.parse(localStorage.getItem('backgroundSpacing')) || 250
+
+// Save state on change
+localStorage.setItem('isBackgroundSet',
+  JSON.stringify(isBackgroundSet))
+localStorage.setItem('backgroundSpacing',
+  JSON.stringify(spacing))`
+---
+
+<BaseLayout
+	pageTitle={blogData.title}
+	{showTypographyHero}
+	description={blogData.description}
+	fullWidthBody={fullWidthBody}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+	<div class="article">
+		<p>
+			If you have been on this site before, you may have noticed the little cat
+			icon in the footer. All my life this cat has been my signature character
+			that I have drawn consistently. Clicking it toggles a tiled cat pattern
+			across the entire page background, and a slider appears to control the
+			spacing between the cats. Here is how I built it.
+		</p>
+
+		<h3>Loading the SVG</h3>
+		<p>
+			The cat SVG is imported as a raw string using the <code>?raw</code> suffix.
+			This gives us access to the full SVG markup at build time so we can manipulate
+			it with JavaScript at runtime. The raw string is also stored in a <code
+				>data-svg</code
+			> attribute so the client-side script can access it.
+		</p>
+		<CodeBlock code={importCode} lang="astro" />
+		<p>
+			I use <code>Fragment</code> with <code>set:html</code> to render the SVG inline
+			for the clickable cat icon. The <code>data-svg</code> attribute holds the same
+			raw string that the JavaScript reads later to build the background.
+		</p>
+
+		<h3>Encoding for CSS</h3>
+		<p>
+			To use an SVG as a CSS <code>background-image</code>, it needs to be
+			encoded as a data URI. Rather than base64, I use
+			<code>encodeURIComponent</code> which keeps the string readable and is perfectly
+			valid for inline SVGs.
+		</p>
+		<CodeBlock code={encodeCode} lang="typescript" />
+
+		<h3>The ViewBox Trick</h3>
+		<p>
+			This is the core of how the spacing works. Instead of changing the
+			background tile size or moving elements around, I expand the SVG's
+			<code>viewBox</code>. A larger viewBox means more transparent space around
+			the cat, and since the browser tiles the background, that transparent
+			space becomes the gap between cats.
+		</p>
+		<CodeBlock code={viewBoxCode} lang="typescript" />
+		<p>
+			The key insight is that <code>background-size</code> scales proportionally with
+			the viewBox. The formula <code>newWidth / 5</code> keeps each cat at a constant
+			visual size. As the slider increases, the tile grows but the cat inside it stays
+			the same size, so you only see more space between them.
+		</p>
+
+		<h3>The Math</h3>
+		<p>
+			The slider value (100–600) maps to a scale factor. At 100, the viewBox is
+			the original size. At 600, it is 6× larger.
+		</p>
+		<h5>Scale Factor</h5>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'scaleFactor').html} />
+		</div>
+		<p>With the slider at its default of 250:</p>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'scaleExample').html} />
+		</div>
+
+		<h5>Expanding the ViewBox</h5>
+		<p>
+			The base viewBox is <code>75 75 500 300</code>. Multiply width and height
+			by the scale factor:
+		</p>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'newWidth').html} />
+		</div>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'newHeight').html} />
+		</div>
+
+		<h5>Centering the Cat</h5>
+		<p>Shift the origin back by half the growth so the cat stays centered:</p>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'centerX').html} />
+		</div>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'centerY').html} />
+		</div>
+		<p>
+			So the new viewBox becomes <code>-300 -150 1250 750</code>.
+		</p>
+
+		<h5>Background Size</h5>
+		<p>Divide by 5 to get the CSS pixel size of each tile:</p>
+		<div class="math">
+			<p set:html={renderedMath.find(({ id }) => id === 'bgSize').html} />
+		</div>
+		<p>
+			The cat stays the same visual size inside a bigger tile, which is why you
+			see more space between the cats.
+		</p>
+
+		<h3>Try It</h3>
+		<p>
+			Here is a live demo. The dashed grid shows the tile boundaries. Drag the
+			slider to see how the tile grows while the cat stays the same size.
+		</p>
+		<div class="demo-container">
+			<div class="demo-box" id="demo-box" data-svg={CatSVGFile}></div>
+			<div class="demo-controls">
+				<label for="demo-slider">Spacing</label>
+				<input id="demo-slider" type="range" min="100" max="600" value="250" />
+				<span id="demo-slider-value" class="demo-value">250</span>
+			</div>
+		</div>
+
+		<h3>The Slider</h3>
+		<p>
+			The range input drives the spacing value from 100 to 600. On each input
+			event, it recalculates the viewBox and updates the background. The slider
+			value is also persisted to <code>localStorage</code> so it sticks across page
+			loads.
+		</p>
+		<CodeBlock code={sliderCode} lang="astro" />
+
+		<h3>Persisting State</h3>
+		<p>
+			Both the toggle state and the spacing value are saved to
+			<code>localStorage</code>. When the page loads, the script checks for
+			saved values and applies them immediately. This way, if you set your
+			preferred cat density, it is still there when you come back.
+		</p>
+		<CodeBlock code={localStorageCode} lang="typescript" />
+
+		<h3>Final Thoughts</h3>
+		<p>
+			This was a fun little feature to build. The viewBox approach turned out to
+			be a clean way to handle tiled spacing without needing to regenerate the
+			SVG on every slider tick. The cat stays the same size, the gaps grow, and
+			the whole thing is just a few lines of vanilla JavaScript. Give it a try
+			by clicking the cat in the footer.
+		</p>
+	</div>
+</BaseLayout>
+
+<style lang="scss">
+	.demo-container {
+		margin: 2rem 0 3rem;
+	}
+	.demo-box {
+		width: calc(100vw - 4rem);
+		margin-left: calc(-50vw + 50%);
+		transform: translateX(2rem);
+		height: 30rem;
+		border: 1px solid var(--text-color);
+
+		@media screen and (min-width: 768px) {
+			height: 50rem;
+		}
+		border-radius: 0.8rem;
+		margin-bottom: 1.5rem;
+		background-color: var(--background-color);
+		background-repeat: repeat;
+		position: relative;
+		overflow: hidden;
+	}
+	.demo-controls {
+		text-align: center;
+		label {
+			display: block;
+			font-family: var(--a-font);
+			margin-bottom: 1rem;
+		}
+	}
+	.demo-value {
+		font-family: var(--a-font);
+		font-size: 3rem;
+	}
+	.math {
+		margin: 0 0 2rem;
+		text-align: center;
+	}
+</style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const demoBox = document.getElementById('demo-box') as HTMLElement
+		const demoSlider = document.getElementById(
+			'demo-slider'
+		) as HTMLInputElement
+		const demoValue = document.getElementById(
+			'demo-slider-value'
+		) as HTMLSpanElement
+		const rawSVG = demoBox.getAttribute('data-svg')
+		if (!rawSVG) return
+
+		const BASE_WIDTH = 500
+		const BASE_HEIGHT = 300
+		const BASE_X = 75
+		const BASE_Y = 75
+		const svgTagRegex = /<svg[^>]+>/
+
+		// Get theme colors for the tile outlines
+		const bodyStyles = getComputedStyle(document.body)
+		const accentColor =
+			bodyStyles.getPropertyValue('--accent-color').trim() || '#5bb598'
+		const secondaryColor =
+			bodyStyles.getPropertyValue('--secondary-color').trim() || '#568091'
+
+		function encodeSVG(svg: string): string {
+			return `data:image/svg+xml,${encodeURIComponent(svg)}`
+		}
+
+		function updateDemo(spacing: number): void {
+			const scaleFactor = 1 + (spacing - 100) / 100
+			const newWidth = BASE_WIDTH * scaleFactor
+			const newHeight = BASE_HEIGHT * scaleFactor
+			const newX = BASE_X - (newWidth - BASE_WIDTH) / 2
+			const newY = BASE_Y - (newHeight - BASE_HEIGHT) / 2
+			const updatedViewBox = `${newX} ${newY} ${newWidth} ${newHeight}`
+
+			// Build cat SVG with double-line tile borders
+			const inset = scaleFactor * 10
+			const updatedSVG = rawSVG
+				.replace(
+					svgTagRegex,
+					`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}">` +
+						// Outer border - accent colored dots
+						`<rect x="${newX}" y="${newY}" width="${newWidth}" height="${newHeight}" ` +
+						`fill="none" stroke="${accentColor}" stroke-width="${scaleFactor * 4}" ` +
+						`stroke-linecap="round" stroke-dasharray="${scaleFactor} ${scaleFactor * 14}" opacity="0.5"/>` +
+						// Inner border - secondary colored dots, offset inward
+						`<rect x="${newX + inset}" y="${newY + inset}" width="${newWidth - inset * 2}" height="${newHeight - inset * 2}" ` +
+						`fill="none" stroke="${secondaryColor}" stroke-width="${scaleFactor * 2}" ` +
+						`stroke-linecap="round" stroke-dasharray="${scaleFactor * 0.5} ${scaleFactor * 10}" opacity="0.35"/>` +
+						`<g opacity="0.2">`
+				)
+				.replace('</svg>', '</g></svg>')
+
+			const bgWidth = newWidth / 5
+			const bgHeight = newHeight / 5
+
+			demoBox.style.backgroundImage = `url('${encodeSVG(updatedSVG)}')`
+			demoBox.style.backgroundSize = `${bgWidth}px ${bgHeight}px`
+		}
+
+		// Initial render
+		updateDemo(250)
+
+		demoSlider.addEventListener('input', (event) => {
+			const target = event.target as HTMLInputElement
+			const spacing = parseInt(target.value, 10)
+			demoValue.textContent = spacing.toString()
+			updateDemo(spacing)
+		})
+	})
+</script>

@@ -88,66 +88,74 @@ import '../styles/module/_slider.scss'
 
 <script>
 	document.addEventListener('DOMContentLoaded', () => {
-		const body = document.querySelector('body')
-		const slider = document.getElementById('spacing-slider')
-		const sliderValue = document.getElementById('slider-value')
-		const svgElement = document.getElementById('cat-svg')
+		const body = document.querySelector('body') as HTMLBodyElement
+		const slider = document.getElementById('spacing-slider') as HTMLInputElement
+		const sliderValue = document.getElementById(
+			'slider-value'
+		) as HTMLSpanElement
+		const svgElement = document.getElementById('cat-svg') as HTMLElement
 		const rawSVG = svgElement.getAttribute('data-svg')
-		const catControls = document.querySelector('.catControls')
+		const catControls = document.querySelector('.catControls') as HTMLElement
+
+		// SVG base viewBox dimensions (must match the original SVG)
+		const BASE_WIDTH = 500
+		const BASE_HEIGHT = 300
+		const BASE_X = 75
+		const BASE_Y = 75
 
 		// Function to encode SVG for inline use
-		function encodeSVG(svg) {
+		function encodeSVG(svg: string): string {
 			return `data:image/svg+xml,${encodeURIComponent(svg)}`
 		}
 
-		// Function to update the SVG's viewBox for spacing
-		function updateSVGViewBox(spacing) {
-			const baseWidth = 500
-			const baseHeight = 300
-			const baseX = 75
-			const baseY = 75
+		// Regex pattern for SVG tag (compiled once)
+		const svgTagRegex = /<svg[^>]+>/
 
-			// Calculate scaling factor based on slider value
-			const scaleFactor = 1 + (spacing - 100) / 100 // Scaling factor between 1 and 6
+		// Function to update the SVG viewBox and apply as tiled background
+		function updateSVGViewBox(spacing: number): void {
+			// Scale factor: slider 100 = 1x, slider 600 = 6x
+			const scaleFactor = 1 + (spacing - 100) / 100
 
-			// Adjust the width and height based on the scale factor
-			const newWidth = baseWidth * scaleFactor
-			const newHeight = baseHeight * scaleFactor
+			// Expand viewBox to add transparent padding around cat
+			const newWidth = BASE_WIDTH * scaleFactor
+			const newHeight = BASE_HEIGHT * scaleFactor
 
-			// Adjust the x and y coordinates to maintain the positioning of the cat
-			const newX = baseX - (newWidth - baseWidth) / 2 // Center the cat horizontally
-			const newY = baseY - (newHeight - baseHeight) / 2 // Center the cat vertically
+			// Offset so the cat stays centered in the expanded viewBox
+			const newX = BASE_X - (newWidth - BASE_WIDTH) / 2
+			const newY = BASE_Y - (newHeight - BASE_HEIGHT) / 2
 
-			// Create the updated viewBox
 			const updatedViewBox = `${newX} ${newY} ${newWidth} ${newHeight}`
 
-			// Replace the viewBox in the raw SVG
+			// Replace SVG tag with updated viewBox and opacity
 			const updatedSVG = rawSVG.replace(
-				/<svg[^>]+>/,
-				`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}" opacity="0.2">` // Apply opacity here
+				svgTagRegex,
+				`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${updatedViewBox}" opacity="0.2">`
 			)
-			// Encode the updated SVG
-			const encodedSVG = encodeSVG(updatedSVG)
 
-			// Set the updated SVG as the background
-			body.style.backgroundImage = `url('${encodedSVG}')`
+			// Set the tiled background
+			body.style.backgroundImage = `url('${encodeSVG(updatedSVG)}')`
 
-			// Adjust background-size to keep the cats the same size
-			const backgroundSize = `${newWidth / 5}px ${newHeight / 5}px`
-			body.style.backgroundSize = backgroundSize
+			// Scale background-size proportionally so the cat stays the same visual size
+			// while the tile (and thus spacing) grows
+			body.style.backgroundSize = `${newWidth / 5}px ${newHeight / 5}px`
 		}
 
 		// Initial background state from localStorage or default to false
-		let isBackgroundSet =
-			JSON.parse(localStorage.getItem('isBackgroundSet')) || false
-		let spacing = JSON.parse(localStorage.getItem('backgroundSpacing')) || 250 // Default to 250 if not found
+		let isBackgroundSet = false
+		let spacing = 250
+		try {
+			isBackgroundSet =
+				JSON.parse(localStorage.getItem('isBackgroundSet')) || false
+			spacing = JSON.parse(localStorage.getItem('backgroundSpacing')) || 250
+		} catch {
+			// Corrupted localStorage data, use defaults
+		}
 
 		// Function to apply the background state
-		function applyBackgroundState() {
+		function applyBackgroundState(): void {
 			if (isBackgroundSet) {
-				body.style.backgroundImage = `url('${encodeSVG(rawSVG)}')`
 				catControls.style.maxHeight = '20rem' // Show controls
-				updateSVGViewBox(spacing) // Use the saved spacing value
+				updateSVGViewBox(spacing) // Apply background with saved spacing
 			} else {
 				body.style.backgroundImage = ''
 				catControls.style.maxHeight = '0' // Hide controls
@@ -155,7 +163,7 @@ import '../styles/module/_slider.scss'
 		}
 
 		// Function to toggle the background
-		function toggleBackground() {
+		function toggleBackground(): void {
 			isBackgroundSet = !isBackgroundSet // Toggle state
 			applyBackgroundState() // Apply the updated state
 			localStorage.setItem('isBackgroundSet', JSON.stringify(isBackgroundSet)) // Save state to local storage
@@ -164,26 +172,22 @@ import '../styles/module/_slider.scss'
 		// Update slider value display and background on input
 		slider.addEventListener('input', (event) => {
 			if (isBackgroundSet) {
-				spacing = parseInt(event.target.value, 10)
-				sliderValue.textContent = spacing
+				const target = event.target as HTMLInputElement
+				spacing = parseInt(target.value, 10)
+				sliderValue.textContent = spacing.toString()
 				updateSVGViewBox(spacing)
 				localStorage.setItem('backgroundSpacing', JSON.stringify(spacing)) // Save state to local storage
 			}
 		})
 
 		// Set the slider value on page load to the saved spacing value
-		slider.value = spacing
-		sliderValue.textContent = spacing // Set the displayed value next to the slider
+		slider.value = spacing.toString()
+		sliderValue.textContent = spacing.toString() // Set the displayed value next to the slider
 
 		// Attach the toggle function to the click event
 		svgElement.addEventListener('click', toggleBackground)
 
 		// Apply the saved state on page load
 		applyBackgroundState()
-
-		// Initialize the background with the default slider value if enabled
-		if (isBackgroundSet) {
-			updateSVGViewBox(spacing)
-		}
 	})
 </script>

@@ -6,22 +6,27 @@ interface Props {
 
 const { code, lang = 'typescript' } = Astro.props
 
-import { getHighlighter } from 'shiki'
+import { getHighlighter, type Highlighter } from 'shiki'
 
 const theme = 'material-theme-palenight'
 
-const highlighter = await getHighlighter({
-	// Specify themes array
-	themes: [theme],
-	// Specify the languages you need
-	langs: ['typescript', 'javascript', 'jsx', 'tsx', 'html', 'css', 'astro'],
-})
+// Cache the highlighter as a singleton across all CodeBlock instances
+const highlighterCache = (globalThis as any).__shikiHighlighter as
+	| Promise<Highlighter>
+	| undefined
+const highlighterPromise =
+	highlighterCache ??
+	((globalThis as any).__shikiHighlighter = getHighlighter({
+		themes: [theme],
+		langs: ['typescript', 'javascript', 'jsx', 'tsx', 'html', 'css', 'astro'],
+	}))
+
+const highlighter = await highlighterPromise
 
 const html = highlighter.codeToHtml(code, {
 	lang,
 	theme: theme,
 })
-highlighter.dispose()
 ---
 
 <div class="code-block">
