@@ -14,7 +14,10 @@ export async function getStaticPaths() {
 		mdPlay = await Astro.glob('../play/*.md')
 	} catch {}
 	const astroPlay = await Astro.glob('../play/*.astro')
-	const mdThoughts = await Astro.glob('../thoughts/*.md')
+	let mdThoughts = []
+	try {
+		mdThoughts = await Astro.glob('../thoughts/*.md')
+	} catch {}
 	const astroThoughts = await Astro.glob('../thoughts/*.astro')
 
 	// Transform posts
@@ -43,7 +46,10 @@ try {
 	mdPlay = await Astro.glob('../play/*.md')
 } catch {}
 const astroPlay = await Astro.glob('../play/*.astro')
-const mdThoughts = await Astro.glob('../thoughts/*.md')
+let mdThoughts = []
+try {
+	mdThoughts = await Astro.glob('../thoughts/*.md')
+} catch {}
 const astroThoughts = await Astro.glob('../thoughts/*.astro')
 
 // Transform posts

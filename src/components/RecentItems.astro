@@ -16,7 +16,10 @@ try {
 	mdPlay = await Astro.glob('../pages/play/*.md')
 } catch {}
 const astroPlay = await Astro.glob('../pages/play/*.astro')
-const mdThoughts = await Astro.glob('../pages/thoughts/*.md')
+let mdThoughts = []
+try {
+	mdThoughts = await Astro.glob('../pages/thoughts/*.md')
+} catch {}
 const astroThoughts = await Astro.glob('../pages/thoughts/*.astro')
 
 // Transform posts
