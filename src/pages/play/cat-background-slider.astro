@@ -249,15 +249,18 @@ localStorage.setItem('backgroundSpacing',
 			Here is a live demo. The dashed grid shows the tile boundaries. Drag the
 			slider to see how the tile grows while the cat stays the same size.
 		</p>
-		<div class="demo-container">
-			<div class="demo-box" id="demo-box" data-svg={CatSVGFile}></div>
-			<div class="demo-controls">
-				<label for="demo-slider">Spacing</label>
-				<input id="demo-slider" type="range" min="100" max="600" value="250" />
-				<span id="demo-slider-value" class="demo-value">250</span>
-			</div>
-		</div>
+	</div>
 
+	<div class="demo-container">
+		<div class="demo-box" id="demo-box" data-svg={CatSVGFile}></div>
+		<div class="demo-controls">
+			<label for="demo-slider">Spacing</label>
+			<input id="demo-slider" type="range" min="100" max="600" value="250" />
+			<span id="demo-slider-value" class="demo-value">250</span>
+		</div>
+	</div>
+
+	<div class="article">
 		<h3>The Slider</h3>
 		<p>
 			The range input drives the spacing value from 100 to 600. On each input
@@ -289,12 +292,11 @@ localStorage.setItem('backgroundSpacing',
 
 <style lang="scss">
 	.demo-container {
-		margin: 2rem 0 3rem;
+		margin: 2rem auto 3rem;
+		max-width: 1260px;
+		padding: 0 2rem;
 	}
 	.demo-box {
-		width: calc(100vw - 4rem);
-		margin-left: calc(-50vw + 50%);
-		transform: translateX(2rem);
 		height: 30rem;
 		border: 1px solid var(--text-color);
 
