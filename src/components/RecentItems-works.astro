@@ -4,13 +4,18 @@ import BlogPost from './BlogPost.astro'
 const { featured = 'false', category = 'both' } = Astro.props // Extract props with default values
 const isFeatured = featured === 'true'
 
-const mdPlay = (await Astro.glob('../pages/play/*.md')) || {}
-const astroPlay = (await Astro.glob('../pages/play/*.astro')) || {}
-let mdThoughts = []
-try {
-	mdThoughts = await Astro.glob('../pages/thoughts/*.md')
-} catch {}
-const astroThoughts = (await Astro.glob('../pages/thoughts/*.astro')) || {}
+const mdPlay = Object.values(
+	import.meta.glob('../pages/play/*.md', { eager: true })
+)
+const astroPlay = Object.values(
+	import.meta.glob('../pages/play/*.astro', { eager: true })
+)
+const mdThoughts = Object.values(
+	import.meta.glob('../pages/thoughts/*.md', { eager: true })
+)
+const astroThoughts = Object.values(
+	import.meta.glob('../pages/thoughts/*.astro', { eager: true })
+)
 
 // Utility function to transform posts
 const transformPosts = (posts, sourceType) =>

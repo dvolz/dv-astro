@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogPost from '../../components/BlogPost.astro'
+import '../../styles/global/_recent-items.scss'
 import {
 	transformPosts,
 	filterPostsByCategory,
@@ -9,16 +10,18 @@ import {
 } from '../../scripts/postHelpers'
 
 export async function getStaticPaths() {
-	let mdPlay = []
-	try {
-		mdPlay = await Astro.glob('../play/*.md')
-	} catch {}
-	const astroPlay = await Astro.glob('../play/*.astro')
-	let mdThoughts = []
-	try {
-		mdThoughts = await Astro.glob('../thoughts/*.md')
-	} catch {}
-	const astroThoughts = await Astro.glob('../thoughts/*.astro')
+	const mdPlay = Object.values(
+		import.meta.glob('../play/*.md', { eager: true })
+	)
+	const astroPlay = Object.values(
+		import.meta.glob('../play/*.astro', { eager: true })
+	)
+	const mdThoughts = Object.values(
+		import.meta.glob('../thoughts/*.md', { eager: true })
+	)
+	const astroThoughts = Object.values(
+		import.meta.glob('../thoughts/*.astro', { eager: true })
+	)
 
 	// Transform posts
 	const allPosts = [
@@ -40,17 +43,17 @@ export async function getStaticPaths() {
 	})
 }
 
-// Use Astro.glob to load posts
-let mdPlay = []
-try {
-	mdPlay = await Astro.glob('../play/*.md')
-} catch {}
-const astroPlay = await Astro.glob('../play/*.astro')
-let mdThoughts = []
-try {
-	mdThoughts = await Astro.glob('../thoughts/*.md')
-} catch {}
-const astroThoughts = await Astro.glob('../thoughts/*.astro')
+// Use import.meta.glob to load posts
+const mdPlay = Object.values(import.meta.glob('../play/*.md', { eager: true }))
+const astroPlay = Object.values(
+	import.meta.glob('../play/*.astro', { eager: true })
+)
+const mdThoughts = Object.values(
+	import.meta.glob('../thoughts/*.md', { eager: true })
+)
+const astroThoughts = Object.values(
+	import.meta.glob('../thoughts/*.astro', { eager: true })
+)
 
 // Transform posts
 const allPosts = [
@@ -71,7 +74,6 @@ const sortedPosts = processedPosts.sort((a, b) => {
 })
 
 const { tag } = Astro.params
-import '../../styles/global/_recent-items.scss'
 ---
 
 <BaseLayout pageTitle={`${tag} Articles`}>

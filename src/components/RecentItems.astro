@@ -1,5 +1,6 @@
 ---
 import BlogPost from './BlogPost.astro'
+import '../styles/global/_recent-items.scss'
 import {
 	transformPosts,
 	filterPostsByCategory,
@@ -10,17 +11,19 @@ import {
 const { featured = 'false', category = 'both' } = Astro.props
 const isFeatured = featured === 'true'
 
-// Use Astro.glob to load posts
-let mdPlay = []
-try {
-	mdPlay = await Astro.glob('../pages/play/*.md')
-} catch {}
-const astroPlay = await Astro.glob('../pages/play/*.astro')
-let mdThoughts = []
-try {
-	mdThoughts = await Astro.glob('../pages/thoughts/*.md')
-} catch {}
-const astroThoughts = await Astro.glob('../pages/thoughts/*.astro')
+// Use import.meta.glob to load posts
+const mdPlay = Object.values(
+	import.meta.glob('../pages/play/*.md', { eager: true })
+)
+const astroPlay = Object.values(
+	import.meta.glob('../pages/play/*.astro', { eager: true })
+)
+const mdThoughts = Object.values(
+	import.meta.glob('../pages/thoughts/*.md', { eager: true })
+)
+const astroThoughts = Object.values(
+	import.meta.glob('../pages/thoughts/*.astro', { eager: true })
+)
 
 // Transform posts
 const allPosts = [
@@ -46,7 +49,6 @@ const sortedPosts = processedPosts.sort((a, b) => {
 	const dateB = new Date(b.date)
 	return dateB - dateA // Sort in descending order
 })
-import '../styles/global/_recent-items.scss'
 ---
 
 <ul class="recentItems">
