@@ -287,10 +287,30 @@ const fullWidthBody = true
 		font-family: var(--a-font);
 		font-weight: 700;
 	}
+	.leaderboard td:nth-child(4) {
+		text-align: right;
+		font-size: 1.2rem;
+		opacity: 0.6;
+		white-space: nowrap;
+	}
 	.leaderboard .empty-board {
 		text-align: center;
 		opacity: 0.6;
 		padding: 2rem 0;
+	}
+	.leaderboard tr.highlight {
+		background: rgba(93, 173, 226, 0.15);
+		td {
+			font-weight: 700;
+			color: #5dade2;
+		}
+	}
+	@keyframes highlight-flash {
+		0% { background: rgba(93, 173, 226, 0.35); }
+		100% { background: rgba(93, 173, 226, 0.1); }
+	}
+	.leaderboard tr.highlight {
+		animation: highlight-flash 1.5s ease-out;
 	}
 </style>
 
@@ -504,9 +524,9 @@ const fullWidthBody = true
 		<div class="leaderboard" id="leaderboard">
 			<h3>Leaderboard</h3>
 			<table>
-				<thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead>
+				<thead><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
 				<tbody id="leaderboardBody">
-					<tr><td colspan="3" class="empty-board">Loading…</td></tr>
+					<tr><td colspan="4" class="empty-board">Loading…</td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -842,22 +862,41 @@ const fullWidthBody = true
 			renderLeaderboard(scores)
 		} catch {
 			leaderboardBody.innerHTML =
-				'<tr><td colspan="3" class="empty-board">Could not load leaderboard</td></tr>'
+				'<tr><td colspan="4" class="empty-board">Could not load leaderboard</td></tr>'
 		}
 	}
 
-	function renderLeaderboard(scores: { name: string; score: number }[]) {
+	function formatDate(iso: string): string {
+		try {
+			const d = new Date(iso)
+			return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+		} catch {
+			return ''
+		}
+	}
+
+	let lastSubmittedDate: string | null = null
+
+	function renderLeaderboard(scores: { name: string; score: number; date?: string }[]) {
 		if (scores.length === 0) {
 			leaderboardBody.innerHTML =
-				'<tr><td colspan="3" class="empty-board">No scores yet — be the first!</td></tr>'
+				'<tr><td colspan="4" class="empty-board">No scores yet — be the first!</td></tr>'
 			return
 		}
 		leaderboardBody.innerHTML = scores
-			.map(
-				(s, i) =>
-					`<tr><td>${i + 1}</td><td>${s.name}</td><td>${s.score}</td></tr>`
-			)
+			.map((s, i) => {
+				const isHighlight = lastSubmittedDate && s.date === lastSubmittedDate
+				const cls = isHighlight ? ' class="highlight"' : ''
+				const dateStr = s.date ? formatDate(s.date) : ''
+				return `<tr${cls}><td>${i + 1}</td><td>${s.name}</td><td>${s.score}</td><td>${dateStr}</td></tr>`
+			})
 			.join('')
+
+		// Scroll the highlighted row into view
+		if (lastSubmittedDate) {
+			const row = leaderboardBody.querySelector('.highlight')
+			row?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+		}
 	}
 
 	submitScoreBtn.addEventListener('click', async () => {
@@ -878,7 +917,14 @@ const fullWidthBody = true
 			})
 			if (!res.ok) throw new Error('Submit failed')
 			const scores = await res.json()
+			// Find the entry we just submitted (most recent with matching name/score)
+			const submitted = scores.find(
+				(s: { name: string; score: number; date?: string }) =>
+					s.name === name && s.score === score && s.date
+			)
+			lastSubmittedDate = submitted?.date || null
 			renderLeaderboard(scores)
+			lastSubmittedDate = null
 			submitStatus.textContent = 'Score submitted!'
 			nameInputRow.classList.remove('visible')
 		} catch {
