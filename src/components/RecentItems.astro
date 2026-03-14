@@ -45,9 +45,12 @@ const featuredFilteredPosts = filterFeaturedPosts(
 	isFeatured
 )
 
+// Remove hidden posts (display: false)
+const visiblePosts = featuredFilteredPosts.filter((post) => post.display !== false)
+
 // Match display components from pre-loaded modules
 const processedPosts = loadDynamicComponents(
-	featuredFilteredPosts,
+	visiblePosts,
 	displayModules
 )
 
