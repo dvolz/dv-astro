@@ -895,6 +895,13 @@ const fullWidthBody = true
 	// ── Controls ──
 
 	document.addEventListener('keydown', (e) => {
+		// Don't intercept keys when typing in an input
+		if (
+			e.target instanceof HTMLInputElement ||
+			e.target instanceof HTMLTextAreaElement
+		)
+			return
+
 		switch (e.key) {
 			case 'ArrowUp':
 			case 'w':
