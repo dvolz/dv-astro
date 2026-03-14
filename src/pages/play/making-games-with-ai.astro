@@ -244,10 +244,8 @@ const fullWidthBody = true
 	/* ── Mobile D-Pad ── */
 	.dpad {
 		display: none;
-		margin: 1.5rem auto 0;
-		width: 16rem;
-		aspect-ratio: 3 / 3;
-		position: relative;
+		margin: 2rem auto 0;
+		width: 18rem;
 		-webkit-user-select: none;
 		user-select: none;
 		touch-action: manipulation;
@@ -257,27 +255,41 @@ const fullWidthBody = true
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
 			grid-template-rows: repeat(3, 1fr);
-			gap: 0.4rem;
+			gap: 0.6rem;
 		}
 	}
 	.dpad-btn {
 		appearance: none;
-		border: 1px solid rgba(128, 128, 128, 0.25);
-		border-radius: 0.6rem;
-		background: rgba(128, 128, 128, 0.08);
+		width: 100%;
+		aspect-ratio: 1;
+		border: 2px solid var(--text-color);
+		border-radius: 50%;
+		background: transparent;
 		color: var(--text-color);
-		font-size: 2.4rem;
 		line-height: 1;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: background 0.1s, transform 0.1s;
+		transition: all 0.2s ease;
 		-webkit-tap-highlight-color: transparent;
+		svg {
+			width: 2rem;
+			height: 2rem;
+			fill: none;
+			stroke: var(--text-color);
+			stroke-width: 2.5;
+			stroke-linejoin: round;
+			stroke-linecap: round;
+			transition: fill 0.15s ease, stroke 0.15s ease;
+		}
+		&.pressed,
 		&:active {
-			background: rgba(93, 173, 226, 0.2);
-			border-color: rgba(93, 173, 226, 0.4);
-			transform: scale(0.93);
+			transform: scale(0.92);
+			svg {
+				fill: var(--highlight-secondary);
+				stroke: var(--highlight-secondary);
+			}
 		}
 	}
 	.dpad-up    { grid-column: 2; grid-row: 1; }
@@ -511,11 +523,11 @@ const fullWidthBody = true
 		</p>
 
 		<div class="dpad" id="dpad">
-			<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">▲</button>
-			<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">◀</button>
+			<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"><svg viewBox="0 0 24 24"><path d="M12 5 L22 19 L2 19 Z"/></svg></button>
+			<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"><svg viewBox="0 0 24 24"><path d="M5 12 L19 2 L19 22 Z"/></svg></button>
 			<div class="dpad-center"></div>
-			<button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">▶</button>
-			<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">▼</button>
+			<button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right"><svg viewBox="0 0 24 24"><path d="M19 12 L5 2 L5 22 Z"/></svg></button>
+			<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"><svg viewBox="0 0 24 24"><path d="M12 19 L2 5 L22 5 Z"/></svg></button>
 		</div>
 
 		<div class="leaderboard" id="leaderboard">
@@ -979,10 +991,16 @@ const fullWidthBody = true
 	// ── D-pad controls ──
 
 	document.querySelectorAll('.dpad-btn').forEach(btn => {
+		const el = btn as HTMLElement
+
+		const press = () => el.classList.add('pressed')
+		const release = () => el.classList.remove('pressed')
+
 		const handler = (e: Event) => {
 			e.preventDefault()
-			const dir = (btn as HTMLElement).dataset.dir
-			switch (dir) {
+			press()
+			setTimeout(release, 150)
+			switch (el.dataset.dir) {
 				case 'up':    moveShark(0, -1); break
 				case 'down':  moveShark(0, 1); break
 				case 'left':  moveShark(-1, 0); break
