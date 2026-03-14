@@ -246,71 +246,155 @@ const fullWidthBody = true
 		min-height: 1.6rem;
 	}
 
-	/* ── Leaderboard ── */
+
+</style>
+
+<style is:global lang="scss">
+	$subtle: rgba(128, 128, 128, 0.15);
+
 	.leaderboard {
-		max-width: 40rem;
+		max-width: 72rem;
 		margin: 3rem auto 0;
-		text-align: left;
+		padding: 0 2rem;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 	.leaderboard h3 {
 		font-family: var(--a-font);
-		font-size: 2rem;
+		font-size: 2.2rem;
+		font-weight: 800;
 		text-align: center;
-		margin: 0 0 1rem;
+		text-transform: uppercase;
+		letter-spacing: 0.15em;
+		margin: 0 0 1.6rem;
+		opacity: 0.75;
 	}
 	.leaderboard table {
 		width: 100%;
+		min-width: 50rem;
 		border-collapse: collapse;
-		font-size: 1.5rem;
+		table-layout: fixed;
+		border: 1px solid $subtle;
+		border-radius: 0.6rem;
+		overflow: hidden;
 	}
+
+	/* ── All cells get subtle borders ── */
 	.leaderboard th,
 	.leaderboard td {
-		padding: 0.6rem 1rem;
-		border-bottom: 1px solid var(--text-color);
-		text-align: left;
+		padding: 0.8rem 1rem;
+		border: 1px solid $subtle;
+		vertical-align: middle;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
-	.leaderboard th {
+
+	/* ── Header row ── */
+	.leaderboard thead th {
 		font-family: var(--a-font);
 		font-weight: 600;
-		font-size: 1.4rem;
-		opacity: 0.7;
+		font-size: 1rem;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-	.leaderboard td:nth-child(1) {
-		width: 3rem;
-		text-align: center;
-		font-weight: 600;
-	}
-	.leaderboard td:nth-child(3) {
-		text-align: right;
-		font-family: var(--a-font);
-		font-weight: 700;
-	}
-	.leaderboard td:nth-child(4) {
-		text-align: right;
-		font-size: 1.2rem;
-		opacity: 0.6;
+		letter-spacing: 0.14em;
+		color: var(--text-color);
+		opacity: 0.5;
+		background: rgba(128, 128, 128, 0.06);
+		border-bottom: 2px solid $subtle;
 		white-space: nowrap;
 	}
+
+	/* ── Row striping ── */
+	.leaderboard tbody tr {
+		transition: background 0.15s ease;
+	}
+	.leaderboard tbody tr:nth-child(even) {
+		background: rgba(128, 128, 128, 0.04);
+	}
+	.leaderboard tbody tr:hover {
+		background: rgba(128, 128, 128, 0.09);
+	}
+
+	/* ── Rank column ── */
+	.leaderboard th:nth-child(1),
+	.leaderboard td:nth-child(1) {
+		width: 4.5rem;
+		text-align: center;
+		font-family: var(--a-font);
+		font-weight: 800;
+		font-size: 1.4rem;
+		opacity: 0.4;
+	}
+	/* Top 3 trophy styling */
+	.leaderboard tbody tr:nth-child(1) td:nth-child(1),
+	.leaderboard tbody tr:nth-child(2) td:nth-child(1),
+	.leaderboard tbody tr:nth-child(3) td:nth-child(1) {
+		opacity: 0.85;
+		font-size: 1.5rem;
+	}
+
+	/* ── Name column ── */
+	.leaderboard th:nth-child(2),
+	.leaderboard td:nth-child(2) {
+		text-align: left;
+		font-family: var(--p-font);
+		font-size: 1.5rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+	}
+
+	/* ── Score column ── */
+	.leaderboard th:nth-child(3),
+	.leaderboard td:nth-child(3) {
+		width: 9rem;
+		text-align: center;
+		font-family: var(--a-font);
+		font-weight: 800;
+		font-size: 1.6rem;
+		letter-spacing: 0.04em;
+		color: #5dade2;
+	}
+
+	/* ── Date column ── */
+	.leaderboard th:nth-child(4),
+	.leaderboard td:nth-child(4) {
+		width: 16rem;
+		text-align: right;
+		font-family: var(--a-font);
+		font-size: 1.15rem;
+		font-weight: 400;
+		color: var(--text-color);
+		opacity: 0.5;
+		white-space: nowrap;
+		font-style: italic;
+	}
+
 	.leaderboard .empty-board {
 		text-align: center;
-		opacity: 0.6;
-		padding: 2rem 0;
+		opacity: 0.4;
+		padding: 2.5rem 0;
+		font-family: var(--p-font);
+		font-style: italic;
+		font-size: 1.4rem;
 	}
+
+	/* ── Highlight row (submitted score) ── */
 	.leaderboard tr.highlight {
-		background: rgba(93, 173, 226, 0.15);
+		background: rgba(93, 173, 226, 0.1) !important;
+		animation: highlight-flash 2s ease-out;
 		td {
-			font-weight: 700;
+			opacity: 1;
+		}
+		td:nth-child(2) {
 			color: #5dade2;
+		}
+		td:nth-child(3) {
+			color: #3498db;
+			font-weight: 900;
 		}
 	}
 	@keyframes highlight-flash {
-		0% { background: rgba(93, 173, 226, 0.35); }
-		100% { background: rgba(93, 173, 226, 0.1); }
-	}
-	.leaderboard tr.highlight {
-		animation: highlight-flash 1.5s ease-out;
+		0% { background: rgba(93, 173, 226, 0.28); }
+		100% { background: rgba(93, 173, 226, 0.08); }
 	}
 </style>
 
@@ -524,7 +608,9 @@ const fullWidthBody = true
 		<div class="leaderboard" id="leaderboard">
 			<h3>Leaderboard</h3>
 			<table>
-				<thead><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
+				<thead
+					><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead
+				>
 				<tbody id="leaderboardBody">
 					<tr><td colspan="4" class="empty-board">Loading…</td></tr>
 				</tbody>
@@ -861,15 +947,23 @@ const fullWidthBody = true
 			const scores = await res.json()
 			renderLeaderboard(scores)
 		} catch {
-			leaderboardBody.innerHTML =
-				'<tr><td colspan="4" class="empty-board">Could not load leaderboard</td></tr>'
+			renderLeaderboard([])
 		}
 	}
 
 	function formatDate(iso: string): string {
 		try {
 			const d = new Date(iso)
-			return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+			const date = d.toLocaleDateString('en-US', {
+				month: 'short',
+				day: 'numeric',
+				year: 'numeric',
+			})
+			const time = d.toLocaleTimeString('en-US', {
+				hour: 'numeric',
+				minute: '2-digit',
+			})
+			return `${date} · ${time}`
 		} catch {
 			return ''
 		}
@@ -877,7 +971,9 @@ const fullWidthBody = true
 
 	let lastSubmittedDate: string | null = null
 
-	function renderLeaderboard(scores: { name: string; score: number; date?: string }[]) {
+	function renderLeaderboard(
+		scores: { name: string; score: number; date?: string }[]
+	) {
 		if (scores.length === 0) {
 			leaderboardBody.innerHTML =
 				'<tr><td colspan="4" class="empty-board">No scores yet — be the first!</td></tr>'
