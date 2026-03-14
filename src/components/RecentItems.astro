@@ -46,13 +46,12 @@ const featuredFilteredPosts = filterFeaturedPosts(
 )
 
 // Remove hidden posts (display: false)
-const visiblePosts = featuredFilteredPosts.filter((post) => post.display !== false)
+const visiblePosts = featuredFilteredPosts.filter(
+	(post) => post.display !== false
+)
 
 // Match display components from pre-loaded modules
-const processedPosts = loadDynamicComponents(
-	visiblePosts,
-	displayModules
-)
+const processedPosts = loadDynamicComponents(visiblePosts, displayModules)
 
 // Sort posts by date (most recent first)
 const sortedPosts = processedPosts.sort((a, b) => {
