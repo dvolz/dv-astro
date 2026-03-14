@@ -241,6 +241,64 @@ const fullWidthBody = true
 		min-height: 1.6rem;
 	}
 
+	/* ── Mobile D-Pad ── */
+	.dpad {
+		display: none;
+		margin: 1.5rem auto 0;
+		width: 16rem;
+		aspect-ratio: 3 / 3;
+		position: relative;
+		-webkit-user-select: none;
+		user-select: none;
+		touch-action: manipulation;
+	}
+	@media (pointer: coarse) {
+		.dpad {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			grid-template-rows: repeat(3, 1fr);
+			gap: 0.4rem;
+		}
+	}
+	.dpad-btn {
+		appearance: none;
+		border: 1px solid rgba(128, 128, 128, 0.25);
+		border-radius: 0.6rem;
+		background: rgba(128, 128, 128, 0.08);
+		color: var(--text-color);
+		font-size: 2.4rem;
+		line-height: 1;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.1s, transform 0.1s;
+		-webkit-tap-highlight-color: transparent;
+		&:active {
+			background: rgba(93, 173, 226, 0.2);
+			border-color: rgba(93, 173, 226, 0.4);
+			transform: scale(0.93);
+		}
+	}
+	.dpad-up    { grid-column: 2; grid-row: 1; }
+	.dpad-left  { grid-column: 1; grid-row: 2; }
+	.dpad-right { grid-column: 3; grid-row: 2; }
+	.dpad-down  { grid-column: 2; grid-row: 3; }
+	.dpad-center {
+		grid-column: 2; grid-row: 2;
+		border: none;
+		background: none;
+		pointer-events: none;
+	}
+	.touch-hint {
+		display: none;
+	}
+	@media (pointer: coarse) {
+		.touch-hint {
+			display: inline;
+		}
+	}
+
 
 </style>
 
@@ -449,8 +507,16 @@ const fullWidthBody = true
 
 		<p class="game-instructions">
 			Arrow keys or WASD to move. Collect yellow squares. Avoid the black
-			squares.
+			squares. <span class="touch-hint">Use the D-pad below or swipe on the board.</span>
 		</p>
+
+		<div class="dpad" id="dpad">
+			<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">▲</button>
+			<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left">◀</button>
+			<div class="dpad-center"></div>
+			<button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right">▶</button>
+			<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down">▼</button>
+		</div>
 
 		<div class="leaderboard" id="leaderboard">
 			<h3>Leaderboard</h3>
@@ -907,6 +973,50 @@ const fullWidthBody = true
 				e.preventDefault()
 				moveShark(1, 0)
 				break
+		}
+	})
+
+	// ── D-pad controls ──
+
+	document.querySelectorAll('.dpad-btn').forEach(btn => {
+		const handler = (e: Event) => {
+			e.preventDefault()
+			const dir = (btn as HTMLElement).dataset.dir
+			switch (dir) {
+				case 'up':    moveShark(0, -1); break
+				case 'down':  moveShark(0, 1); break
+				case 'left':  moveShark(-1, 0); break
+				case 'right': moveShark(1, 0); break
+			}
+		}
+		btn.addEventListener('touchstart', handler, { passive: false })
+		btn.addEventListener('click', handler)
+	})
+
+	// ── Swipe controls on canvas ──
+
+	let touchStartX = 0
+	let touchStartY = 0
+
+	canvas.addEventListener('touchstart', (e) => {
+		const t = e.touches[0]
+		touchStartX = t.clientX
+		touchStartY = t.clientY
+	}, { passive: true })
+
+	canvas.addEventListener('touchend', (e) => {
+		if (!e.changedTouches.length) return
+		const t = e.changedTouches[0]
+		const dx = t.clientX - touchStartX
+		const dy = t.clientY - touchStartY
+		const absDx = Math.abs(dx)
+		const absDy = Math.abs(dy)
+		const MIN_SWIPE = 20
+		if (Math.max(absDx, absDy) < MIN_SWIPE) return
+		if (absDx > absDy) {
+			moveShark(dx > 0 ? 1 : -1, 0)
+		} else {
+			moveShark(0, dy > 0 ? 1 : -1)
 		}
 	})
 
