@@ -25,6 +25,11 @@ const astroThoughts = Object.values(
 	import.meta.glob('../pages/thoughts/*.astro', { eager: true })
 )
 
+// Pre-load all display components via import.meta.glob (statically analyzable by Vite)
+const displayModules = import.meta.glob('./display/*-display.astro', {
+	eager: true,
+})
+
 // Transform posts
 const allPosts = [
 	...transformPosts(mdThoughts, 'markdown'),
@@ -40,8 +45,11 @@ const featuredFilteredPosts = filterFeaturedPosts(
 	isFeatured
 )
 
-// Dynamically load components for posts with `display: true`
-const processedPosts = await loadDynamicComponents(featuredFilteredPosts)
+// Match display components from pre-loaded modules
+const processedPosts = loadDynamicComponents(
+	featuredFilteredPosts,
+	displayModules
+)
 
 // Sort posts by date (most recent first)
 const sortedPosts = processedPosts.sort((a, b) => {

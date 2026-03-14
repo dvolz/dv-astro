@@ -1,0 +1,468 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+import resumeData from '../../data/resume.json'
+
+export const blogData = {
+	title: 'Resume',
+	author: 'David Volz',
+	description: 'A data-driven resume page built with Astro.',
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2026-3-14',
+	tags: ['code', 'design'],
+	featured: true,
+	display: true,
+}
+
+const showTypographyHero = true
+const fullWidthBody = false
+---
+
+<style lang="scss">
+	/* ── Article Toggle ── */
+	.article-toggle-wrapper {
+		max-width: 55rem;
+		margin: 0 auto 3rem;
+		text-align: center;
+	}
+	.article-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.8rem;
+		background: none;
+		border: 1px solid var(--text-color);
+		border-radius: 0.6rem;
+		padding: 0.8rem 2rem;
+		font-family: var(--a-font);
+		font-size: 1.6rem;
+		font-weight: 600;
+		color: var(--text-color);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		&:hover {
+			background: var(--text-color);
+			color: var(--background-color);
+		}
+		.toggle-icon {
+			display: inline-block;
+			transition: transform 0.3s ease;
+			font-size: 1.2rem;
+		}
+		&[aria-expanded='true'] .toggle-icon {
+			transform: rotate(90deg);
+		}
+	}
+	.article-content {
+		max-height: 0;
+		overflow: hidden;
+		transition:
+			max-height 0.5s ease,
+			opacity 0.4s ease;
+		opacity: 0;
+		&.open {
+			opacity: 1;
+			max-height: 200rem;
+		}
+	}
+
+	/* ── Resume ── */
+	.resume {
+		max-width: 80rem;
+		margin: 0 auto;
+		padding: 0 2rem;
+	}
+
+	.resume-header {
+		text-align: center;
+		margin-bottom: 3rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--text-color);
+	}
+	.resume-header h2 {
+		font-family: var(--a-font);
+		font-size: 3rem;
+		margin: 0 0 0.3rem;
+	}
+	.resume-header .resume-title {
+		font-size: 1.8rem;
+		font-weight: 300;
+		margin: 0 0 1.5rem;
+		opacity: 0.85;
+	}
+	.contact-list {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1rem 2rem;
+		padding: 0;
+		margin: 0;
+		font-size: 1.5rem;
+		a {
+			color: var(--link-color);
+			&:hover {
+				color: var(--link-hover);
+			}
+		}
+	}
+	.contact-list li {
+		white-space: nowrap;
+	}
+
+	/* ── Sections ── */
+	.resume-section {
+		margin-bottom: 3.5rem;
+	}
+	.resume-section h3 {
+		font-family: var(--a-font);
+		font-size: 2.2rem;
+		font-weight: 700;
+		margin: 0 0 1.5rem;
+		padding-bottom: 0.6rem;
+		border-bottom: 1px solid var(--text-color);
+	}
+
+	/* ── Summary ── */
+	.resume-summary p {
+		font-size: 1.7rem;
+		line-height: 1.7;
+		margin: 0;
+	}
+
+	/* ── Experience ── */
+	.experience-item {
+		margin-bottom: 2.5rem;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+	.experience-item .role-line {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 0.2rem;
+	}
+	.role-line h4 {
+		font-family: var(--a-font);
+		font-size: 1.9rem;
+		font-weight: 600;
+		margin: 0;
+	}
+	.role-line .dates {
+		font-size: 1.4rem;
+		font-weight: 300;
+		opacity: 0.8;
+		white-space: nowrap;
+	}
+	.experience-item .company-line {
+		font-size: 1.5rem;
+		font-weight: 400;
+		margin: 0 0 0.8rem;
+		opacity: 0.85;
+	}
+	.experience-item ul {
+		padding-left: 2rem;
+		margin: 0;
+	}
+	.experience-item li {
+		margin-bottom: 0.5rem;
+		font-size: 1.6rem;
+		line-height: 1.5;
+	}
+
+	/* ── Skills ── */
+	.skills-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+		gap: 2rem;
+	}
+	.skill-group h4 {
+		font-family: var(--a-font);
+		font-size: 1.7rem;
+		font-weight: 600;
+		margin: 0 0 0.6rem;
+	}
+	.skill-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.skill-tags li {
+		padding: 0.4rem 1rem;
+		border: 1px solid var(--text-color);
+		border-radius: 0.4rem;
+		font-size: 1.4rem;
+		white-space: nowrap;
+		transition: all 0.3s ease;
+	}
+
+	/* ── Education ── */
+	.education-item {
+		margin-bottom: 1.5rem;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+	.education-item .degree-line {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+	.degree-line h4 {
+		font-family: var(--a-font);
+		font-size: 1.9rem;
+		font-weight: 600;
+		margin: 0;
+	}
+	.degree-line .year {
+		font-size: 1.4rem;
+		font-weight: 300;
+		opacity: 0.8;
+	}
+	.education-item .institution {
+		font-size: 1.5rem;
+		margin: 0;
+		opacity: 0.85;
+	}
+
+	/* ── Projects ── */
+	.project-item {
+		margin-bottom: 1.5rem;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+	.project-item h4 {
+		font-family: var(--a-font);
+		font-size: 1.8rem;
+		font-weight: 600;
+		margin: 0 0 0.3rem;
+	}
+	.project-item p {
+		font-size: 1.6rem;
+		margin: 0;
+		line-height: 1.5;
+	}
+</style>
+
+<BaseLayout
+	pageTitle={blogData.title}
+	{showTypographyHero}
+	description={blogData.description}
+	fullWidthBody={fullWidthBody}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<!-- Article toggle -->
+	<div class="article-toggle-wrapper">
+		<button
+			class="article-toggle"
+			aria-expanded="false"
+			aria-controls="article-content">
+			<span class="toggle-icon">▶</span> View Article
+		</button>
+	</div>
+
+	<div id="article-content" class="article-content">
+		<div class="article">
+			<p>
+				I wanted to build a resume page that lives right on my site instead of
+				being a static PDF. The data lives in a single JSON file, which means I
+				can update my experience, skills, and projects in one place and the page
+				rebuilds itself.
+			</p>
+			<p>
+				The JSON structure covers all the standard resume categories — contact
+				info, summary, experience, skills, education, certifications, and
+				projects. Astro reads it at build time and renders everything into
+				semantic HTML with styles consistent with the rest of the site.
+			</p>
+			<h3>How It Works</h3>
+			<p>
+				The resume data is imported from <code>src/data/resume.json</code>. Each
+				section maps to a block in the template. Experience entries loop out
+				with role, company, dates, and bullet-point highlights. Skills are
+				displayed in a responsive grid of tagged groups. Education and projects
+				round it out.
+			</p>
+			<p>
+				Since everything is data-driven, adding a new job or skill is just
+				editing the JSON — no template changes needed.
+			</p>
+		</div>
+	</div>
+
+	<!-- Resume content -->
+	<div class="resume">
+		<div class="resume-header">
+			<h2>{resumeData.name}</h2>
+			<p class="resume-title">{resumeData.title}</p>
+			<ul class="contact-list">
+				{resumeData.contact.email && <li>{resumeData.contact.email}</li>}
+				{resumeData.contact.location && <li>{resumeData.contact.location}</li>}
+				{
+					resumeData.contact.website && (
+						<li>
+							<a href={resumeData.contact.website} target="_blank">
+								{resumeData.contact.website.replace('https://', '')}
+							</a>
+						</li>
+					)
+				}
+				{
+					resumeData.contact.linkedin && (
+						<li>
+							<a href={resumeData.contact.linkedin} target="_blank">
+								LinkedIn
+							</a>
+						</li>
+					)
+				}
+				{
+					resumeData.contact.github && (
+						<li>
+							<a href={resumeData.contact.github} target="_blank">
+								GitHub
+							</a>
+						</li>
+					)
+				}
+			</ul>
+		</div>
+
+		{
+			resumeData.summary && (
+				<div class="resume-section resume-summary">
+					<h3>Summary</h3>
+					<p>{resumeData.summary}</p>
+				</div>
+			)
+		}
+
+		{
+			resumeData.experience.length > 0 && (
+				<div class="resume-section">
+					<h3>Experience</h3>
+					{resumeData.experience.map((job) => (
+						<div class="experience-item">
+							<div class="role-line">
+								<h4>{job.role}</h4>
+								<span class="dates">
+									{job.startDate} — {job.endDate}
+								</span>
+							</div>
+							<p class="company-line">
+								{job.company} · {job.location}
+							</p>
+							{job.highlights.length > 0 && (
+								<ul>
+									{job.highlights.map((h) => (
+										<li>{h}</li>
+									))}
+								</ul>
+							)}
+						</div>
+					))}
+				</div>
+			)
+		}
+
+		{
+			resumeData.skills.length > 0 && (
+				<div class="resume-section">
+					<h3>Skills</h3>
+					<div class="skills-grid">
+						{resumeData.skills.map((group) => (
+							<div class="skill-group">
+								<h4>{group.category}</h4>
+								<ul class="skill-tags">
+									{group.items.map((item) => (
+										<li>{item}</li>
+									))}
+								</ul>
+							</div>
+						))}
+					</div>
+				</div>
+			)
+		}
+
+		{
+			resumeData.education.length > 0 && (
+				<div class="resume-section">
+					<h3>Education</h3>
+					{resumeData.education.map((edu) => (
+						<div class="education-item">
+							<div class="degree-line">
+								<h4>{edu.degree}</h4>
+								<span class="year">{edu.graduationYear}</span>
+							</div>
+							<p class="institution">
+								{edu.institution} · {edu.location}
+							</p>
+						</div>
+					))}
+				</div>
+			)
+		}
+
+		{
+			resumeData.certifications && resumeData.certifications.length > 0 && (
+				<div class="resume-section">
+					<h3>Certifications</h3>
+					<ul>
+						{resumeData.certifications.map((cert) => (
+							<li>{cert}</li>
+						))}
+					</ul>
+				</div>
+			)
+		}
+
+		{
+			resumeData.projects && resumeData.projects.length > 0 && (
+				<div class="resume-section">
+					<h3>Projects</h3>
+					{resumeData.projects.map((proj) => (
+						<div class="project-item">
+							<h4>
+								{proj.url ? (
+									<a href={proj.url} target="_blank">
+										{proj.name}
+									</a>
+								) : (
+									proj.name
+								)}
+							</h4>
+							<p>{proj.description}</p>
+						</div>
+					))}
+				</div>
+			)
+		}
+	</div>
+</BaseLayout>
+
+<script>
+	const toggle = document.querySelector('.article-toggle')
+	const content = document.getElementById('article-content')
+
+	toggle?.addEventListener('click', () => {
+		const isOpen = content?.classList.toggle('open')
+		toggle.setAttribute('aria-expanded', String(isOpen))
+
+		const label = toggle.querySelector('.toggle-icon')
+		if (label) {
+			// Icon rotation is handled by CSS via aria-expanded
+		}
+	})
+</script>

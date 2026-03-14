@@ -1,0 +1,84 @@
+{
+	"name": "David Volz",
+	"title": "Software Manager & Engineer",
+	"contact": {
+		"email": "",
+		"location": "",
+		"website": "https://dv-astro.netlify.app",
+		"linkedin": "",
+		"github": ""
+	},
+	"summary": "Experienced software manager and engineer with a passion for building elegant, performant web applications. Skilled in modern frontend frameworks, team leadership, and delivering high-quality products.",
+	"experience": [
+		{
+			"company": "Company Name",
+			"role": "Software Engineering Manager",
+			"location": "City, State",
+			"startDate": "2022",
+			"endDate": "Present",
+			"highlights": [
+				"Led a team of engineers to deliver key product features",
+				"Improved development workflows and CI/CD pipelines",
+				"Mentored junior engineers and conducted code reviews"
+			]
+		},
+		{
+			"company": "Previous Company",
+			"role": "Senior Software Engineer",
+			"location": "City, State",
+			"startDate": "2018",
+			"endDate": "2022",
+			"highlights": [
+				"Built and maintained customer-facing web applications",
+				"Implemented responsive designs and accessibility improvements",
+				"Collaborated with product and design teams on feature development"
+			]
+		},
+		{
+			"company": "Earlier Company",
+			"role": "Software Engineer",
+			"location": "City, State",
+			"startDate": "2015",
+			"endDate": "2018",
+			"highlights": [
+				"Developed frontend components using modern JavaScript frameworks",
+				"Wrote unit and integration tests to ensure code quality",
+				"Participated in agile sprints and retrospectives"
+			]
+		}
+	],
+	"skills": [
+		{
+			"category": "Languages",
+			"items": ["JavaScript", "TypeScript", "HTML", "CSS/SCSS", "Python"]
+		},
+		{
+			"category": "Frameworks & Libraries",
+			"items": ["Astro", "React", "Node.js", "Motion"]
+		},
+		{
+			"category": "Tools & Platforms",
+			"items": ["Git", "VS Code", "Netlify", "Vite", "Figma"]
+		},
+		{
+			"category": "Leadership",
+			"items": ["Team Management", "Code Review", "Mentorship", "Agile/Scrum"]
+		}
+	],
+	"education": [
+		{
+			"institution": "University Name",
+			"degree": "Bachelor of Science in Computer Science",
+			"location": "City, State",
+			"graduationYear": "2015"
+		}
+	],
+	"certifications": [],
+	"projects": [
+		{
+			"name": "Personal Site (dv-astro)",
+			"description": "A personal portfolio and playground built from scratch with Astro 6, featuring custom SVG animations, tiled backgrounds, and a YouTube timing controller.",
+			"url": "https://dv-astro.netlify.app"
+		}
+	]
+}

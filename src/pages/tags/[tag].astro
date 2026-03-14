@@ -63,8 +63,14 @@ const allPosts = [
 	...transformPosts(astroPlay, 'astro'),
 ]
 
-// Dynamically load components for posts with `display: true`
-const processedPosts = await loadDynamicComponents(allPosts)
+// Pre-load all display components via import.meta.glob
+const displayModules = import.meta.glob(
+	'../../components/display/*-display.astro',
+	{ eager: true }
+)
+
+// Match display components from pre-loaded modules
+const processedPosts = loadDynamicComponents(allPosts, displayModules)
 
 // Sort posts by date (most recent first)
 const sortedPosts = processedPosts.sort((a, b) => {

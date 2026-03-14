@@ -1,0 +1,931 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import BlogDetails from '../../components/BlogDetails.astro'
+
+export const blogData = {
+	title: 'Making Games With AI',
+	author: 'David Volz',
+	description:
+		"A browser game built from a kid's prompt — sharks, bad guys, and yellow squares.",
+	image: {
+		url: 'https://docs.astro.build/assets/arc.webp',
+		alt: 'The Astro logo on a dark background with a purple gradient arc.',
+	},
+	pubDate: '2026-3-14',
+	tags: ['javascript', 'code', 'fluff'],
+	featured: true,
+	display: true,
+}
+
+const showTypographyHero = true
+const fullWidthBody = true
+---
+
+<style lang="scss">
+	/* ── Article Toggle ── */
+	.article-toggle-wrapper {
+		max-width: 55rem;
+		margin: 0 auto 3rem;
+		text-align: center;
+	}
+	.article-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.8rem;
+		background: none;
+		border: 1px solid var(--text-color);
+		border-radius: 0.6rem;
+		padding: 0.8rem 2rem;
+		font-family: var(--a-font);
+		font-size: 1.6rem;
+		font-weight: 600;
+		color: var(--text-color);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		&:hover {
+			background: var(--text-color);
+			color: var(--background-color);
+		}
+		.toggle-icon {
+			display: inline-block;
+			transition: transform 0.3s ease;
+			font-size: 1.2rem;
+		}
+		&[aria-expanded='true'] .toggle-icon {
+			transform: rotate(90deg);
+		}
+	}
+	.article-content {
+		max-height: 0;
+		overflow: hidden;
+		transition:
+			max-height 0.5s ease,
+			opacity 0.4s ease;
+		opacity: 0;
+		&.open {
+			opacity: 1;
+			max-height: 200rem;
+		}
+	}
+
+	/* ── Game ── */
+	.game-wrapper {
+		max-width: 80rem;
+		margin: 0 auto;
+		padding: 0 2rem;
+		text-align: center;
+	}
+	.game-hud {
+		display: flex;
+		justify-content: center;
+		gap: 3rem;
+		margin-bottom: 1.5rem;
+		font-family: var(--a-font);
+		font-size: 1.8rem;
+		font-weight: 600;
+	}
+	.game-canvas-wrapper {
+		display: inline-block;
+		border: 2px solid var(--text-color);
+		border-radius: 0.4rem;
+		line-height: 0;
+	}
+	canvas {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		image-rendering: pixelated;
+	}
+	.game-instructions {
+		margin: 1.5rem auto 0;
+		max-width: 50rem;
+		font-size: 1.5rem;
+		opacity: 0.8;
+		line-height: 1.6;
+	}
+
+	/* ── Game Over Overlay ── */
+	.game-over-overlay {
+		position: absolute;
+		inset: 0;
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		background: rgba(0, 0, 0, 0.85);
+		z-index: 10;
+		border-radius: 0.4rem;
+	}
+	.game-over-overlay.visible {
+		display: flex;
+	}
+	.game-over-overlay h2 {
+		font-family: var(--a-font);
+		font-size: 4rem;
+		color: #e74c3c;
+		margin: 0 0 0.5rem;
+	}
+	.game-over-overlay .final-score {
+		font-family: var(--a-font);
+		font-size: 2rem;
+		color: #fff;
+		margin: 0 0 2rem;
+	}
+	.game-over-overlay .game-over-buttons {
+		display: flex;
+		gap: 1.5rem;
+	}
+	.game-over-overlay button,
+	.game-over-overlay a {
+		font-family: var(--a-font);
+		font-size: 1.6rem;
+		font-weight: 600;
+		padding: 0.8rem 2.5rem;
+		border: 1px solid #fff;
+		border-radius: 0.6rem;
+		background: none;
+		color: #fff;
+		cursor: pointer;
+		text-decoration: none;
+		transition: all 0.3s ease;
+		&:hover {
+			background: #fff;
+			color: #000;
+		}
+	}
+
+	.game-canvas-container {
+		position: relative;
+		display: inline-block;
+	}
+
+	.prompt-callout {
+		background: var(--text-color);
+		color: var(--background-color);
+		border-radius: 0.6rem;
+		padding: 2rem 2.5rem;
+		max-width: 55rem;
+		margin: 0 auto 3rem;
+		font-size: 1.6rem;
+		line-height: 1.6;
+		text-align: left;
+	}
+	.prompt-callout strong {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-family: var(--a-font);
+		font-size: 1.8rem;
+	}
+
+	/* ── Name Input on Game Over ── */
+	.submit-prompt {
+		margin: 0 0 1.2rem;
+	}
+	.submit-prompt button {
+		font-family: var(--a-font);
+		font-size: 1.5rem;
+		font-weight: 600;
+		padding: 0.6rem 2rem;
+		border: 1px solid #5dade2;
+		border-radius: 0.4rem;
+		background: none;
+		color: #5dade2;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		&:hover {
+			background: #5dade2;
+			color: #000;
+		}
+	}
+	.name-input-row {
+		display: none;
+		gap: 0.8rem;
+		margin: 0 0 1.5rem;
+		&.visible {
+			display: flex;
+		}
+	}
+	.name-input-row input {
+		font-family: var(--a-font);
+		font-size: 1.5rem;
+		padding: 0.6rem 1rem;
+		border: 1px solid #fff;
+		border-radius: 0.4rem;
+		background: rgba(255, 255, 255, 0.1);
+		color: #fff;
+		width: 14rem;
+		outline: none;
+		&::placeholder {
+			color: rgba(255, 255, 255, 0.5);
+		}
+	}
+	.name-input-row button {
+		font-family: var(--a-font);
+		font-size: 1.4rem;
+		font-weight: 600;
+		padding: 0.6rem 1.5rem;
+		border: 1px solid #fff;
+		border-radius: 0.4rem;
+		background: none;
+		color: #fff;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		&:hover {
+			background: #fff;
+			color: #000;
+		}
+		&:disabled {
+			opacity: 0.4;
+			cursor: default;
+		}
+	}
+	.submit-status {
+		font-size: 1.3rem;
+		color: #5dade2;
+		margin: 0 0 1rem;
+		min-height: 1.6rem;
+	}
+
+	/* ── Leaderboard ── */
+	.leaderboard {
+		max-width: 40rem;
+		margin: 3rem auto 0;
+		text-align: left;
+	}
+	.leaderboard h3 {
+		font-family: var(--a-font);
+		font-size: 2rem;
+		text-align: center;
+		margin: 0 0 1rem;
+	}
+	.leaderboard table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 1.5rem;
+	}
+	.leaderboard th,
+	.leaderboard td {
+		padding: 0.6rem 1rem;
+		border-bottom: 1px solid var(--text-color);
+		text-align: left;
+	}
+	.leaderboard th {
+		font-family: var(--a-font);
+		font-weight: 600;
+		font-size: 1.4rem;
+		opacity: 0.7;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.leaderboard td:nth-child(1) {
+		width: 3rem;
+		text-align: center;
+		font-weight: 600;
+	}
+	.leaderboard td:nth-child(3) {
+		text-align: right;
+		font-family: var(--a-font);
+		font-weight: 700;
+	}
+	.leaderboard .empty-board {
+		text-align: center;
+		opacity: 0.6;
+		padding: 2rem 0;
+	}
+</style>
+
+<BaseLayout
+	pageTitle={blogData.title}
+	{showTypographyHero}
+	description={blogData.description}
+	fullWidthBody={fullWidthBody}>
+	<div class="details-width">
+		<BlogDetails {...blogData} />
+	</div>
+
+	<!-- Article toggle -->
+	<div class="article-toggle-wrapper">
+		<button
+			class="article-toggle"
+			aria-expanded="false"
+			aria-controls="article-content">
+			<span class="toggle-icon">▶</span> View Article
+		</button>
+	</div>
+
+	<div id="article-content" class="article-content">
+		<div class="article">
+			<p>
+				My son walked up to me and rattled off a game idea like he was pitching
+				to a publisher. No hesitation. No second-guessing. Just pure, unfiltered
+				game design from a kid who plays a lot of games and knows exactly what
+				he wants. I typed his words into an AI coding assistant almost verbatim
+				and hit enter.
+			</p>
+			<p>
+				What followed was an exercise in what people are calling
+				<strong>vibe coding</strong> — the practice of describing what you want in
+				natural language and letting AI generate the implementation. The term was
+				coined by Andrej Karpathy in early 2025, and by now it's become shorthand
+				for a real shift in how people build software. You don't write code. You describe
+				vibes. The machine writes code. You react.
+			</p>
+
+			<h3>Step 1: The Prompt</h3>
+			<p>Here's what I typed, almost word for word from my son:</p>
+			<blockquote>
+				"Screen with a shark you can move using arrow keys or WASD. You start in
+				a random spot on a 30 by 30 unit room. Each unit is a random color. By
+				clicking the button, you go one space. A smaller yellow square appears
+				in 5% of the squares and spawns randomly 1 in 1000 of the time in each
+				square every time the shark moves. The 'bad guy' is a black square that
+				moves 1 square towards you every 2 times you move. When you go on a
+				square with the smaller yellow square, another 'bad guy' spawns in a
+				random square to get you. If the 'bad guy' gets to you, you're out. The
+				game has a high score counter for the number of yellow squares you get.
+				When you're out it says 'YOU DIED' and has a play again option, or a
+				home option."
+			</blockquote>
+			<p>
+				There's a specificity to kid prompts that's honestly better than most
+				product specs I've seen professionally. He didn't say "make a fun game."
+				He said exactly how spawning works, what the enemy behavior is, and what
+				the game-over screen should say. That precision — that
+				<em>vibe</em> — is exactly what AI tools work best with.
+			</p>
+
+			<h3>Step 2: First Generation</h3>
+			<p>
+				I asked the AI to build the full page, including article content and the
+				game below it, fitting the patterns already established on this site —
+				the <code>blogData</code> export, the <code>BaseLayout</code>, the <code
+					>BlogDetails</code
+				> component, and the "View Article" toggle from the resume page.
+			</p>
+			<p>
+				Within seconds it generated a complete Astro page with an HTML5
+				<code>&lt;canvas&gt;</code> game. The 30×30 grid, random pastel colors, keyboard
+				controls, yellow pickups, black enemy squares, a chase algorithm, score tracking,
+				game-over overlay — all there. It also created a display component for the
+				homepage card. One prompt, and the page built on the first try.
+			</p>
+			<p>
+				This is the surreal part of vibe coding: <strong
+					>it actually worked</strong
+				>. Not "worked with twenty bugs." Worked. The build passed. The game
+				loaded. I could move the shark. Enemies chased me. Yellow squares
+				spawned. I died and saw "YOU DIED."
+			</p>
+
+			<h3>Step 3: "Make the Colors More Accessible"</h3>
+			<p>
+				The first version used fully random HSL pastels for the grid tiles. They
+				looked fine on my monitor, but I worried about contrast — some pastels
+				were close to yellow (confusing with pickups) or very dark (blending
+				with enemies). So I typed five words:
+			</p>
+			<blockquote>"Make the colors more accessible."</blockquote>
+			<p>
+				The AI replaced the random HSL generator with a curated 10-color palette
+				— muted steel blues, sage greens, plums, tans — chosen to avoid clashing
+				with the yellow pickups or black enemies. It also added dark outlines
+				around the yellow squares and red borders around the enemies for extra
+				visibility.
+			</p>
+			<p>
+				This is a pattern I notice with vibe coding: <strong
+					>refinement prompts are where the real value is</strong
+				>. The first generation gets you 80% there. The follow-ups — short,
+				specific nudges — are where you shape it into something you're actually
+				proud of. It's less like writing code and more like art direction.
+			</p>
+
+			<h3>Step 4: "Make the Fish Stand Out More"</h3>
+			<p>
+				The shark was a small blue ellipse with a tiny fin. On the grid, it was
+				hard to spot at a glance. So:
+			</p>
+			<blockquote>"Make the fish stand out more."</blockquote>
+			<p>
+				The AI gave the shark a bolder blue body, white outlines on every part
+				(body, dorsal fin, tail), a soft white glow using canvas shadow blur, a
+				lighter belly, a mouth line, and a bigger eye. The shark went from a
+				tiny blob to an actual recognizable character.
+			</p>
+
+			<h3>What I Learned</h3>
+			<p>
+				The discourse around vibe coding in 2025 and 2026 has mostly been about
+				professional developers debating whether it's "real coding." But
+				watching my son describe a game and then seeing it materialize in front
+				of him — that's the part nobody talks about enough. <strong
+					>AI didn't replace the creativity. The creativity came from a kid.</strong
+				> The AI was just fast enough to keep up with his imagination.
+			</p>
+			<p>A few observations from the process:</p>
+			<ul>
+				<li>
+					<strong>Kid prompts are underrated.</strong> They skip the hedging and ambiguity
+					that adults add. "The bad guy is a black square that moves 1 square towards
+					you every 2 times you move" is a perfect spec.
+				</li>
+				<li>
+					<strong>Iteration beats generation.</strong> The first output was functional
+					but rough. Three short follow-up prompts turned it into something polished.
+					That's 4 total messages for a complete game.
+				</li>
+				<li>
+					<strong>Context matters enormously.</strong> Because the AI could see my
+					existing site structure — layouts, components, styles — it generated code
+					that fit naturally. No boilerplate mismatch, no framework conflicts.
+				</li>
+				<li>
+					<strong>You still need taste.</strong> The AI didn't decide the colors were
+					inaccessible or that the shark was too small. I did. Vibe coding doesn't
+					remove judgment — it accelerates execution.
+				</li>
+			</ul>
+			<p>
+				The full game is below. Everything you see was generated from a
+				conversation — a kid's idea, a few nudges, and an AI that could keep up.
+			</p>
+		</div>
+	</div>
+
+	<div class="game-wrapper">
+		<div class="prompt-callout">
+			<strong>The Prompt (by my son):</strong>
+			"Screen with a shark you can move using arrow keys or WASD. You start in a random
+			spot on a 30 by 30 unit room. Each unit is a random color. By clicking the button,
+			you go one space. A smaller yellow square appears in 5% of the squares and spawns
+			randomly 1 in 1000 of the time in each square every time the shark moves. The
+			'bad guy' is a black square that moves 1 square towards you every 2 times you
+			move. When you go on a square with the smaller yellow square, another 'bad guy'
+			spawns in a random square to get you. If the 'bad guy' gets to you, you're out.
+			The game has a high score counter for the number of yellow squares you get.
+			When you're out it says 'YOU DIED' and has a play again option, or a home option."
+		</div>
+
+		<div class="game-hud">
+			<span>Score: <span id="score">0</span></span>
+			<span>High Score: <span id="highScore">0</span></span>
+		</div>
+
+		<div class="game-canvas-container">
+			<canvas id="gameCanvas" width="600" height="600"></canvas>
+			<div class="game-over-overlay" id="gameOverOverlay">
+				<h2>YOU DIED</h2>
+				<p class="final-score">Score: <span id="finalScore">0</span></p>
+				<div class="submit-prompt" id="submitPrompt">
+					<button id="wantToSubmitBtn">Submit Score?</button>
+				</div>
+				<div class="name-input-row" id="nameInputRow">
+					<input
+						type="text"
+						id="playerName"
+						placeholder="Your name"
+						maxlength="20"
+					/>
+					<button id="submitScoreBtn">Submit</button>
+				</div>
+				<p class="submit-status" id="submitStatus"></p>
+				<div class="game-over-buttons">
+					<button id="playAgainBtn">Play Again</button>
+					<a href="/">Home</a>
+				</div>
+			</div>
+		</div>
+
+		<p class="game-instructions">
+			Arrow keys or WASD to move. Collect yellow squares. Avoid the black
+			squares.
+		</p>
+
+		<div class="leaderboard" id="leaderboard">
+			<h3>Leaderboard</h3>
+			<table>
+				<thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead>
+				<tbody id="leaderboardBody">
+					<tr><td colspan="3" class="empty-board">Loading…</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</BaseLayout>
+
+<script>
+	const toggle = document.querySelector('.article-toggle')
+	const content = document.getElementById('article-content')
+	toggle?.addEventListener('click', () => {
+		const isOpen = content?.classList.toggle('open')
+		toggle.setAttribute('aria-expanded', String(isOpen))
+	})
+</script>
+
+<script>
+	const GRID = 30
+	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+	const ctx = canvas.getContext('2d')!
+	const CELL = canvas.width / GRID
+
+	const scoreEl = document.getElementById('score')!
+	const highScoreEl = document.getElementById('highScore')!
+	const finalScoreEl = document.getElementById('finalScore')!
+	const overlay = document.getElementById('gameOverOverlay')!
+	const playAgainBtn = document.getElementById('playAgainBtn')!
+	const submitScoreBtn = document.getElementById(
+		'submitScoreBtn'
+	)! as HTMLButtonElement
+	const playerNameInput = document.getElementById(
+		'playerName'
+	)! as HTMLInputElement
+	const submitStatus = document.getElementById('submitStatus')!
+	const nameInputRow = document.getElementById('nameInputRow')!
+	const leaderboardBody = document.getElementById('leaderboardBody')!
+
+	let highScore = parseInt(localStorage.getItem('sharkHighScore') || '0', 10)
+	highScoreEl.textContent = String(highScore)
+
+	// ── State ──
+	interface Enemy {
+		x: number
+		y: number
+	}
+
+	let colors: string[][] = []
+	let pickups: boolean[][] = []
+	let enemies: Enemy[] = []
+	let shark = { x: 0, y: 0 }
+	let score = 0
+	let moveCount = 0
+	let gameOver = false
+
+	// Curated palette — distinct hues with consistent lightness,
+	// chosen so none clash with yellow pickups, black enemies, or the blue shark.
+	const TILE_COLORS = [
+		'#7ca6b3', // steel blue
+		'#8fae7e', // sage green
+		'#b58dac', // muted plum
+		'#c49880', // warm tan
+		'#6d9e9e', // teal
+		'#a3887e', // mauve brown
+		'#8e9fc0', // periwinkle
+		'#9caa6c', // olive
+		'#b08f9f', // dusty rose
+		'#7b9a84', // fern
+	]
+
+	function randomTileColor(): string {
+		return TILE_COLORS[Math.floor(Math.random() * TILE_COLORS.length)]
+	}
+
+	function init() {
+		score = 0
+		moveCount = 0
+		gameOver = false
+		scoreEl.textContent = '0'
+		overlay.classList.remove('visible')
+
+		// Random colors
+		colors = Array.from({ length: GRID }, () =>
+			Array.from({ length: GRID }, () => randomTileColor())
+		)
+
+		// Pickups — 5% on init
+		pickups = Array.from({ length: GRID }, () =>
+			Array.from({ length: GRID }, () => Math.random() < 0.05)
+		)
+
+		// Shark starts at random spot
+		shark.x = Math.floor(Math.random() * GRID)
+		shark.y = Math.floor(Math.random() * GRID)
+
+		// Make sure shark doesn't start on a pickup
+		pickups[shark.y][shark.x] = false
+
+		// One initial enemy
+		enemies = [spawnEnemy()]
+
+		draw()
+	}
+
+	function spawnEnemy(): Enemy {
+		let ex: number, ey: number
+		do {
+			ex = Math.floor(Math.random() * GRID)
+			ey = Math.floor(Math.random() * GRID)
+		} while (
+			(ex === shark.x && ey === shark.y) ||
+			enemies.some((e) => e.x === ex && e.y === ey)
+		)
+		return { x: ex, y: ey }
+	}
+
+	// ── Drawing ──
+
+	function draw() {
+		// Grid cells
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				ctx.fillStyle = colors[r][c]
+				ctx.fillRect(c * CELL, r * CELL, CELL, CELL)
+			}
+		}
+
+		// Pickups (smaller yellow squares with dark outline for contrast)
+		const pad = CELL * 0.22
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				if (pickups[r][c]) {
+					const px = c * CELL + pad
+					const py = r * CELL + pad
+					const ps = CELL - pad * 2
+					// Dark outline
+					ctx.fillStyle = '#7a6200'
+					ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2)
+					// Yellow fill
+					ctx.fillStyle = '#f1c40f'
+					ctx.fillRect(px, py, ps, ps)
+				}
+			}
+		}
+
+		// Enemies (dark squares with red outline for visibility)
+		for (const e of enemies) {
+			ctx.fillStyle = '#c0392b'
+			ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2)
+			ctx.fillStyle = '#1a1a1a'
+			ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL)
+		}
+
+		// Shark 🦈 — draw a simple shark shape
+		drawShark(shark.x, shark.y)
+	}
+
+	function drawShark(cx: number, cy: number) {
+		const x = cx * CELL
+		const y = cy * CELL
+		const w = CELL
+		const h = CELL
+
+		ctx.save()
+
+		// Glow / highlight behind the shark
+		ctx.shadowColor = '#ffffff'
+		ctx.shadowBlur = 12
+
+		// White outline for contrast on any background
+		ctx.strokeStyle = '#fff'
+		ctx.lineWidth = 1
+
+		// Body
+		ctx.fillStyle = '#2980b9'
+		ctx.beginPath()
+		ctx.ellipse(x + w / 2, y + h / 2, w * 0.45, h * 0.35, 0, 0, Math.PI * 2)
+		ctx.fill()
+		ctx.stroke()
+
+		// Reset shadow so fins/tail don't double-glow
+		ctx.shadowBlur = 0
+
+		// Dorsal fin
+		ctx.fillStyle = '#1a5276'
+		ctx.beginPath()
+		ctx.moveTo(x + w * 0.4, y + h * 0.08)
+		ctx.lineTo(x + w * 0.48, y + h * 0.38)
+		ctx.lineTo(x + w * 0.62, y + h * 0.35)
+		ctx.closePath()
+		ctx.fill()
+		ctx.stroke()
+
+		// Tail
+		ctx.fillStyle = '#1a5276'
+		ctx.beginPath()
+		ctx.moveTo(x + w * 0.05, y + h * 0.35)
+		ctx.lineTo(x - w * 0.1, y + h * 0.15)
+		ctx.lineTo(x - w * 0.1, y + h * 0.7)
+		ctx.lineTo(x + w * 0.05, y + h * 0.55)
+		ctx.closePath()
+		ctx.fill()
+		ctx.stroke()
+
+		// Belly (lighter underside)
+		ctx.fillStyle = '#d6eaf8'
+		ctx.beginPath()
+		ctx.ellipse(x + w / 2, y + h * 0.58, w * 0.32, h * 0.12, 0, 0, Math.PI)
+		ctx.fill()
+
+		// Mouth line
+		ctx.strokeStyle = '#1a5276'
+		ctx.lineWidth = 1
+		ctx.beginPath()
+		ctx.moveTo(x + w * 0.55, y + h * 0.58)
+		ctx.lineTo(x + w * 0.85, y + h * 0.52)
+		ctx.stroke()
+
+		// Eye
+		ctx.fillStyle = '#fff'
+		ctx.beginPath()
+		ctx.arc(x + w * 0.65, y + h * 0.38, w * 0.09, 0, Math.PI * 2)
+		ctx.fill()
+		ctx.strokeStyle = '#1a5276'
+		ctx.lineWidth = 1
+		ctx.stroke()
+		ctx.fillStyle = '#000'
+		ctx.beginPath()
+		ctx.arc(x + w * 0.67, y + h * 0.38, w * 0.045, 0, Math.PI * 2)
+		ctx.fill()
+
+		ctx.restore()
+	}
+
+	// ── Game Logic ──
+
+	function moveShark(dx: number, dy: number) {
+		if (gameOver) return
+
+		const nx = shark.x + dx
+		const ny = shark.y + dy
+		if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) return
+
+		shark.x = nx
+		shark.y = ny
+		moveCount++
+
+		// Check pickup
+		if (pickups[ny][nx]) {
+			pickups[ny][nx] = false
+			score++
+			scoreEl.textContent = String(score)
+			// Spawn a new enemy
+			enemies.push(spawnEnemy())
+		}
+
+		// Spawn new pickups — 1/4000 chance per cell
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				if (!pickups[r][c] && Math.random() < 0.00025) {
+					pickups[r][c] = true
+				}
+			}
+		}
+
+		// Enemies move every 2 player moves
+		if (moveCount % 2 === 0) {
+			for (const e of enemies) {
+				const diffX = shark.x - e.x
+				const diffY = shark.y - e.y
+				let nx = e.x
+				let ny = e.y
+				if (Math.abs(diffX) >= Math.abs(diffY)) {
+					nx += Math.sign(diffX)
+				} else {
+					ny += Math.sign(diffY)
+				}
+				// Only move if no other enemy is already on that square
+				const occupied = enemies.some(
+					(other) => other !== e && other.x === nx && other.y === ny
+				)
+				if (!occupied) {
+					e.x = nx
+					e.y = ny
+				}
+			}
+		}
+
+		// Check death
+		for (const e of enemies) {
+			if (e.x === shark.x && e.y === shark.y) {
+				endGame()
+				return
+			}
+		}
+
+		draw()
+	}
+
+	function endGame() {
+		gameOver = true
+		draw()
+		if (score > highScore) {
+			highScore = score
+			localStorage.setItem('sharkHighScore', String(highScore))
+			highScoreEl.textContent = String(highScore)
+		}
+		finalScoreEl.textContent = String(score)
+
+		// Reset submit UI — show prompt button, hide name input
+		submitPrompt.style.display = score > 0 ? 'block' : 'none'
+		nameInputRow.classList.remove('visible')
+		submitScoreBtn.disabled = false
+		submitStatus.textContent = ''
+		const savedName = localStorage.getItem('sharkPlayerName') || ''
+		playerNameInput.value = savedName
+
+		overlay.classList.add('visible')
+	}
+
+	// Player opts in to submit
+	wantToSubmitBtn.addEventListener('click', () => {
+		submitPrompt.style.display = 'none'
+		nameInputRow.classList.add('visible')
+		playerNameInput.focus()
+	})
+
+	// ── Leaderboard ──
+
+	async function fetchLeaderboard() {
+		try {
+			const res = await fetch('/api/scores')
+			if (!res.ok) throw new Error('Failed to fetch')
+			const scores = await res.json()
+			renderLeaderboard(scores)
+		} catch {
+			leaderboardBody.innerHTML =
+				'<tr><td colspan="3" class="empty-board">Could not load leaderboard</td></tr>'
+		}
+	}
+
+	function renderLeaderboard(scores: { name: string; score: number }[]) {
+		if (scores.length === 0) {
+			leaderboardBody.innerHTML =
+				'<tr><td colspan="3" class="empty-board">No scores yet — be the first!</td></tr>'
+			return
+		}
+		leaderboardBody.innerHTML = scores
+			.map(
+				(s, i) =>
+					`<tr><td>${i + 1}</td><td>${s.name}</td><td>${s.score}</td></tr>`
+			)
+			.join('')
+	}
+
+	submitScoreBtn.addEventListener('click', async () => {
+		const name = playerNameInput.value.trim()
+		if (!name) {
+			submitStatus.textContent = 'Enter your name first!'
+			return
+		}
+		submitScoreBtn.disabled = true
+		submitStatus.textContent = 'Submitting…'
+		localStorage.setItem('sharkPlayerName', name)
+
+		try {
+			const res = await fetch('/api/scores', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, score }),
+			})
+			if (!res.ok) throw new Error('Submit failed')
+			const scores = await res.json()
+			renderLeaderboard(scores)
+			submitStatus.textContent = 'Score submitted!'
+			nameInputRow.classList.remove('visible')
+		} catch {
+			submitStatus.textContent = 'Failed to submit — try again'
+			submitScoreBtn.disabled = false
+		}
+	})
+
+	// Allow Enter key to submit
+	playerNameInput.addEventListener('keydown', (e) => {
+		if (e.key === 'Enter') submitScoreBtn.click()
+	})
+
+	// ── Controls ──
+
+	document.addEventListener('keydown', (e) => {
+		switch (e.key) {
+			case 'ArrowUp':
+			case 'w':
+			case 'W':
+				e.preventDefault()
+				moveShark(0, -1)
+				break
+			case 'ArrowDown':
+			case 's':
+			case 'S':
+				e.preventDefault()
+				moveShark(0, 1)
+				break
+			case 'ArrowLeft':
+			case 'a':
+			case 'A':
+				e.preventDefault()
+				moveShark(-1, 0)
+				break
+			case 'ArrowRight':
+			case 'd':
+			case 'D':
+				e.preventDefault()
+				moveShark(1, 0)
+				break
+		}
+	})
+
+	playAgainBtn.addEventListener('click', () => init())
+
+	// Go!
+	fetchLeaderboard()
+	init()
+</script>

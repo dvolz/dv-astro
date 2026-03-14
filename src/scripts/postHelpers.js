@@ -30,25 +30,23 @@ export function filterFeaturedPosts(posts, isFeatured) {
 	return isFeatured ? posts.filter((post) => post.featured) : posts
 }
 
-// Dynamically load components for posts with `display: true`
-export async function loadDynamicComponents(posts) {
-	return Promise.all(
-		posts.map(async (post) => {
-			if (post.display) {
-				try {
-					const formattedTitle = post.title.replace(/\s+/g, '-').toLowerCase()
-					const DynamicComponent = await import(
-						`../components/display/${formattedTitle}-display.astro`
-					)
-					return { ...post, DynamicComponent: DynamicComponent.default }
-				} catch (e) {
-					console.error(
-						`Failed to import dynamic component for ${post.title}`,
-						e
-					)
-				}
+// Match display components from a pre-loaded module map
+export function loadDynamicComponents(posts, displayModules) {
+	return posts.map((post) => {
+		if (post.display) {
+			const formattedTitle = post.title.replace(/\s+/g, '-').toLowerCase()
+			const filename = `${formattedTitle}-display.astro`
+			// Find the module by matching the end of the key (handles different relative paths)
+			const entry = Object.entries(displayModules).find(([key]) =>
+				key.endsWith(`/${filename}`)
+			)
+			if (entry) {
+				return { ...post, DynamicComponent: entry[1].default }
 			}
-			return { ...post, DynamicComponent: null }
-		})
-	)
+			console.error(
+				`Display component not found for ${post.title} (expected ${filename})`
+			)
+		}
+		return { ...post, DynamicComponent: null }
+	})
 }
