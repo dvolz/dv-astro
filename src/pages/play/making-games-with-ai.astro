@@ -22,51 +22,6 @@ const fullWidthBody = true
 ---
 
 <style lang="scss">
-	/* ── Article Toggle ── */
-	.article-toggle-wrapper {
-		max-width: 55rem;
-		margin: 0 auto 3rem;
-		text-align: center;
-	}
-	.article-toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.8rem;
-		background: none;
-		border: 1px solid var(--text-color);
-		border-radius: 0.6rem;
-		padding: 0.8rem 2rem;
-		font-family: var(--a-font);
-		font-size: 1.6rem;
-		font-weight: 600;
-		color: var(--text-color);
-		cursor: pointer;
-		transition: all 0.3s ease;
-		&:hover {
-			background: var(--text-color);
-			color: var(--background-color);
-		}
-		.toggle-icon {
-			display: inline-block;
-			transition: transform 0.3s ease;
-			font-size: 1.2rem;
-		}
-		&[aria-expanded='true'] .toggle-icon {
-			transform: rotate(90deg);
-		}
-	}
-	.article-content {
-		max-height: 0;
-		overflow: hidden;
-		transition:
-			max-height 0.5s ease,
-			opacity 0.4s ease;
-		opacity: 0;
-		&.open {
-			opacity: 1;
-			max-height: 200rem;
-		}
-	}
 
 	/* ── Game ── */
 	.game-wrapper {
@@ -159,22 +114,62 @@ const fullWidthBody = true
 		display: inline-block;
 	}
 
-	.prompt-callout {
-		background: var(--text-color);
-		color: var(--background-color);
-		border-radius: 0.6rem;
-		padding: 2rem 2.5rem;
-		max-width: 55rem;
+	/* ── DOS-style prompt ── */
+	.prompt-terminal {
+		max-width: 60rem;
 		margin: 0 auto 3rem;
-		font-size: 1.6rem;
-		line-height: 1.6;
-		text-align: left;
+		border: 1px solid rgba(93, 173, 226, 0.3);
+		border-radius: 0.6rem;
+		overflow: hidden;
+		background: #0c1421;
+		box-shadow: 0 0 24px rgba(93, 173, 226, 0.06);
 	}
-	.prompt-callout strong {
-		display: block;
-		margin-bottom: 0.5rem;
+	.prompt-titlebar {
+		background: rgba(93, 173, 226, 0.12);
+		border-bottom: 1px solid rgba(93, 173, 226, 0.2);
+		padding: 0.5rem 1.2rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.prompt-dot {
+		width: 0.8rem;
+		height: 0.8rem;
+		border-radius: 50%;
+		&:nth-child(1) { background: #e74c3c; }
+		&:nth-child(2) { background: #f39c12; }
+		&:nth-child(3) { background: #2ecc71; }
+	}
+	.prompt-titlebar span:last-child {
 		font-family: var(--a-font);
-		font-size: 1.8rem;
+		font-size: 1rem;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: rgba(93, 173, 226, 0.6);
+		margin-left: auto;
+	}
+	.prompt-body {
+		padding: 1.6rem 2rem;
+		font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace;
+		font-size: 1.3rem;
+		line-height: 1.7;
+		color: #a8c7e2;
+	}
+	.prompt-label {
+		color: #5dade2;
+		font-weight: 700;
+	}
+	.prompt-cursor {
+		display: inline-block;
+		width: 0.7rem;
+		height: 1.4rem;
+		background: #5dade2;
+		margin-left: 0.3rem;
+		vertical-align: text-bottom;
+		animation: blink 1s step-end infinite;
+	}
+	@keyframes blink {
+		50% { opacity: 0; }
 	}
 
 	/* ── Name Input on Game Over ── */
@@ -407,167 +402,19 @@ const fullWidthBody = true
 		<BlogDetails {...blogData} />
 	</div>
 
-	<!-- Article toggle -->
-	<div class="article-toggle-wrapper">
-		<button
-			class="article-toggle"
-			aria-expanded="false"
-			aria-controls="article-content">
-			<span class="toggle-icon">▶</span> View Article
-		</button>
-	</div>
-
-	<div id="article-content" class="article-content">
-		<div class="article">
-			<p>
-				My son walked up to me and rattled off a game idea like he was pitching
-				to a publisher. No hesitation. No second-guessing. Just pure, unfiltered
-				game design from a kid who plays a lot of games and knows exactly what
-				he wants. I typed his words into an AI coding assistant almost verbatim
-				and hit enter.
-			</p>
-			<p>
-				What followed was an exercise in what people are calling
-				<strong>vibe coding</strong> — the practice of describing what you want in
-				natural language and letting AI generate the implementation. The term was
-				coined by Andrej Karpathy in early 2025, and by now it's become shorthand
-				for a real shift in how people build software. You don't write code. You describe
-				vibes. The machine writes code. You react.
-			</p>
-
-			<h3>Step 1: The Prompt</h3>
-			<p>Here's what I typed, almost word for word from my son:</p>
-			<blockquote>
-				"Screen with a shark you can move using arrow keys or WASD. You start in
-				a random spot on a 30 by 30 unit room. Each unit is a random color. By
-				clicking the button, you go one space. A smaller yellow square appears
-				in 5% of the squares and spawns randomly 1 in 1000 of the time in each
-				square every time the shark moves. The 'bad guy' is a black square that
-				moves 1 square towards you every 2 times you move. When you go on a
-				square with the smaller yellow square, another 'bad guy' spawns in a
-				random square to get you. If the 'bad guy' gets to you, you're out. The
-				game has a high score counter for the number of yellow squares you get.
-				When you're out it says 'YOU DIED' and has a play again option, or a
-				home option."
-			</blockquote>
-			<p>
-				There's a specificity to kid prompts that's honestly better than most
-				product specs I've seen professionally. He didn't say "make a fun game."
-				He said exactly how spawning works, what the enemy behavior is, and what
-				the game-over screen should say. That precision — that
-				<em>vibe</em> — is exactly what AI tools work best with.
-			</p>
-
-			<h3>Step 2: First Generation</h3>
-			<p>
-				I asked the AI to build the full page, including article content and the
-				game below it, fitting the patterns already established on this site —
-				the <code>blogData</code> export, the <code>BaseLayout</code>, the <code
-					>BlogDetails</code
-				> component, and the "View Article" toggle from the resume page.
-			</p>
-			<p>
-				Within seconds it generated a complete Astro page with an HTML5
-				<code>&lt;canvas&gt;</code> game. The 30×30 grid, random pastel colors, keyboard
-				controls, yellow pickups, black enemy squares, a chase algorithm, score tracking,
-				game-over overlay — all there. It also created a display component for the
-				homepage card. One prompt, and the page built on the first try.
-			</p>
-			<p>
-				This is the surreal part of vibe coding: <strong
-					>it actually worked</strong
-				>. Not "worked with twenty bugs." Worked. The build passed. The game
-				loaded. I could move the shark. Enemies chased me. Yellow squares
-				spawned. I died and saw "YOU DIED."
-			</p>
-
-			<h3>Step 3: "Make the Colors More Accessible"</h3>
-			<p>
-				The first version used fully random HSL pastels for the grid tiles. They
-				looked fine on my monitor, but I worried about contrast — some pastels
-				were close to yellow (confusing with pickups) or very dark (blending
-				with enemies). So I typed five words:
-			</p>
-			<blockquote>"Make the colors more accessible."</blockquote>
-			<p>
-				The AI replaced the random HSL generator with a curated 10-color palette
-				— muted steel blues, sage greens, plums, tans — chosen to avoid clashing
-				with the yellow pickups or black enemies. It also added dark outlines
-				around the yellow squares and red borders around the enemies for extra
-				visibility.
-			</p>
-			<p>
-				This is a pattern I notice with vibe coding: <strong
-					>refinement prompts are where the real value is</strong
-				>. The first generation gets you 80% there. The follow-ups — short,
-				specific nudges — are where you shape it into something you're actually
-				proud of. It's less like writing code and more like art direction.
-			</p>
-
-			<h3>Step 4: "Make the Fish Stand Out More"</h3>
-			<p>
-				The shark was a small blue ellipse with a tiny fin. On the grid, it was
-				hard to spot at a glance. So:
-			</p>
-			<blockquote>"Make the fish stand out more."</blockquote>
-			<p>
-				The AI gave the shark a bolder blue body, white outlines on every part
-				(body, dorsal fin, tail), a soft white glow using canvas shadow blur, a
-				lighter belly, a mouth line, and a bigger eye. The shark went from a
-				tiny blob to an actual recognizable character.
-			</p>
-
-			<h3>What I Learned</h3>
-			<p>
-				The discourse around vibe coding in 2025 and 2026 has mostly been about
-				professional developers debating whether it's "real coding." But
-				watching my son describe a game and then seeing it materialize in front
-				of him — that's the part nobody talks about enough. <strong
-					>AI didn't replace the creativity. The creativity came from a kid.</strong
-				> The AI was just fast enough to keep up with his imagination.
-			</p>
-			<p>A few observations from the process:</p>
-			<ul>
-				<li>
-					<strong>Kid prompts are underrated.</strong> They skip the hedging and ambiguity
-					that adults add. "The bad guy is a black square that moves 1 square towards
-					you every 2 times you move" is a perfect spec.
-				</li>
-				<li>
-					<strong>Iteration beats generation.</strong> The first output was functional
-					but rough. Three short follow-up prompts turned it into something polished.
-					That's 4 total messages for a complete game.
-				</li>
-				<li>
-					<strong>Context matters enormously.</strong> Because the AI could see my
-					existing site structure — layouts, components, styles — it generated code
-					that fit naturally. No boilerplate mismatch, no framework conflicts.
-				</li>
-				<li>
-					<strong>You still need taste.</strong> The AI didn't decide the colors were
-					inaccessible or that the shark was too small. I did. Vibe coding doesn't
-					remove judgment — it accelerates execution.
-				</li>
-			</ul>
-			<p>
-				The full game is below. Everything you see was generated from a
-				conversation — a kid's idea, a few nudges, and an AI that could keep up.
-			</p>
-		</div>
-	</div>
-
 	<div class="game-wrapper">
-		<div class="prompt-callout">
-			<strong>The Prompt (by my son):</strong>
-			"Screen with a shark you can move using arrow keys or WASD. You start in a random
-			spot on a 30 by 30 unit room. Each unit is a random color. By clicking the button,
-			you go one space. A smaller yellow square appears in 5% of the squares and spawns
-			randomly 1 in 1000 of the time in each square every time the shark moves. The
-			'bad guy' is a black square that moves 1 square towards you every 2 times you
-			move. When you go on a square with the smaller yellow square, another 'bad guy'
-			spawns in a random square to get you. If the 'bad guy' gets to you, you're out.
-			The game has a high score counter for the number of yellow squares you get.
-			When you're out it says 'YOU DIED' and has a play again option, or a home option."
+		<div class="prompt-terminal">
+			<div class="prompt-titlebar">
+				<span class="prompt-dot"></span>
+				<span class="prompt-dot"></span>
+				<span class="prompt-dot"></span>
+				<span>prompt.txt</span>
+			</div>
+			<div class="prompt-body">
+				<span class="prompt-label">son@home ~$</span> describe your game<br/>
+				<br/>
+				Screen with a shark you can move using arrow keys or WASD. You start in a random spot on a 30 by 30 unit room. Each unit is a random color. By clicking the button, you go one space. A smaller yellow square appears in 5% of the squares and spawns randomly 1 in 1000 of the time in each square every time the shark moves. The &apos;bad guy&apos; is a black square that moves 1 square towards you every 2 times you move. When you go on a square with the smaller yellow square, another &apos;bad guy&apos; spawns in a random square to get you. If the &apos;bad guy&apos; gets to you, you&apos;re out. The game has a high score counter for the number of yellow squares you get. When you&apos;re out it says &apos;YOU DIED&apos; and has a play again option, or a home option.<span class="prompt-cursor"></span>
+			</div>
 		</div>
 
 		<div class="game-hud">
@@ -618,15 +465,6 @@ const fullWidthBody = true
 		</div>
 	</div>
 </BaseLayout>
-
-<script>
-	const toggle = document.querySelector('.article-toggle')
-	const content = document.getElementById('article-content')
-	toggle?.addEventListener('click', () => {
-		const isOpen = content?.classList.toggle('open')
-		toggle.setAttribute('aria-expanded', String(isOpen))
-	})
-</script>
 
 <script>
 	const GRID = 30
