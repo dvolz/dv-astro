@@ -819,26 +819,24 @@ const fullWidthBody = true
 
 		ctx.save()
 
-		// Rotate shark to face movement direction
+		// Flip/rotate shark to face movement direction
 		const centerX = x + w / 2
 		const centerY = y + h / 2
-		let angle = 0
+		ctx.translate(centerX, centerY)
 		switch (sharkDir) {
 			case 'right':
-				angle = 0
-				break
-			case 'down':
-				angle = Math.PI / 2
+				// default orientation, no transform
 				break
 			case 'left':
-				angle = Math.PI
+				ctx.scale(-1, 1) // mirror horizontally
+				break
+			case 'down':
+				ctx.rotate(Math.PI / 2)
 				break
 			case 'up':
-				angle = -Math.PI / 2
+				ctx.rotate(-Math.PI / 2)
 				break
 		}
-		ctx.translate(centerX, centerY)
-		ctx.rotate(angle)
 		ctx.translate(-centerX, -centerY)
 
 		// Glow / highlight behind the shark
