@@ -34,10 +34,18 @@ const fullWidthBody = true
 		display: flex;
 		justify-content: center;
 		gap: 3rem;
-		margin-bottom: 1.5rem;
+		margin: 0 0 1.5rem;
 		font-family: var(--a-font);
-		font-size: 1.8rem;
+		font-size: 1.6rem;
 		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		span span {
+			color: #5dade2;
+			font-size: 2rem;
+			font-weight: 800;
+			letter-spacing: 0.04em;
+		}
 	}
 	.game-canvas-wrapper {
 		display: inline-block;
@@ -52,11 +60,41 @@ const fullWidthBody = true
 		image-rendering: pixelated;
 	}
 	.game-instructions {
-		margin: 1.5rem auto 0;
-		max-width: 50rem;
-		font-size: 1.5rem;
-		opacity: 0.8;
-		line-height: 1.6;
+		margin: 0 auto 2.5rem;
+		max-width: 44rem;
+		padding: 1.6rem 2rem;
+		border: 1px solid rgba(128, 128, 128, 0.15);
+		border-radius: 0.6rem;
+		text-align: left;
+		line-height: 1.8;
+		font-size: 1.4rem;
+	}
+	.game-instructions .how-to-play {
+		font-family: var(--a-font);
+		font-weight: 700;
+		font-size: 1.2rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		opacity: 0.5;
+		margin: 0 0 0.6rem;
+	}
+	.game-instructions ol {
+		margin: 0;
+		padding-left: 2rem;
+		list-style: decimal;
+	}
+	.game-instructions li {
+		margin-bottom: 0.3rem;
+		font-family: var(--p-font);
+	}
+	.game-instructions li strong {
+		font-weight: 700;
+	}
+	.game-instructions .controls-note {
+		margin: 0.8rem 0 0;
+		font-size: 1.2rem;
+		opacity: 0.55;
+		font-family: var(--a-font);
 	}
 
 	/* ── Game Over Overlay ── */
@@ -407,19 +445,47 @@ const fullWidthBody = true
 	/* ── Rank column ── */
 	.leaderboard th:nth-child(1),
 	.leaderboard td:nth-child(1) {
-		width: 4.5rem;
+		width: 5.5rem;
 		text-align: center;
 		font-family: var(--a-font);
 		font-weight: 800;
 		font-size: 1.4rem;
 		opacity: 0.4;
+		overflow: visible;
 	}
-	/* Top 3 trophy styling */
+	/* Top 3 medal styling */
 	.leaderboard tbody tr:nth-child(1) td:nth-child(1),
 	.leaderboard tbody tr:nth-child(2) td:nth-child(1),
 	.leaderboard tbody tr:nth-child(3) td:nth-child(1) {
-		opacity: 0.85;
-		font-size: 1.5rem;
+		opacity: 1;
+	}
+	.medal {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		border-radius: 50%;
+		font-family: var(--a-font);
+		font-weight: 900;
+		font-size: 1.4rem;
+		line-height: 1;
+		box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+	}
+	.medal-gold {
+		background: linear-gradient(145deg, #f7dc6f, #d4a017);
+		color: #5c4300;
+		border: 2px solid #c9960c;
+	}
+	.medal-silver {
+		background: linear-gradient(145deg, #d5d5d5, #a0a0a0);
+		color: #4a4a4a;
+		border: 2px solid #909090;
+	}
+	.medal-bronze {
+		background: linear-gradient(145deg, #dea06e, #b87333);
+		color: #5a3510;
+		border: 2px solid #a0612a;
 	}
 
 	/* ── Name column ── */
@@ -526,6 +592,21 @@ const fullWidthBody = true
 			</div>
 		</div>
 
+		<div class="game-instructions">
+			<p class="how-to-play">How to Play</p>
+			<ol>
+				<li><strong>Move</strong> your shark around the board</li>
+				<li><strong>Collect</strong> the yellow squares to score points</li>
+				<li><strong>Avoid</strong> the black squares — they chase you</li>
+				<li>Each pickup spawns a new enemy — survive as long as you can</li>
+			</ol>
+			<p class="controls-note">
+				Arrow keys or WASD to move<span class="touch-hint">
+					· D-pad or swipe on mobile</span
+				>
+			</p>
+		</div>
+
 		<div class="game-hud">
 			<span>Score: <span id="score">0</span></span>
 			<span>High Score: <span id="highScore">0</span></span>
@@ -555,48 +636,36 @@ const fullWidthBody = true
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<p class="game-instructions">
-			Arrow keys or WASD to move. Collect yellow squares. Avoid the black
-			squares. <span class="touch-hint"
-				>Use the D-pad below or swipe on the board.</span
-			>
-		</p>
+	<div class="dpad" id="dpad">
+		<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"
+			><svg viewBox="0 0 24 24"><path d="M12 5 L22 19 L2 19 Z"></path></svg
+			></button
+		>
+		<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"
+			><svg viewBox="0 0 24 24"><path d="M5 12 L19 2 L19 22 Z"></path></svg
+			></button
+		>
+		<div class="dpad-center"></div>
+		<button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right"
+			><svg viewBox="0 0 24 24"><path d="M19 12 L5 2 L5 22 Z"></path></svg
+			></button
+		>
+		<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"
+			><svg viewBox="0 0 24 24"><path d="M12 19 L2 5 L22 5 Z"></path></svg
+			></button
+		>
+	</div>
 
-		<div class="dpad" id="dpad">
-			<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"
-				><svg viewBox="0 0 24 24"><path d="M12 5 L22 19 L2 19 Z"></path></svg
-				></button
-			>
-			<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"
-				><svg viewBox="0 0 24 24"><path d="M5 12 L19 2 L19 22 Z"></path></svg
-				></button
-			>
-			<div class="dpad-center"></div>
-			<button
-				class="dpad-btn dpad-right"
-				data-dir="right"
-				aria-label="Move right"
-				><svg viewBox="0 0 24 24"><path d="M19 12 L5 2 L5 22 Z"></path></svg
-				></button
-			>
-			<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"
-				><svg viewBox="0 0 24 24"><path d="M12 19 L2 5 L22 5 Z"></path></svg
-				></button
-			>
-		</div>
-
-		<div class="leaderboard" id="leaderboard">
-			<h3>Leaderboard</h3>
-			<table>
-				<thead
-					><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead
-				>
-				<tbody id="leaderboardBody">
-					<tr><td colspan="4" class="empty-board">Loading…</td></tr>
-				</tbody>
-			</table>
-		</div>
+	<div class="leaderboard" id="leaderboard">
+		<h3>Leaderboard</h3>
+		<table>
+			<thead><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
+			<tbody id="leaderboardBody">
+				<tr><td colspan="4" class="empty-board">Loading…</td></tr>
+			</tbody>
+		</table>
 	</div>
 </BaseLayout>
 
@@ -634,6 +703,7 @@ const fullWidthBody = true
 	let pickups: boolean[][] = []
 	let enemies: Enemy[] = []
 	let shark = { x: 0, y: 0 }
+	let sharkDir = 'right' // tracks last movement direction
 	let score = 0
 	let moveCount = 0
 	let gameOver = false
@@ -688,12 +758,13 @@ const fullWidthBody = true
 	}
 
 	function spawnEnemy(): Enemy {
+		const MIN_DIST = 5
 		let ex: number, ey: number
 		do {
 			ex = Math.floor(Math.random() * GRID)
 			ey = Math.floor(Math.random() * GRID)
 		} while (
-			(ex === shark.x && ey === shark.y) ||
+			Math.abs(ex - shark.x) + Math.abs(ey - shark.y) < MIN_DIST ||
 			enemies.some((e) => e.x === ex && e.y === ey)
 		)
 		return { x: ex, y: ey }
@@ -747,6 +818,28 @@ const fullWidthBody = true
 		const h = CELL
 
 		ctx.save()
+
+		// Rotate shark to face movement direction
+		const centerX = x + w / 2
+		const centerY = y + h / 2
+		let angle = 0
+		switch (sharkDir) {
+			case 'right':
+				angle = 0
+				break
+			case 'down':
+				angle = Math.PI / 2
+				break
+			case 'left':
+				angle = Math.PI
+				break
+			case 'up':
+				angle = -Math.PI / 2
+				break
+		}
+		ctx.translate(centerX, centerY)
+		ctx.rotate(angle)
+		ctx.translate(-centerX, -centerY)
 
 		// Glow / highlight behind the shark
 		ctx.shadowColor = '#ffffff'
@@ -830,6 +923,12 @@ const fullWidthBody = true
 		shark.y = ny
 		moveCount++
 
+		// Track facing direction
+		if (dx === 1) sharkDir = 'right'
+		else if (dx === -1) sharkDir = 'left'
+		else if (dy === 1) sharkDir = 'down'
+		else if (dy === -1) sharkDir = 'up'
+
 		// Check pickup
 		if (pickups[ny][nx]) {
 			pickups[ny][nx] = false
@@ -912,14 +1011,25 @@ const fullWidthBody = true
 
 	// ── Leaderboard ──
 
+	const MOCK_SCORES = [
+		{ name: 'SharkMaster', score: 18, date: '2026-03-14T09:23:00Z' },
+		{ name: 'FinFrenzy', score: 14, date: '2026-03-13T22:15:00Z' },
+		{ name: 'OceanKing', score: 11, date: '2026-03-14T14:02:00Z' },
+		{ name: 'DeepDiver', score: 9, date: '2026-03-12T18:45:00Z' },
+		{ name: 'WaveCatcher', score: 7, date: '2026-03-14T11:30:00Z' },
+		{ name: 'CoralQueen', score: 5, date: '2026-03-11T20:10:00Z' },
+		{ name: 'TideRunner', score: 4, date: '2026-03-13T16:55:00Z' },
+		{ name: 'ReefRaider', score: 3, date: '2026-03-10T08:40:00Z' },
+	]
+
 	async function fetchLeaderboard() {
 		try {
 			const res = await fetch('/api/scores')
 			if (!res.ok) throw new Error('Failed to fetch')
 			const scores = await res.json()
-			renderLeaderboard(scores)
+			renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES)
 		} catch {
-			renderLeaderboard([])
+			renderLeaderboard(MOCK_SCORES)
 		}
 	}
 
@@ -956,7 +1066,12 @@ const fullWidthBody = true
 				const isHighlight = lastSubmittedDate && s.date === lastSubmittedDate
 				const cls = isHighlight ? ' class="highlight"' : ''
 				const dateStr = s.date ? formatDate(s.date) : ''
-				return `<tr${cls}><td>${i + 1}</td><td>${s.name}</td><td>${s.score}</td><td>${dateStr}</td></tr>`
+				const medalClasses = ['medal-gold', 'medal-silver', 'medal-bronze']
+				const rankDisplay =
+					i < 3
+						? `<span class="medal ${medalClasses[i]}">${i + 1}</span>`
+						: `${i + 1}`
+				return `<tr${cls}><td>${rankDisplay}</td><td>${s.name}</td><td>${s.score}</td><td>${dateStr}</td></tr>`
 			})
 			.join('')
 
