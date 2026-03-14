@@ -58,6 +58,7 @@ const fullWidthBody = true
 		max-width: 100%;
 		height: auto;
 		image-rendering: pixelated;
+		touch-action: none;
 	}
 	.game-instructions {
 		margin: 0 auto 2.5rem;
@@ -291,7 +292,7 @@ const fullWidthBody = true
 	/* ── Mobile D-Pad ── */
 	.dpad {
 		display: none;
-		margin: 2rem auto 0;
+		margin: 1.5rem auto 0;
 		width: 30rem;
 		-webkit-user-select: none;
 		user-select: none;
@@ -602,7 +603,7 @@ const fullWidthBody = true
 			</ol>
 			<p class="controls-note">
 				Arrow keys or WASD to move<span class="touch-hint">
-					· D-pad or swipe on mobile</span
+					· D-pad on mobile</span
 				>
 			</p>
 		</div>
@@ -636,26 +637,29 @@ const fullWidthBody = true
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="dpad" id="dpad">
-		<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"
-			><svg viewBox="0 0 24 24"><path d="M12 5 L22 19 L2 19 Z"></path></svg
-			></button
-		>
-		<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"
-			><svg viewBox="0 0 24 24"><path d="M5 12 L19 2 L19 22 Z"></path></svg
-			></button
-		>
-		<div class="dpad-center"></div>
-		<button class="dpad-btn dpad-right" data-dir="right" aria-label="Move right"
-			><svg viewBox="0 0 24 24"><path d="M19 12 L5 2 L5 22 Z"></path></svg
-			></button
-		>
-		<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"
-			><svg viewBox="0 0 24 24"><path d="M12 19 L2 5 L22 5 Z"></path></svg
-			></button
-		>
+		<div class="dpad" id="dpad">
+			<button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up"
+				><svg viewBox="0 0 24 24"><path d="M12 5 L22 19 L2 19 Z"></path></svg
+				></button
+			>
+			<button class="dpad-btn dpad-left" data-dir="left" aria-label="Move left"
+				><svg viewBox="0 0 24 24"><path d="M5 12 L19 2 L19 22 Z"></path></svg
+				></button
+			>
+			<div class="dpad-center"></div>
+			<button
+				class="dpad-btn dpad-right"
+				data-dir="right"
+				aria-label="Move right"
+				><svg viewBox="0 0 24 24"><path d="M19 12 L5 2 L5 22 Z"></path></svg
+				></button
+			>
+			<button class="dpad-btn dpad-down" data-dir="down" aria-label="Move down"
+				><svg viewBox="0 0 24 24"><path d="M12 19 L2 5 L22 5 Z"></path></svg
+				></button
+			>
+		</div>
 	</div>
 
 	<div class="leaderboard" id="leaderboard">
@@ -1188,40 +1192,17 @@ const fullWidthBody = true
 		btn.addEventListener('click', handler)
 	})
 
-	// ── Swipe controls on canvas ──
-
-	let touchStartX = 0
-	let touchStartY = 0
-
-	canvas.addEventListener(
-		'touchstart',
-		(e) => {
-			const t = e.touches[0]
-			touchStartX = t.clientX
-			touchStartY = t.clientY
-		},
-		{ passive: true }
-	)
-
-	canvas.addEventListener('touchend', (e) => {
-		if (!e.changedTouches.length) return
-		const t = e.changedTouches[0]
-		const dx = t.clientX - touchStartX
-		const dy = t.clientY - touchStartY
-		const absDx = Math.abs(dx)
-		const absDy = Math.abs(dy)
-		const MIN_SWIPE = 20
-		if (Math.max(absDx, absDy) < MIN_SWIPE) return
-		if (absDx > absDy) {
-			moveShark(dx > 0 ? 1 : -1, 0)
-		} else {
-			moveShark(0, dy > 0 ? 1 : -1)
-		}
-	})
-
 	playAgainBtn.addEventListener('click', () => init())
 
 	// Go!
 	fetchLeaderboard()
 	init()
+
+	// Auto-scroll game into view on touch devices
+	if ('ontouchstart' in window) {
+		setTimeout(() => {
+			const hud = document.querySelector('.game-hud')
+			if (hud) hud.scrollIntoView({ behavior: 'smooth', block: 'start' })
+		}, 300)
+	}
 </script>
