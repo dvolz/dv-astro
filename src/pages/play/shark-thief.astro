@@ -1063,6 +1063,14 @@ const fullWidthBody = true
 				'<tr><td colspan="4" class="empty-board">No scores yet — be the first!</td></tr>'
 			return
 		}
+
+		const esc = (str: string) =>
+			str
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;')
+
 		leaderboardBody.innerHTML = scores
 			.map((s, i) => {
 				const isHighlight = lastSubmittedDate && s.date === lastSubmittedDate
@@ -1073,7 +1081,7 @@ const fullWidthBody = true
 					i < 3
 						? `<span class="medal ${medalClasses[i]}">${i + 1}</span>`
 						: `${i + 1}`
-				return `<tr${cls}><td>${rankDisplay}</td><td>${s.name}</td><td>${s.score}</td><td>${dateStr}</td></tr>`
+				return `<tr${cls}><td>${rankDisplay}</td><td>${esc(s.name)}</td><td>${s.score}</td><td>${dateStr}</td></tr>`
 			})
 			.join('')
 
