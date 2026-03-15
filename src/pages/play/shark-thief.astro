@@ -731,6 +731,30 @@ const fullWidthBody = true
 	let moveCount = 0
 	let gameOver = false
 
+	// Smooth shark animation
+	let sharkVisualX = 0
+	let sharkVisualY = 0
+	let sharkFromX = 0
+	let sharkFromY = 0
+	let animStartTime = 0
+	const ANIM_DURATION = 80 // ms
+
+	function startSharkAnim() {
+		sharkFromX = sharkVisualX
+		sharkFromY = sharkVisualY
+		animStartTime = performance.now()
+		requestAnimationFrame(tickAnim)
+	}
+
+	function tickAnim(now: number) {
+		const t = Math.min(1, (now - animStartTime) / ANIM_DURATION)
+		const ease = 1 - (1 - t) * (1 - t) // ease-out quad
+		sharkVisualX = sharkFromX + (shark.x - sharkFromX) * ease
+		sharkVisualY = sharkFromY + (shark.y - sharkFromY) * ease
+		draw()
+		if (t < 1) requestAnimationFrame(tickAnim)
+	}
+
 	// Curated palette — distinct hues with consistent lightness,
 	// chosen so none clash with yellow pickups, black enemies, or the blue shark.
 	const TILE_COLORS = [
@@ -773,6 +797,10 @@ const fullWidthBody = true
 
 		// Make sure shark doesn't start on a pickup
 		pickups[shark.y][shark.x] = false
+
+		// Snap visual position
+		sharkVisualX = shark.x
+		sharkVisualY = shark.y
 
 		// One initial enemy
 		enemies = [spawnEnemy()]
@@ -831,7 +859,7 @@ const fullWidthBody = true
 		}
 
 		// Shark 🦈 — draw a simple shark shape
-		drawShark(shark.x, shark.y)
+		drawShark(sharkVisualX, sharkVisualY)
 	}
 
 	function drawShark(cx: number, cy: number) {
@@ -999,11 +1027,13 @@ const fullWidthBody = true
 			}
 		}
 
-		draw()
+		startSharkAnim()
 	}
 
 	function endGame() {
 		gameOver = true
+		sharkVisualX = shark.x
+		sharkVisualY = shark.y
 		draw()
 		if (score > highScore) {
 			highScore = score

@@ -29,6 +29,11 @@ const fullWidthBody = true
 		text-align: center;
 		overflow-x: hidden;
 	}
+	@media (max-width: 640px) {
+		.game-wrapper {
+			padding: 0 0.5rem;
+		}
+	}
 	.game-hud {
 		display: flex;
 		justify-content: center;
@@ -323,7 +328,7 @@ const fullWidthBody = true
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: all 0.2s ease;
+		transition: transform 0.1s ease;
 		-webkit-tap-highlight-color: transparent;
 		touch-action: none;
 		min-height: 8rem;
@@ -337,8 +342,8 @@ const fullWidthBody = true
 			stroke-linejoin: round;
 			stroke-linecap: round;
 			transition:
-				fill 0.15s ease,
-				stroke 0.15s ease;
+				fill 0.1s ease,
+				stroke 0.1s ease;
 		}
 		&.pressed,
 		&:active {
@@ -568,6 +573,20 @@ const fullWidthBody = true
 	{showTypographyHero}
 	description={blogData.description}
 	fullWidthBody={fullWidthBody}>
+	<Fragment slot="head">
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+		/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent"
+		/>
+		<meta name="apple-mobile-web-app-title" content="Shark Thief 2" />
+		<link rel="apple-touch-icon" href="/images/shark-icon-180.png" />
+		<link rel="manifest" href="/manifest-shark.json" />
+	</Fragment>
 	<div class="details-width">
 		<BlogDetails {...blogData} />
 	</div>
@@ -747,6 +766,30 @@ const fullWidthBody = true
 	let lastThreshold = 0 // last 10% threshold we crossed
 	const TOTAL_CELLS = GRID * GRID
 
+	// Smooth shark animation
+	let sharkVisualX = 0
+	let sharkVisualY = 0
+	let sharkFromX = 0
+	let sharkFromY = 0
+	let animStartTime = 0
+	const ANIM_DURATION = 80 // ms
+
+	function startSharkAnim() {
+		sharkFromX = sharkVisualX
+		sharkFromY = sharkVisualY
+		animStartTime = performance.now()
+		requestAnimationFrame(tickAnim)
+	}
+
+	function tickAnim(now: number) {
+		const t = Math.min(1, (now - animStartTime) / ANIM_DURATION)
+		const ease = 1 - (1 - t) * (1 - t) // ease-out quad
+		sharkVisualX = sharkFromX + (shark.x - sharkFromX) * ease
+		sharkVisualY = sharkFromY + (shark.y - sharkFromY) * ease
+		draw()
+		if (t < 1) requestAnimationFrame(tickAnim)
+	}
+
 	function countFilledCells(): number {
 		let count = 0
 		for (let r = 0; r < GRID; r++) {
@@ -825,6 +868,10 @@ const fullWidthBody = true
 		// Make sure shark doesn't start on a pickup
 		pickups[shark.y][shark.x] = false
 
+		// Snap visual position
+		sharkVisualX = shark.x
+		sharkVisualY = shark.y
+
 		// One initial enemy
 		enemies = [spawnEnemy()]
 
@@ -896,7 +943,7 @@ const fullWidthBody = true
 		}
 
 		// Shark 🦈 — draw a simple shark shape
-		drawShark(shark.x, shark.y)
+		drawShark(sharkVisualX, sharkVisualY)
 	}
 
 	// MDI shark icon path (viewBox 0 0 24 24)
@@ -1024,11 +1071,13 @@ const fullWidthBody = true
 			}
 		}
 
-		draw()
+		startSharkAnim()
 	}
 
 	function endGame() {
 		gameOver = true
+		sharkVisualX = shark.x
+		sharkVisualY = shark.y
 		draw()
 		displayScore = Math.round(score * multiplier)
 		if (displayScore > highScore) {
@@ -1216,33 +1265,64 @@ const fullWidthBody = true
 
 	// ── D-pad controls ──
 
+	function execDir(dir: string) {
+		switch (dir) {
+			case 'up':
+				moveShark(0, -1)
+				break
+			case 'down':
+				moveShark(0, 1)
+				break
+			case 'left':
+				moveShark(-1, 0)
+				break
+			case 'right':
+				moveShark(1, 0)
+				break
+		}
+	}
+
 	document.querySelectorAll('.dpad-btn').forEach((btn) => {
 		const el = btn as HTMLElement
+		let repeatTimer: ReturnType<typeof setInterval> | null = null
 
 		const press = () => el.classList.add('pressed')
-		const release = () => el.classList.remove('pressed')
-
-		const handler = (e: Event) => {
-			e.preventDefault()
-			press()
-			setTimeout(release, 150)
-			switch (el.dataset.dir) {
-				case 'up':
-					moveShark(0, -1)
-					break
-				case 'down':
-					moveShark(0, 1)
-					break
-				case 'left':
-					moveShark(-1, 0)
-					break
-				case 'right':
-					moveShark(1, 0)
-					break
+		const release = () => {
+			el.classList.remove('pressed')
+			if (repeatTimer) {
+				clearInterval(repeatTimer)
+				repeatTimer = null
 			}
 		}
-		btn.addEventListener('touchstart', handler, { passive: false })
-		btn.addEventListener('click', handler)
+
+		const startMove = (e: Event) => {
+			e.preventDefault()
+			press()
+			const dir = el.dataset.dir!
+			// Haptic feedback
+			if (navigator.vibrate) navigator.vibrate(12)
+			execDir(dir)
+			// Auto-repeat after 200ms delay, then every 100ms
+			repeatTimer = setTimeout(() => {
+				repeatTimer = setInterval(() => {
+					if (navigator.vibrate) navigator.vibrate(8)
+					execDir(dir)
+				}, 100)
+			}, 200) as unknown as ReturnType<typeof setInterval>
+		}
+
+		const stopMove = () => release()
+
+		btn.addEventListener('touchstart', startMove, { passive: false })
+		btn.addEventListener('touchend', stopMove)
+		btn.addEventListener('touchcancel', stopMove)
+		btn.addEventListener('click', (e) => {
+			e.preventDefault()
+			if (navigator.vibrate) navigator.vibrate(12)
+			execDir(el.dataset.dir!)
+			press()
+			setTimeout(release, 150)
+		})
 	})
 
 	playAgainBtn.addEventListener('click', () => init())
