@@ -7,7 +7,7 @@ export function transformPosts(posts, sourceType) {
 			url: post.url,
 			title: data?.title ?? 'Untitled',
 			date: data?.pubDate ?? 'Unknown date',
-			display: data?.display ?? false,
+			display: data?.display ?? true,
 			description: data?.description ?? 'No Description',
 			featured: data?.featured ?? false,
 			tags: data?.tags ?? 'no tags',
