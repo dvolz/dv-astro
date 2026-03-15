@@ -3,18 +3,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import BlogDetails from '../../components/BlogDetails.astro'
 
 export const blogData = {
-	title: 'Shark Thief',
+	title: 'Shark Thief 2',
 	author: 'David Volz',
-	description:
-		"A browser game built from a kid's prompt — sharks, bad guys, and yellow squares.",
+	description: "The sequel — a browser game built from a kid's prompt.",
 	image: {
 		url: 'https://docs.astro.build/assets/arc.webp',
 		alt: 'The Astro logo on a dark background with a purple gradient arc.',
 	},
-	pubDate: '2026-3-14',
+	pubDate: '2026-3-15',
 	tags: ['javascript', 'code', 'fluff'],
-	featured: true,
-	display: true,
+	featured: false,
+	display: false,
 }
 
 const showTypographyHero = true
@@ -24,7 +23,7 @@ const fullWidthBody = true
 <style lang="scss">
 	/* ── Game ── */
 	.game-wrapper {
-		max-width: 80rem;
+		max-width: 90rem;
 		margin: 0 auto;
 		padding: 0 2rem;
 		text-align: center;
@@ -46,6 +45,12 @@ const fullWidthBody = true
 			font-weight: 800;
 			letter-spacing: 0.04em;
 		}
+		.multiplier {
+			color: #e8a87c;
+		}
+		.filled {
+			color: #a3b18a;
+		}
 	}
 	.game-canvas-wrapper {
 		display: inline-block;
@@ -57,7 +62,6 @@ const fullWidthBody = true
 		display: block;
 		max-width: 100%;
 		height: auto;
-		image-rendering: pixelated;
 		touch-action: none;
 	}
 	.game-instructions {
@@ -319,7 +323,7 @@ const fullWidthBody = true
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: transform 0.1s ease;
+		transition: all 0.2s ease;
 		-webkit-tap-highlight-color: transparent;
 		touch-action: none;
 		min-height: 8rem;
@@ -333,8 +337,8 @@ const fullWidthBody = true
 			stroke-linejoin: round;
 			stroke-linecap: round;
 			transition:
-				fill 0.1s ease,
-				stroke 0.1s ease;
+				fill 0.15s ease,
+				stroke 0.15s ease;
 		}
 		&.pressed,
 		&:active {
@@ -596,8 +600,14 @@ const fullWidthBody = true
 		<div class="game-instructions">
 			<p class="how-to-play">How to Play</p>
 			<ol>
-				<li><strong>Move</strong> your shark around the board</li>
+				<li>
+					<strong>Move</strong> your shark — every tile you visit gets colored
+				</li>
 				<li><strong>Collect</strong> the yellow squares to score points</li>
+				<li>
+					<strong>Fill the board</strong> with one color to earn a multiplier (up
+					to 2x)
+				</li>
 				<li><strong>Avoid</strong> the black squares — they chase you</li>
 				<li>Each pickup spawns a new enemy — survive as long as you can</li>
 			</ol>
@@ -610,11 +620,15 @@ const fullWidthBody = true
 
 		<div class="game-hud">
 			<span>Score: <span id="score">0</span></span>
+			<span>Filled: <span id="filled" class="filled">0%</span></span>
+			<span
+				>Multiplier: <span id="multiplier" class="multiplier">1.0x</span></span
+			>
 			<span>High Score: <span id="highScore">0</span></span>
 		</div>
 
 		<div class="game-canvas-container">
-			<canvas id="gameCanvas" width="600" height="600"></canvas>
+			<canvas id="gameCanvas" width="800" height="800"></canvas>
 			<div class="game-over-overlay" id="gameOverOverlay">
 				<h2>YOU DIED</h2>
 				<p class="final-score">Score: <span id="finalScore">0</span></p>
@@ -674,14 +688,16 @@ const fullWidthBody = true
 </BaseLayout>
 
 <script>
-	const GRID = 30
+	const GRID = 20
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
 	const ctx = canvas.getContext('2d')!
-	const CELL = canvas.width / GRID
+	const CELL = canvas.width / GRID // 40px per cell
 
 	const scoreEl = document.getElementById('score')!
 	const highScoreEl = document.getElementById('highScore')!
 	const finalScoreEl = document.getElementById('finalScore')!
+	const multiplierEl = document.getElementById('multiplier')!
+	const filledEl = document.getElementById('filled')!
 	const overlay = document.getElementById('gameOverOverlay')!
 	const playAgainBtn = document.getElementById('playAgainBtn')!
 	const submitScoreBtn = document.getElementById(
@@ -693,8 +709,10 @@ const fullWidthBody = true
 	const submitStatus = document.getElementById('submitStatus')!
 	const nameInputRow = document.getElementById('nameInputRow')!
 	const leaderboardBody = document.getElementById('leaderboardBody')!
+	const submitPrompt = document.getElementById('submitPrompt')!
+	const wantToSubmitBtn = document.getElementById('wantToSubmitBtn')!
 
-	let highScore = parseInt(localStorage.getItem('sharkHighScore') || '0', 10)
+	let highScore = parseInt(localStorage.getItem('sharkHighScore2') || '0', 10)
 	highScoreEl.textContent = String(highScore)
 
 	// ── State ──
@@ -703,44 +721,93 @@ const fullWidthBody = true
 		y: number
 	}
 
-	let colors: string[][] = []
+	// Trail colors — from YouTube Timer palette, used sequentially
+	const TRAIL_COLORS = [
+		'#D8A7B1', // rose
+		'#E8A87C', // peach
+		'#D4B483', // sand
+		'#A3B18A', // sage
+		'#E5989B', // coral
+		'#B8A9C9', // lavender
+		'#C97C5D', // terra cotta
+		'#7D9BA6', // slate blue
+	]
+
+	let trail: (string | null)[][] = [] // null = unvisited
 	let pickups: boolean[][] = []
 	let enemies: Enemy[] = []
 	let shark = { x: 0, y: 0 }
-	let sharkDir = 'right' // tracks last movement direction
+	let sharkDir = 'right'
 	let score = 0
+	let displayScore = 0 // score with multiplier applied
 	let moveCount = 0
 	let gameOver = false
+	let currentColorIndex = 0 // which trail color we're painting
+	let multiplier = 1.0
+	let lastThreshold = 0 // last 10% threshold we crossed
+	const TOTAL_CELLS = GRID * GRID
 
-	// Curated palette — distinct hues with consistent lightness,
-	// chosen so none clash with yellow pickups, black enemies, or the blue shark.
-	const TILE_COLORS = [
-		'#7ca6b3', // steel blue
-		'#8fae7e', // sage green
-		'#b58dac', // muted plum
-		'#c49880', // warm tan
-		'#6d9e9e', // teal
-		'#a3887e', // mauve brown
-		'#8e9fc0', // periwinkle
-		'#9caa6c', // olive
-		'#b08f9f', // dusty rose
-		'#7b9a84', // fern
-	]
+	function countFilledCells(): number {
+		let count = 0
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				if (trail[r][c] !== null) count++
+			}
+		}
+		return count
+	}
 
-	function randomTileColor(): string {
-		return TILE_COLORS[Math.floor(Math.random() * TILE_COLORS.length)]
+	function updateMultiplierDisplay() {
+		multiplierEl.textContent = `${multiplier.toFixed(1)}x`
+	}
+
+	function updateFilledDisplay(pct: number) {
+		filledEl.textContent = `${pct}%`
+	}
+
+	function updateScoreDisplay() {
+		scoreEl.textContent = String(displayScore)
+	}
+
+	function checkTrailProgress() {
+		const filled = countFilledCells()
+		const pct = Math.min(100, Math.round((filled / TOTAL_CELLS) * 100))
+		updateFilledDisplay(pct)
+
+		// Check which 10% threshold we're at
+		const threshold = Math.floor(pct / 10)
+		if (threshold > lastThreshold && threshold <= 10) {
+			// Advance color for each new threshold crossed
+			for (let t = lastThreshold + 1; t <= threshold; t++) {
+				if (multiplier < 2.0) {
+					multiplier = Math.min(2.0, Math.round((multiplier + 0.1) * 10) / 10)
+				}
+				currentColorIndex = (currentColorIndex + 1) % TRAIL_COLORS.length
+			}
+			lastThreshold = threshold
+			updateMultiplierDisplay()
+			// Recalculate displayed score with new multiplier
+			displayScore = Math.round(score * multiplier)
+			updateScoreDisplay()
+		}
 	}
 
 	function init() {
 		score = 0
+		displayScore = 0
 		moveCount = 0
 		gameOver = false
+		multiplier = 1.0
+		lastThreshold = 0
+		currentColorIndex = 0
 		scoreEl.textContent = '0'
+		updateMultiplierDisplay()
+		updateFilledDisplay(0)
 		overlay.classList.remove('visible')
 
-		// Random colors
-		colors = Array.from({ length: GRID }, () =>
-			Array.from({ length: GRID }, () => randomTileColor())
+		// Trail starts empty (null = unvisited, transparent)
+		trail = Array.from({ length: GRID }, () =>
+			Array.from({ length: GRID }, () => null)
 		)
 
 		// Pickups — 5% on init
@@ -751,6 +818,9 @@ const fullWidthBody = true
 		// Shark starts at random spot
 		shark.x = Math.floor(Math.random() * GRID)
 		shark.y = Math.floor(Math.random() * GRID)
+
+		// Mark starting tile
+		trail[shark.y][shark.x] = TRAIL_COLORS[currentColorIndex]
 
 		// Make sure shark doesn't start on a pickup
 		pickups[shark.y][shark.x] = false
@@ -777,16 +847,30 @@ const fullWidthBody = true
 	// ── Drawing ──
 
 	function draw() {
-		// Grid cells
+		// Clear canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+		// Grid cells — transparent with border, colored if visited
 		for (let r = 0; r < GRID; r++) {
 			for (let c = 0; c < GRID; c++) {
-				ctx.fillStyle = colors[r][c]
-				ctx.fillRect(c * CELL, r * CELL, CELL, CELL)
+				const x = c * CELL
+				const y = r * CELL
+
+				// Fill with trail color if visited
+				if (trail[r][c]) {
+					ctx.fillStyle = trail[r][c]!
+					ctx.fillRect(x, y, CELL, CELL)
+				}
+
+				// 1px border on every cell
+				ctx.strokeStyle = 'rgba(128, 128, 128, 0.25)'
+				ctx.lineWidth = 1
+				ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1)
 			}
 		}
 
 		// Pickups (smaller yellow squares with dark outline for contrast)
-		const pad = CELL * 0.22
+		const pad = CELL * 0.2
 		for (let r = 0; r < GRID; r++) {
 			for (let c = 0; c < GRID; c++) {
 				if (pickups[r][c]) {
@@ -815,6 +899,11 @@ const fullWidthBody = true
 		drawShark(shark.x, shark.y)
 	}
 
+	// MDI shark icon path (viewBox 0 0 24 24)
+	const sharkPath = new Path2D(
+		'M15.56 9.09C14.66 7.18 12.54 6 11 6c.47 1.4.28 2.57-.05 3.43C8.45 10 6 11 6 11S3 7 1 7l2 6l-1 4c2 0 4-3 4-3s5 2 8 2v2c.65 0 1.91-.83 2.73-2.23c1.24-.21 2.27-.56 3.14-.96c-.15-.18-.34-.37-.59-.51c-.65-.39-1.46-.63-2.28-.8c.82-.16 1.67-.28 2.59-.15c.46.06.95.19 1.41.51c.1.06.17.14.24.19C22.4 13.26 23 12.44 23 12c0-.87-3.81-2.5-7.44-2.91M18 12c-.55 0-1-.45-1-1c0-.24.1-.45.23-.62c.61.12 1.2.29 1.74.46c.03.05.03.1.03.16c0 .55-.45 1-1 1'
+	)
+
 	function drawShark(cx: number, cy: number) {
 		const x = cx * CELL
 		const y = cy * CELL
@@ -829,10 +918,9 @@ const fullWidthBody = true
 		ctx.translate(centerX, centerY)
 		switch (sharkDir) {
 			case 'right':
-				// default orientation, no transform
 				break
 			case 'left':
-				ctx.scale(-1, 1) // mirror horizontally
+				ctx.scale(-1, 1)
 				break
 			case 'down':
 				ctx.rotate(Math.PI / 2)
@@ -843,71 +931,20 @@ const fullWidthBody = true
 		}
 		ctx.translate(-centerX, -centerY)
 
-		// Glow / highlight behind the shark
-		ctx.shadowColor = '#ffffff'
-		ctx.shadowBlur = 12
+		// Scale the 24x24 icon to fit the cell with some padding
+		const padding = w * 0.08
+		const scale = (w - padding * 2) / 24
+		ctx.translate(x + padding, y + padding)
+		ctx.scale(scale, scale)
 
-		// White outline for contrast on any background
-		ctx.strokeStyle = '#fff'
-		ctx.lineWidth = 1
-
-		// Body
-		ctx.fillStyle = '#2980b9'
-		ctx.beginPath()
-		ctx.ellipse(x + w / 2, y + h / 2, w * 0.45, h * 0.35, 0, 0, Math.PI * 2)
-		ctx.fill()
-		ctx.stroke()
-
-		// Reset shadow so fins/tail don't double-glow
-		ctx.shadowBlur = 0
-
-		// Dorsal fin
-		ctx.fillStyle = '#1a5276'
-		ctx.beginPath()
-		ctx.moveTo(x + w * 0.4, y + h * 0.08)
-		ctx.lineTo(x + w * 0.48, y + h * 0.38)
-		ctx.lineTo(x + w * 0.62, y + h * 0.35)
-		ctx.closePath()
-		ctx.fill()
-		ctx.stroke()
-
-		// Tail
-		ctx.fillStyle = '#1a5276'
-		ctx.beginPath()
-		ctx.moveTo(x + w * 0.05, y + h * 0.35)
-		ctx.lineTo(x - w * 0.1, y + h * 0.15)
-		ctx.lineTo(x - w * 0.1, y + h * 0.7)
-		ctx.lineTo(x + w * 0.05, y + h * 0.55)
-		ctx.closePath()
-		ctx.fill()
-		ctx.stroke()
-
-		// Belly (lighter underside)
-		ctx.fillStyle = '#d6eaf8'
-		ctx.beginPath()
-		ctx.ellipse(x + w / 2, y + h * 0.58, w * 0.32, h * 0.12, 0, 0, Math.PI)
-		ctx.fill()
-
-		// Mouth line
-		ctx.strokeStyle = '#1a5276'
-		ctx.lineWidth = 1
-		ctx.beginPath()
-		ctx.moveTo(x + w * 0.55, y + h * 0.58)
-		ctx.lineTo(x + w * 0.85, y + h * 0.52)
-		ctx.stroke()
-
-		// Eye
-		ctx.fillStyle = '#fff'
-		ctx.beginPath()
-		ctx.arc(x + w * 0.65, y + h * 0.38, w * 0.09, 0, Math.PI * 2)
-		ctx.fill()
-		ctx.strokeStyle = '#1a5276'
-		ctx.lineWidth = 1
-		ctx.stroke()
-		ctx.fillStyle = '#000'
-		ctx.beginPath()
-		ctx.arc(x + w * 0.67, y + h * 0.38, w * 0.045, 0, Math.PI * 2)
-		ctx.fill()
+		// Stroke only, no fill
+		const textColor =
+			getComputedStyle(document.documentElement)
+				.getPropertyValue('--text-color')
+				.trim() || '#332e2e'
+		ctx.strokeStyle = textColor
+		ctx.lineWidth = 1 / scale // 1px in screen space
+		ctx.stroke(sharkPath)
 
 		ctx.restore()
 	}
@@ -931,14 +968,21 @@ const fullWidthBody = true
 		else if (dy === 1) sharkDir = 'down'
 		else if (dy === -1) sharkDir = 'up'
 
+		// Color the tile the shark just moved to
+		trail[ny][nx] = TRAIL_COLORS[currentColorIndex]
+
 		// Check pickup
 		if (pickups[ny][nx]) {
 			pickups[ny][nx] = false
 			score++
-			scoreEl.textContent = String(score)
+			displayScore = Math.round(score * multiplier)
+			updateScoreDisplay()
 			// Spawn a new enemy
 			enemies.push(spawnEnemy())
 		}
+
+		// Check trail progress (multiplier & color changes)
+		checkTrailProgress()
 
 		// Spawn new pickups — 1/4000 chance per cell
 		for (let r = 0; r < GRID; r++) {
@@ -986,12 +1030,13 @@ const fullWidthBody = true
 	function endGame() {
 		gameOver = true
 		draw()
-		if (score > highScore) {
-			highScore = score
-			localStorage.setItem('sharkHighScore', String(highScore))
+		displayScore = Math.round(score * multiplier)
+		if (displayScore > highScore) {
+			highScore = displayScore
+			localStorage.setItem('sharkHighScore2', String(highScore))
 			highScoreEl.textContent = String(highScore)
 		}
-		finalScoreEl.textContent = String(score)
+		finalScoreEl.textContent = String(displayScore)
 
 		// Reset submit UI — show prompt button, hide name input
 		submitPrompt.style.display = score > 0 ? 'block' : 'none'
@@ -1106,14 +1151,14 @@ const fullWidthBody = true
 			const res = await fetch('/api/scores', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, score }),
+				body: JSON.stringify({ name, score: displayScore }),
 			})
 			if (!res.ok) throw new Error('Submit failed')
 			const scores = await res.json()
 			// Find the entry we just submitted (most recent with matching name/score)
 			const submitted = scores.find(
 				(s: { name: string; score: number; date?: string }) =>
-					s.name === name && s.score === score && s.date
+					s.name === name && s.score === displayScore && s.date
 			)
 			lastSubmittedDate = submitted?.date || null
 			renderLeaderboard(scores)
@@ -1171,64 +1216,33 @@ const fullWidthBody = true
 
 	// ── D-pad controls ──
 
-	function execDir(dir: string) {
-		switch (dir) {
-			case 'up':
-				moveShark(0, -1)
-				break
-			case 'down':
-				moveShark(0, 1)
-				break
-			case 'left':
-				moveShark(-1, 0)
-				break
-			case 'right':
-				moveShark(1, 0)
-				break
-		}
-	}
-
 	document.querySelectorAll('.dpad-btn').forEach((btn) => {
 		const el = btn as HTMLElement
-		let repeatTimer: ReturnType<typeof setInterval> | null = null
 
 		const press = () => el.classList.add('pressed')
-		const release = () => {
-			el.classList.remove('pressed')
-			if (repeatTimer) {
-				clearInterval(repeatTimer)
-				repeatTimer = null
-			}
-		}
+		const release = () => el.classList.remove('pressed')
 
-		const startMove = (e: Event) => {
+		const handler = (e: Event) => {
 			e.preventDefault()
-			press()
-			const dir = el.dataset.dir!
-			// Haptic feedback
-			if (navigator.vibrate) navigator.vibrate(12)
-			execDir(dir)
-			// Auto-repeat after 200ms delay, then every 100ms
-			repeatTimer = setTimeout(() => {
-				repeatTimer = setInterval(() => {
-					if (navigator.vibrate) navigator.vibrate(8)
-					execDir(dir)
-				}, 100)
-			}, 200) as unknown as ReturnType<typeof setInterval>
-		}
-
-		const stopMove = () => release()
-
-		btn.addEventListener('touchstart', startMove, { passive: false })
-		btn.addEventListener('touchend', stopMove)
-		btn.addEventListener('touchcancel', stopMove)
-		btn.addEventListener('click', (e) => {
-			e.preventDefault()
-			if (navigator.vibrate) navigator.vibrate(12)
-			execDir(el.dataset.dir!)
 			press()
 			setTimeout(release, 150)
-		})
+			switch (el.dataset.dir) {
+				case 'up':
+					moveShark(0, -1)
+					break
+				case 'down':
+					moveShark(0, 1)
+					break
+				case 'left':
+					moveShark(-1, 0)
+					break
+				case 'right':
+					moveShark(1, 0)
+					break
+			}
+		}
+		btn.addEventListener('touchstart', handler, { passive: false })
+		btn.addEventListener('click', handler)
 	})
 
 	playAgainBtn.addEventListener('click', () => init())
