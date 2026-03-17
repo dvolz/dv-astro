@@ -1,12 +1,21 @@
 import { getStore } from '@netlify/blobs'
 
 const MAX_SCORES = 500
-const MAX_SCORE_VALUE = 500
+const MAX_SCORE_VALUE = 10000
+const VALID_MAPS = ['small', 'medium', 'large', 'xl', 'extreme']
+
+function blobKey(map) {
+	return map === 'medium' ? 'scores' : `scores-${map}`
+}
 
 export default async (req) => {
 	if (req.method !== 'POST') {
 		return new Response('Method not allowed', { status: 405 })
 	}
+
+	const url = new URL(req.url)
+	const map = url.searchParams.get('map') || 'medium'
+	const mapKey = VALID_MAPS.includes(map) ? map : 'medium'
 
 	// Simple rate limiting via IP
 	const ip =
@@ -43,7 +52,7 @@ export default async (req) => {
 
 	const cleanName = name.trim().slice(0, 20)
 
-	const raw = await store.get('scores')
+	const raw = await store.get(blobKey(mapKey))
 	const scores = raw ? JSON.parse(raw) : []
 
 	scores.push({ name: cleanName, score, date: new Date().toISOString() })
@@ -52,7 +61,7 @@ export default async (req) => {
 	scores.sort((a, b) => b.score - a.score)
 	const capped = scores.slice(0, MAX_SCORES)
 
-	await store.set('scores', JSON.stringify(capped))
+	await store.set(blobKey(mapKey), JSON.stringify(capped))
 	await store.set(rateLimitKey, String(Date.now()))
 
 	return new Response(JSON.stringify(capped), {
