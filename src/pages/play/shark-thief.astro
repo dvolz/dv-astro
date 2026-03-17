@@ -62,7 +62,6 @@ const fullWidthBody = true
 		display: block;
 		max-width: 100%;
 		height: auto;
-		image-rendering: pixelated;
 		touch-action: none;
 	}
 	.game-instructions {
@@ -824,6 +823,10 @@ const fullWidthBody = true
 	// ── Drawing ──
 
 	function draw() {
+		// Background fill — prevents white seams between cells on scaled displays
+		ctx.fillStyle = '#5b7b7b'
+		ctx.fillRect(0, 0, canvas.width, canvas.height)
+
 		// Grid cells
 		for (let r = 0; r < GRID; r++) {
 			for (let c = 0; c < GRID; c++) {

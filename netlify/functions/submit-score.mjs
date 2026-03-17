@@ -1,4 +1,5 @@
 import { getStore } from '@netlify/blobs'
+import { containsBadWord } from './bad-words.mjs'
 
 const MAX_SCORES = 500
 const MAX_SCORE_VALUE = 10000
@@ -51,6 +52,12 @@ export default async (req) => {
 	}
 
 	const cleanName = name.trim().slice(0, 20)
+
+	if (containsBadWord(cleanName)) {
+		return new Response('Name contains inappropriate language', {
+			status: 400,
+		})
+	}
 
 	const raw = await store.get(blobKey(mapKey))
 	const scores = raw ? JSON.parse(raw) : []

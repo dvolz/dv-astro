@@ -5,8 +5,7 @@ import BlogDetails from '../../components/BlogDetails.astro'
 export const blogData = {
 	title: 'Shark Thief Preview',
 	author: 'David Volz',
-	description:
-		"Preview — a browser game built from a kid's prompt.",
+	description: "Preview — a browser game built from a kid's prompt.",
 	image: {
 		url: 'https://docs.astro.build/assets/arc.webp',
 		alt: 'The Astro logo on a dark background with a purple gradient arc.',
@@ -62,7 +61,6 @@ const fullWidthBody = true
 		display: block;
 		max-width: 100%;
 		height: auto;
-		image-rendering: pixelated;
 		touch-action: none;
 	}
 	.game-instructions {
@@ -575,24 +573,16 @@ const fullWidthBody = true
 				Arrow keys or WASD to move<span class="touch-hint">
 					· D-pad on mobile</span
 				>
+				· Switching map size resets the game
 			</p>
 		</div>
 
 		<div class="map-selector">
-			<button class="map-btn" data-map="small" data-grid="15">
-				Small<span class="map-size">15 × 15</span>
+			<button class="map-btn" data-map="small" data-grid="20">
+				Small<span class="map-size">20 × 20</span>
 			</button>
 			<button class="map-btn active" data-map="medium" data-grid="30">
 				Medium<span class="map-size">30 × 30</span>
-			</button>
-			<button class="map-btn" data-map="large" data-grid="45">
-				Large<span class="map-size">45 × 45</span>
-			</button>
-			<button class="map-btn" data-map="xl" data-grid="60">
-				Extra Large<span class="map-size">60 × 60</span>
-			</button>
-			<button class="map-btn" data-map="extreme" data-grid="240">
-				Extreme<span class="map-size">240 × 240</span>
 			</button>
 		</div>
 
@@ -666,45 +656,14 @@ const fullWidthBody = true
 	const ctx = canvas.getContext('2d')!
 
 	// ── Map config ──
-	type MapSize = 'small' | 'medium' | 'large' | 'xl' | 'extreme'
+	type MapSize = 'small' | 'medium'
 	const MAP_GRIDS: Record<MapSize, number> = {
-		small: 15,
+		small: 20,
 		medium: 30,
-		large: 45,
-		xl: 60,
-		extreme: 240,
 	}
-	// Viewport size for extreme mode (show 60×60 cells at a time)
-	const VIEWPORT_CELLS = 60
 	let currentMap: MapSize = 'medium'
 	let GRID = MAP_GRIDS[currentMap]
 	let CELL = canvas.width / GRID
-
-	// Camera offset (in grid cells) — only used for extreme mode
-	let camX = 0
-	let camY = 0
-
-	function isViewportMode(): boolean {
-		return GRID > VIEWPORT_CELLS
-	}
-
-	function updateCamera() {
-		if (!isViewportMode()) {
-			camX = 0
-			camY = 0
-			return
-		}
-		// Center on shark, clamp to edges
-		const half = VIEWPORT_CELLS / 2
-		camX = Math.max(
-			0,
-			Math.min(GRID - VIEWPORT_CELLS, Math.round(sharkVisualX - half))
-		)
-		camY = Math.max(
-			0,
-			Math.min(GRID - VIEWPORT_CELLS, Math.round(sharkVisualY - half))
-		)
-	}
 
 	const scoreEl = document.getElementById('score')!
 	const highScoreEl = document.getElementById('highScore')!
@@ -818,9 +777,6 @@ const fullWidthBody = true
 		sharkVisualX = shark.x
 		sharkVisualY = shark.y
 
-		// Snap camera
-		updateCamera()
-
 		// One initial enemy
 		enemies = [spawnEnemy()]
 
@@ -843,37 +799,26 @@ const fullWidthBody = true
 	// ── Drawing ──
 
 	function draw() {
-		if (isViewportMode()) {
-			updateCamera()
-		}
+		// Background fill — prevents white seams between cells on scaled displays
+		ctx.fillStyle = '#5b7b7b'
+		ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-		const viewCells = isViewportMode() ? VIEWPORT_CELLS : GRID
-		const cellPx = canvas.width / viewCells
-
-		// Grid cells (only visible viewport)
-		for (let vr = 0; vr < viewCells; vr++) {
-			for (let vc = 0; vc < viewCells; vc++) {
-				const gr = vr + camY
-				const gc = vc + camX
-				if (gr >= 0 && gr < GRID && gc >= 0 && gc < GRID) {
-					ctx.fillStyle = colors[gr][gc]
-				} else {
-					ctx.fillStyle = '#333'
-				}
-				ctx.fillRect(vc * cellPx, vr * cellPx, cellPx, cellPx)
+		// Grid cells
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				ctx.fillStyle = colors[r][c]
+				ctx.fillRect(c * CELL, r * CELL, CELL, CELL)
 			}
 		}
 
 		// Pickups (smaller yellow squares with dark outline for contrast)
-		const pad = cellPx * 0.22
-		for (let vr = 0; vr < viewCells; vr++) {
-			for (let vc = 0; vc < viewCells; vc++) {
-				const gr = vr + camY
-				const gc = vc + camX
-				if (gr >= 0 && gr < GRID && gc >= 0 && gc < GRID && pickups[gr][gc]) {
-					const px = vc * cellPx + pad
-					const py = vr * cellPx + pad
-					const ps = cellPx - pad * 2
+		const pad = CELL * 0.22
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				if (pickups[r][c]) {
+					const px = c * CELL + pad
+					const py = r * CELL + pad
+					const ps = CELL - pad * 2
 					ctx.fillStyle = '#7a6200'
 					ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2)
 					ctx.fillStyle = '#f1c40f'
@@ -884,100 +829,14 @@ const fullWidthBody = true
 
 		// Enemies (dark squares with red outline for visibility)
 		for (const e of enemies) {
-			const ex = (e.x - camX) * cellPx
-			const ey = (e.y - camY) * cellPx
-			// Only draw if in viewport
-			if (
-				ex >= -cellPx &&
-				ex < canvas.width + cellPx &&
-				ey >= -cellPx &&
-				ey < canvas.height + cellPx
-			) {
-				ctx.fillStyle = '#c0392b'
-				ctx.fillRect(ex - 1, ey - 1, cellPx + 2, cellPx + 2)
-				ctx.fillStyle = '#1a1a1a'
-				ctx.fillRect(ex, ey, cellPx, cellPx)
-			}
+			ctx.fillStyle = '#c0392b'
+			ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2)
+			ctx.fillStyle = '#1a1a1a'
+			ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL)
 		}
 
 		// Shark 🦈
-		const sharkScreenX = (sharkVisualX - camX) * cellPx
-		const sharkScreenY = (sharkVisualY - camY) * cellPx
-		drawSharkAt(sharkScreenX, sharkScreenY, cellPx)
-
-		// Mini-map for extreme mode
-		if (isViewportMode()) {
-			drawMiniMap(cellPx)
-		}
-	}
-
-	function drawMiniMap(cellPx: number) {
-		const mapSize = 120 // px
-		const margin = 8
-		const mx = canvas.width - mapSize - margin
-		const my = canvas.height - mapSize - margin
-		const mapCellPx = mapSize / GRID
-
-		// Background
-		ctx.save()
-		ctx.globalAlpha = 0.85
-		ctx.fillStyle = '#0c1421'
-		ctx.fillRect(mx - 2, my - 2, mapSize + 4, mapSize + 4)
-		ctx.globalAlpha = 1
-
-		// Border
-		ctx.strokeStyle = 'rgba(93, 173, 226, 0.5)'
-		ctx.lineWidth = 2
-		ctx.strokeRect(mx - 2, my - 2, mapSize + 4, mapSize + 4)
-
-		// Tiles (simplified — just colored blocks)
-		for (let r = 0; r < GRID; r++) {
-			for (let c = 0; c < GRID; c++) {
-				ctx.fillStyle = colors[r][c]
-				ctx.fillRect(
-					mx + c * mapCellPx,
-					my + r * mapCellPx,
-					Math.ceil(mapCellPx),
-					Math.ceil(mapCellPx)
-				)
-			}
-		}
-
-		// Enemies as red dots
-		ctx.fillStyle = '#e74c3c'
-		for (const e of enemies) {
-			ctx.fillRect(
-				mx + e.x * mapCellPx,
-				my + e.y * mapCellPx,
-				Math.max(2, Math.ceil(mapCellPx)),
-				Math.max(2, Math.ceil(mapCellPx))
-			)
-		}
-
-		// Shark as a bright blue dot
-		const sharkR = Math.max(3, mapCellPx * 2)
-		ctx.fillStyle = '#5dade2'
-		ctx.beginPath()
-		ctx.arc(
-			mx + shark.x * mapCellPx + mapCellPx / 2,
-			my + shark.y * mapCellPx + mapCellPx / 2,
-			sharkR,
-			0,
-			Math.PI * 2
-		)
-		ctx.fill()
-
-		// Viewport rectangle
-		ctx.strokeStyle = '#fff'
-		ctx.lineWidth = 1.5
-		ctx.strokeRect(
-			mx + camX * mapCellPx,
-			my + camY * mapCellPx,
-			VIEWPORT_CELLS * mapCellPx,
-			VIEWPORT_CELLS * mapCellPx
-		)
-
-		ctx.restore()
+		drawSharkAt(sharkVisualX * CELL, sharkVisualY * CELL, CELL)
 	}
 
 	function drawSharkAt(x: number, y: number, size: number) {
@@ -1403,18 +1262,12 @@ const fullWidthBody = true
 	const MAP_LABELS: Record<MapSize, string> = {
 		small: 'Small',
 		medium: 'Medium',
-		large: 'Large',
-		xl: 'Extra Large',
-		extreme: 'Extreme',
 	}
 
 	function switchMap(map: MapSize) {
 		currentMap = map
 		GRID = MAP_GRIDS[map]
-		// In viewport mode, CELL uses viewport-sized rendering
-		CELL = isViewportMode()
-			? canvas.width / VIEWPORT_CELLS
-			: canvas.width / GRID
+		CELL = canvas.width / GRID
 
 		// Update button active state
 		mapBtns.forEach((b) => {
