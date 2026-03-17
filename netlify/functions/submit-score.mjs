@@ -54,7 +54,7 @@ export default async (req) => {
 	const cleanName = name.trim().slice(0, 20)
 
 	if (containsBadWord(cleanName)) {
-		return new Response('Name contains inappropriate language', {
+		return new Response('Invalid name', {
 			status: 400,
 		})
 	}

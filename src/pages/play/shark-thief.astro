@@ -24,7 +24,7 @@ const fullWidthBody = true
 <style lang="scss">
 	/* ── Game ── */
 	.game-wrapper {
-		max-width: 80rem;
+		max-width: 96rem;
 		margin: 0 auto;
 		padding: 0 2rem;
 		text-align: center;
@@ -57,6 +57,33 @@ const fullWidthBody = true
 		border: 2px solid var(--text-color);
 		border-radius: 0.4rem;
 		line-height: 0;
+	}
+	.colorblind-toggle {
+		display: flex;
+		justify-content: center;
+		margin: 0 0 1rem;
+	}
+	.colorblind-toggle button {
+		font-family: var(--a-font);
+		font-size: 1.2rem;
+		font-weight: 600;
+		padding: 0.4rem 1.2rem;
+		border: 1px solid rgba(128, 128, 128, 0.3);
+		border-radius: 0.4rem;
+		background: none;
+		color: var(--text-color);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		opacity: 0.6;
+	}
+	.colorblind-toggle button:hover {
+		opacity: 1;
+	}
+	.colorblind-toggle button.active {
+		background: var(--highlight-secondary);
+		color: #fff;
+		border-color: var(--highlight-secondary);
+		opacity: 1;
 	}
 	canvas {
 		display: block;
@@ -100,6 +127,47 @@ const fullWidthBody = true
 		font-size: 1.2rem;
 		opacity: 0.55;
 		font-family: var(--a-font);
+	}
+
+	/* ── Map Selector ── */
+	.map-selector {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin: 0 0 2rem;
+	}
+	.map-btn {
+		font-family: var(--a-font);
+		font-size: 1.3rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		padding: 0.7rem 1.8rem;
+		border: 2px solid var(--text-color);
+		border-radius: 0.5rem;
+		background: none;
+		color: var(--text-color);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		opacity: 0.5;
+	}
+	.map-btn:hover {
+		opacity: 0.75;
+	}
+	.map-btn.active {
+		opacity: 1;
+		border-color: var(--highlight-secondary);
+		color: var(--highlight-secondary);
+		background: rgba(74, 151, 184, 0.08);
+	}
+	.map-btn .map-size {
+		display: block;
+		font-size: 1rem;
+		font-weight: 400;
+		opacity: 0.55;
+		margin-top: 0.2rem;
+		letter-spacing: 0.04em;
 	}
 
 	/* ── Game Over Overlay ── */
@@ -156,72 +224,6 @@ const fullWidthBody = true
 		position: relative;
 		display: inline-block;
 		max-width: 100%;
-	}
-
-	/* ── DOS-style prompt ── */
-	.prompt-terminal {
-		max-width: 60rem;
-		margin: 0 auto 3rem;
-		border: 1px solid rgba(93, 173, 226, 0.3);
-		border-radius: 0.6rem;
-		overflow: hidden;
-		background: #0c1421;
-		box-shadow: 0 0 24px rgba(93, 173, 226, 0.06);
-	}
-	.prompt-titlebar {
-		background: rgba(93, 173, 226, 0.12);
-		border-bottom: 1px solid rgba(93, 173, 226, 0.2);
-		padding: 0.5rem 1.2rem;
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-	}
-	.prompt-dot {
-		width: 0.8rem;
-		height: 0.8rem;
-		border-radius: 50%;
-		&:nth-child(1) {
-			background: #e74c3c;
-		}
-		&:nth-child(2) {
-			background: #f39c12;
-		}
-		&:nth-child(3) {
-			background: #2ecc71;
-		}
-	}
-	.prompt-titlebar span:last-child {
-		font-family: var(--a-font);
-		font-size: 1rem;
-		text-transform: uppercase;
-		letter-spacing: 0.12em;
-		color: rgba(93, 173, 226, 0.6);
-		margin-left: auto;
-	}
-	.prompt-body {
-		padding: 1.6rem 2rem;
-		font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace;
-		font-size: 1.3rem;
-		line-height: 1.7;
-		color: #a8c7e2;
-	}
-	.prompt-label {
-		color: #5dade2;
-		font-weight: 700;
-	}
-	.prompt-cursor {
-		display: inline-block;
-		width: 0.7rem;
-		height: 1.4rem;
-		background: #5dade2;
-		margin-left: 0.3rem;
-		vertical-align: text-bottom;
-		animation: blink 1s step-end infinite;
-	}
-	@keyframes blink {
-		50% {
-			opacity: 0;
-		}
 	}
 
 	/* ── Name Input on Game Over ── */
@@ -587,30 +589,6 @@ const fullWidthBody = true
 	</div>
 
 	<div class="game-wrapper">
-		<div class="prompt-terminal">
-			<div class="prompt-titlebar">
-				<span class="prompt-dot"></span>
-				<span class="prompt-dot"></span>
-				<span class="prompt-dot"></span>
-				<span>prompt.txt</span>
-			</div>
-			<div class="prompt-body">
-				<span class="prompt-label">son@home ~$</span> describe your game<br />
-				<br />
-				Screen with a shark you can move using arrow keys or WASD. You start in a
-				random spot on a 30 by 30 unit room. Each unit is a random color. By clicking
-				the button, you go one space. A smaller yellow square appears in 5% of the
-				squares and spawns randomly 1 in 1000 of the time in each square every time
-				the shark moves. The &apos;bad guy&apos; is a black square that moves 1 square
-				towards you every 2 times you move. When you go on a square with the smaller
-				yellow square, another &apos;bad guy&apos; spawns in a random square to get
-				you. If the &apos;bad guy&apos; gets to you, you&apos;re out. The game has
-				a high score counter for the number of yellow squares you get. When you&apos;re
-				out it says &apos;YOU DIED&apos; and has a play again option, or a home option.<span
-					class="prompt-cursor"></span>
-			</div>
-		</div>
-
 		<div class="game-instructions">
 			<p class="how-to-play">How to Play</p>
 			<ol>
@@ -623,7 +601,23 @@ const fullWidthBody = true
 				Arrow keys or WASD to move<span class="touch-hint">
 					· D-pad on mobile</span
 				>
+				· Switching map size resets the game
 			</p>
+		</div>
+
+		<div class="map-selector">
+			<button class="map-btn" data-map="small" data-grid="20">
+				Small<span class="map-size">20 × 20</span>
+			</button>
+			<button class="map-btn active" data-map="medium" data-grid="30">
+				Medium<span class="map-size">30 × 30</span>
+			</button>
+		</div>
+
+		<div class="colorblind-toggle">
+			<button id="colorblindBtn" title="Toggle colorblind-friendly grid"
+				>Colorblind Mode</button
+			>
 		</div>
 
 		<div class="game-hud">
@@ -632,7 +626,7 @@ const fullWidthBody = true
 		</div>
 
 		<div class="game-canvas-container">
-			<canvas id="gameCanvas" width="600" height="600"></canvas>
+			<canvas id="gameCanvas" width="700" height="700"></canvas>
 			<div class="game-over-overlay" id="gameOverOverlay">
 				<h2>YOU DIED</h2>
 				<p class="final-score">Score: <span id="finalScore">0</span></p>
@@ -681,7 +675,7 @@ const fullWidthBody = true
 	</div>
 
 	<div class="leaderboard" id="leaderboard">
-		<h3>Leaderboard</h3>
+		<h3>Leaderboard — <span id="leaderboardMapLabel">Medium</span></h3>
 		<table>
 			<thead><tr><th>#</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
 			<tbody id="leaderboardBody">
@@ -692,10 +686,18 @@ const fullWidthBody = true
 </BaseLayout>
 
 <script>
-	const GRID = 30
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
 	const ctx = canvas.getContext('2d')!
-	const CELL = canvas.width / GRID
+
+	// ── Map config ──
+	type MapSize = 'small' | 'medium'
+	const MAP_GRIDS: Record<MapSize, number> = {
+		small: 20,
+		medium: 30,
+	}
+	let currentMap: MapSize = 'medium'
+	let GRID = MAP_GRIDS[currentMap]
+	let CELL = canvas.width / GRID
 
 	const scoreEl = document.getElementById('score')!
 	const highScoreEl = document.getElementById('highScore')!
@@ -711,8 +713,16 @@ const fullWidthBody = true
 	const submitStatus = document.getElementById('submitStatus')!
 	const nameInputRow = document.getElementById('nameInputRow')!
 	const leaderboardBody = document.getElementById('leaderboardBody')!
+	const leaderboardMapLabel = document.getElementById('leaderboardMapLabel')!
+	const submitPrompt = document.getElementById('submitPrompt')!
+	const wantToSubmitBtn = document.getElementById('wantToSubmitBtn')!
 
-	let highScore = parseInt(localStorage.getItem('sharkHighScore') || '0', 10)
+	function highScoreKey(): string {
+		if (currentMap === 'medium') return 'sharkHighScore'
+		return `sharkHighScore-${currentMap}`
+	}
+
+	let highScore = parseInt(localStorage.getItem(highScoreKey()) || '0', 10)
 	highScoreEl.textContent = String(highScore)
 
 	// ── State ──
@@ -822,16 +832,56 @@ const fullWidthBody = true
 
 	// ── Drawing ──
 
-	function draw() {
-		// Background fill — prevents white seams between cells on scaled displays
-		ctx.fillStyle = '#5b7b7b'
-		ctx.fillRect(0, 0, canvas.width, canvas.height)
+	let colorblindMode = localStorage.getItem('sharkColorblind') === 'true'
+	const colorblindBtn = document.getElementById(
+		'colorblindBtn'
+	)! as HTMLButtonElement
+	if (colorblindMode) colorblindBtn.classList.add('active')
 
-		// Grid cells
-		for (let r = 0; r < GRID; r++) {
-			for (let c = 0; c < GRID; c++) {
-				ctx.fillStyle = colors[r][c]
-				ctx.fillRect(c * CELL, r * CELL, CELL, CELL)
+	colorblindBtn.addEventListener('click', () => {
+		colorblindMode = !colorblindMode
+		localStorage.setItem('sharkColorblind', String(colorblindMode))
+		colorblindBtn.classList.toggle('active', colorblindMode)
+		draw()
+	})
+
+	// Redraw when theme changes so colors update (grid lines, enemy colors)
+	new MutationObserver(() => {
+		draw()
+	}).observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ['class'],
+	})
+
+	function draw() {
+		if (colorblindMode) {
+			// Clear to transparent, draw single grid lines using the theme text color
+			ctx.clearRect(0, 0, canvas.width, canvas.height)
+			const textColor = getComputedStyle(document.body)
+				.getPropertyValue('--text-color')
+				.trim()
+			ctx.strokeStyle = textColor || '#332e2e'
+			ctx.lineWidth = 1
+			ctx.beginPath()
+			for (let i = 0; i <= GRID; i++) {
+				const pos = i === GRID ? canvas.width - 0.5 : Math.round(i * CELL) + 0.5
+				ctx.moveTo(pos, 0)
+				ctx.lineTo(pos, canvas.height)
+				ctx.moveTo(0, pos)
+				ctx.lineTo(canvas.width, pos)
+			}
+			ctx.stroke()
+		} else {
+			// Background fill — prevents white seams between cells on scaled displays
+			ctx.fillStyle = '#5b7b7b'
+			ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+			// Grid cells
+			for (let r = 0; r < GRID; r++) {
+				for (let c = 0; c < GRID; c++) {
+					ctx.fillStyle = colors[r][c]
+					ctx.fillRect(c * CELL, r * CELL, CELL, CELL)
+				}
 			}
 		}
 
@@ -853,11 +903,13 @@ const fullWidthBody = true
 			}
 		}
 
-		// Enemies (dark squares with red outline for visibility)
+		// Enemies — white in colorblind+dark mode, black otherwise
+		const enemyWhite =
+			colorblindMode && document.documentElement.classList.contains('dark')
 		for (const e of enemies) {
-			ctx.fillStyle = '#c0392b'
+			ctx.fillStyle = enemyWhite ? '#8b3a3a' : '#c0392b'
 			ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2)
-			ctx.fillStyle = '#1a1a1a'
+			ctx.fillStyle = enemyWhite ? '#fff7f2' : '#1a1a1a'
 			ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL)
 		}
 
@@ -1040,7 +1092,7 @@ const fullWidthBody = true
 		draw()
 		if (score > highScore) {
 			highScore = score
-			localStorage.setItem('sharkHighScore', String(highScore))
+			localStorage.setItem(highScoreKey(), String(highScore))
 			highScoreEl.textContent = String(highScore)
 		}
 		finalScoreEl.textContent = String(score)
@@ -1078,7 +1130,7 @@ const fullWidthBody = true
 
 	async function fetchLeaderboard() {
 		try {
-			const res = await fetch('/api/scores')
+			const res = await fetch(`/api/scores?map=${currentMap}`)
 			if (!res.ok) throw new Error('Failed to fetch')
 			const scores = await res.json()
 			renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES)
@@ -1150,17 +1202,103 @@ const fullWidthBody = true
 			submitStatus.textContent = 'Enter your name first!'
 			return
 		}
+
+		// Client-side bad word check
+		const lower = name.toLowerCase()
+		const stripped = lower.replace(/[^a-z]/g, '')
+		const badWords = [
+			'ass',
+			'asshole',
+			'bastard',
+			'bitch',
+			'bollocks',
+			'bullshit',
+			'cock',
+			'crap',
+			'cunt',
+			'damn',
+			'dick',
+			'douche',
+			'fag',
+			'faggot',
+			'fuck',
+			'goddamn',
+			'jackass',
+			'motherfucker',
+			'nigger',
+			'nigga',
+			'piss',
+			'prick',
+			'pussy',
+			'shit',
+			'slut',
+			'twat',
+			'whore',
+			'wanker',
+			'chink',
+			'gook',
+			'kike',
+			'spic',
+			'wetback',
+			'retard',
+			'tranny',
+			'dyke',
+			'blowjob',
+			'dildo',
+			'handjob',
+			'jizz',
+			'porn',
+			'tits',
+			'boobs',
+			'penis',
+			'vagina',
+			'anal',
+			'cum',
+			'orgasm',
+			'nazi',
+			'hitler',
+			'kkk',
+			'rape',
+			'molest',
+			'pedo',
+			'pedophile',
+			'phuck',
+			'phuk',
+			'fuk',
+			'fuc',
+			'fuq',
+			'sh1t',
+			'b1tch',
+			'kunt',
+			'd1ck',
+			'a55',
+			'n1gga',
+			'n1gger',
+		]
+		if (badWords.some((w) => lower.includes(w) || stripped.includes(w))) {
+			submitStatus.textContent = 'Invalid name'
+			return
+		}
+
 		submitScoreBtn.disabled = true
 		submitStatus.textContent = 'Submitting…'
 		localStorage.setItem('sharkPlayerName', name)
 
 		try {
-			const res = await fetch('/api/scores', {
+			const res = await fetch(`/api/scores?map=${currentMap}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name, score }),
 			})
-			if (!res.ok) throw new Error('Submit failed')
+			if (!res.ok) {
+				const msg = await res.text()
+				const isHtml = msg.trimStart().startsWith('<')
+				submitStatus.textContent = isHtml
+					? 'Invalid name'
+					: msg || 'Failed to submit — try again'
+				submitScoreBtn.disabled = false
+				return
+			}
 			const scores = await res.json()
 			// Find the entry we just submitted (most recent with matching name/score)
 			const submitted = scores.find(
@@ -1284,6 +1422,44 @@ const fullWidthBody = true
 	})
 
 	playAgainBtn.addEventListener('click', () => init())
+
+	// ── Map selector ──
+	const mapBtns = document.querySelectorAll('.map-btn')
+	const MAP_LABELS: Record<MapSize, string> = {
+		small: 'Small',
+		medium: 'Medium',
+	}
+
+	function switchMap(map: MapSize) {
+		currentMap = map
+		GRID = MAP_GRIDS[map]
+		CELL = canvas.width / GRID
+
+		// Update button active state
+		mapBtns.forEach((b) => {
+			b.classList.toggle('active', (b as HTMLElement).dataset.map === map)
+		})
+
+		// Update leaderboard label
+		leaderboardMapLabel.textContent = MAP_LABELS[map]
+
+		// Load high score for this map
+		highScore = parseInt(localStorage.getItem(highScoreKey()) || '0', 10)
+		highScoreEl.textContent = String(highScore)
+
+		// Fetch this map's leaderboard
+		fetchLeaderboard()
+
+		// Restart game
+		init()
+	}
+
+	mapBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const map = (btn as HTMLElement).dataset.map as MapSize
+			if (map !== currentMap) switchMap(map)
+		})
+	})
 
 	// Go!
 	fetchLeaderboard()
