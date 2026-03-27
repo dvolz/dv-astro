@@ -594,7 +594,11 @@ const fullWidthBody = true
 			<ol>
 				<li><strong>Move</strong> your shark around the board</li>
 				<li><strong>Collect</strong> the yellow squares to score points</li>
-				<li><strong>Avoid</strong> the black squares — they chase you</li>
+				<li>
+					<strong>Rare purple coins</strong> are worth 15 points — but spawn a big
+					red enemy
+				</li>
+				<li><strong>Avoid</strong> the dark squares — they chase you</li>
 				<li>Each pickup spawns a new enemy — survive as long as you can</li>
 			</ol>
 			<p class="controls-note">
@@ -733,7 +737,9 @@ const fullWidthBody = true
 
 	let colors: string[][] = []
 	let pickups: boolean[][] = []
+	let superPickups: boolean[][] = []
 	let enemies: Enemy[] = []
+	let bigEnemies: { x: number; y: number }[] = []
 	let shark = { x: 0, y: 0 }
 	let sharkDir = 'right' // tracks last movement direction
 	let score = 0
@@ -800,12 +806,26 @@ const fullWidthBody = true
 			Array.from({ length: GRID }, () => Math.random() < 0.05)
 		)
 
+		// 15-point coins: 1 in 800 of normal pickups become super pickups
+		superPickups = Array.from({ length: GRID }, (_, r) =>
+			Array.from({ length: GRID }, (_, c) => {
+				if (pickups[r][c] && Math.random() < 1 / 800) {
+					pickups[r][c] = false
+					return true
+				}
+				return false
+			})
+		)
+
+		bigEnemies = []
+
 		// Shark starts at random spot
 		shark.x = Math.floor(Math.random() * GRID)
 		shark.y = Math.floor(Math.random() * GRID)
 
 		// Make sure shark doesn't start on a pickup
 		pickups[shark.y][shark.x] = false
+		superPickups[shark.y][shark.x] = false
 
 		// Snap visual position
 		sharkVisualX = shark.x
@@ -826,6 +846,23 @@ const fullWidthBody = true
 		} while (
 			Math.abs(ex - shark.x) + Math.abs(ey - shark.y) < MIN_DIST ||
 			enemies.some((e) => e.x === ex && e.y === ey)
+		)
+		return { x: ex, y: ey }
+	}
+
+	function spawnBigEnemy(): { x: number; y: number } {
+		const MIN_DIST = 5
+		let ex: number, ey: number
+		do {
+			ex = Math.floor(Math.random() * (GRID - 1))
+			ey = Math.floor(Math.random() * (GRID - 1))
+		} while (
+			Math.min(
+				Math.abs(ex - shark.x) + Math.abs(ey - shark.y),
+				Math.abs(ex + 1 - shark.x) + Math.abs(ey - shark.y),
+				Math.abs(ex - shark.x) + Math.abs(ey + 1 - shark.y),
+				Math.abs(ex + 1 - shark.x) + Math.abs(ey + 1 - shark.y)
+			) < MIN_DIST
 		)
 		return { x: ex, y: ey }
 	}
@@ -903,6 +940,31 @@ const fullWidthBody = true
 			}
 		}
 
+		// Super pickups (15-point coins — purple with label)
+		for (let r = 0; r < GRID; r++) {
+			for (let c = 0; c < GRID; c++) {
+				if (superPickups[r][c]) {
+					const px = c * CELL + pad
+					const py = r * CELL + pad
+					const ps = CELL - pad * 2
+					// Dark outline
+					ctx.fillStyle = '#4a0060'
+					ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2)
+					// Purple fill
+					ctx.fillStyle = '#9b59b6'
+					ctx.fillRect(px, py, ps, ps)
+					// "15" label when cells are large enough
+					if (CELL >= 16) {
+						ctx.fillStyle = '#fff'
+						ctx.font = `bold ${Math.max(8, CELL * 0.35)}px sans-serif`
+						ctx.textAlign = 'center'
+						ctx.textBaseline = 'middle'
+						ctx.fillText('15', c * CELL + CELL / 2, r * CELL + CELL / 2)
+					}
+				}
+			}
+		}
+
 		// Enemies — white in colorblind+dark mode, black otherwise
 		const enemyWhite =
 			colorblindMode && document.documentElement.classList.contains('dark')
@@ -911,6 +973,19 @@ const fullWidthBody = true
 			ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2)
 			ctx.fillStyle = enemyWhite ? '#fff7f2' : '#1a1a1a'
 			ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL)
+		}
+
+		// Big enemies (2×2 red squares)
+		for (const be of bigEnemies) {
+			const bx = be.x * CELL
+			const by = be.y * CELL
+			const bw = CELL * 2
+			// Dark outline
+			ctx.fillStyle = '#6b0000'
+			ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2)
+			// Red fill
+			ctx.fillStyle = '#e74c3c'
+			ctx.fillRect(bx, by, bw, bw)
 		}
 
 		// Shark 🦈 — draw a simple shark shape
@@ -1042,11 +1117,24 @@ const fullWidthBody = true
 			enemies.push(spawnEnemy())
 		}
 
+		// Check super pickup (15-point coin)
+		if (superPickups[ny][nx]) {
+			superPickups[ny][nx] = false
+			score += 15
+			scoreEl.textContent = String(score)
+			// Spawn a 2×2 red enemy
+			bigEnemies.push(spawnBigEnemy())
+		}
+
 		// Spawn new pickups — 1/4000 chance per cell
 		for (let r = 0; r < GRID; r++) {
 			for (let c = 0; c < GRID; c++) {
-				if (!pickups[r][c] && Math.random() < 0.00025) {
-					pickups[r][c] = true
+				if (!pickups[r][c] && !superPickups[r][c] && Math.random() < 0.00025) {
+					if (Math.random() < 1 / 800) {
+						superPickups[r][c] = true
+					} else {
+						pickups[r][c] = true
+					}
 				}
 			}
 		}
@@ -1072,11 +1160,36 @@ const fullWidthBody = true
 					e.y = ny
 				}
 			}
+
+			// Big enemies also chase the shark
+			for (const be of bigEnemies) {
+				const diffX = shark.x - be.x
+				const diffY = shark.y - be.y
+				if (Math.abs(diffX) >= Math.abs(diffY)) {
+					be.x += Math.sign(diffX)
+				} else {
+					be.y += Math.sign(diffY)
+				}
+				// Clamp so the 2×2 block stays on the grid
+				be.x = Math.max(0, Math.min(GRID - 2, be.x))
+				be.y = Math.max(0, Math.min(GRID - 2, be.y))
+			}
 		}
 
 		// Check death
 		for (const e of enemies) {
 			if (e.x === shark.x && e.y === shark.y) {
+				endGame()
+				return
+			}
+		}
+		for (const be of bigEnemies) {
+			if (
+				shark.x >= be.x &&
+				shark.x <= be.x + 1 &&
+				shark.y >= be.y &&
+				shark.y <= be.y + 1
+			) {
 				endGame()
 				return
 			}
