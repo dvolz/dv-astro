@@ -850,6 +850,15 @@ const fullWidthBody = true
 		return { x: ex, y: ey }
 	}
 
+	function bigEnemyOverlaps(
+		ax: number,
+		ay: number,
+		bx: number,
+		by: number
+	): boolean {
+		return ax < bx + 2 && ax + 2 > bx && ay < by + 2 && ay + 2 > by
+	}
+
 	function spawnBigEnemy(): { x: number; y: number } {
 		const MIN_DIST = 5
 		let ex: number, ey: number
@@ -862,7 +871,8 @@ const fullWidthBody = true
 				Math.abs(ex + 1 - shark.x) + Math.abs(ey - shark.y),
 				Math.abs(ex - shark.x) + Math.abs(ey + 1 - shark.y),
 				Math.abs(ex + 1 - shark.x) + Math.abs(ey + 1 - shark.y)
-			) < MIN_DIST
+			) < MIN_DIST ||
+			bigEnemies.some((b) => bigEnemyOverlaps(ex, ey, b.x, b.y))
 		)
 		return { x: ex, y: ey }
 	}
@@ -1165,14 +1175,24 @@ const fullWidthBody = true
 			for (const be of bigEnemies) {
 				const diffX = shark.x - be.x
 				const diffY = shark.y - be.y
+				let nx = be.x
+				let ny = be.y
 				if (Math.abs(diffX) >= Math.abs(diffY)) {
-					be.x += Math.sign(diffX)
+					nx += Math.sign(diffX)
 				} else {
-					be.y += Math.sign(diffY)
+					ny += Math.sign(diffY)
 				}
 				// Clamp so the 2×2 block stays on the grid
-				be.x = Math.max(0, Math.min(GRID - 2, be.x))
-				be.y = Math.max(0, Math.min(GRID - 2, be.y))
+				nx = Math.max(0, Math.min(GRID - 2, nx))
+				ny = Math.max(0, Math.min(GRID - 2, ny))
+				// Only move if not overlapping another big enemy
+				const blocked = bigEnemies.some(
+					(other) => other !== be && bigEnemyOverlaps(nx, ny, other.x, other.y)
+				)
+				if (!blocked) {
+					be.x = nx
+					be.y = ny
+				}
 			}
 		}
 
