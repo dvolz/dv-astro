@@ -1,0 +1,2260 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const blogData = {
+  title: "Shark Thief iOS",
+  author: "David Volz",
+  description:
+    "Web prototype for the Shark Thief iOS app — pixel-art ocean arcade game with depth levels.",
+  pubDate: "2026-4-11",
+  tags: ["javascript", "code", "game", "ios"],
+  featured: true,
+  display: true,
+};
+
+const showTypographyHero = false;
+const fullWidthBody = true;
+---
+
+<style lang="scss">
+  /* ── Design Tokens ── */
+  .shark-ios-app {
+    --ocean-abyss: #0a1f2e;
+    --ocean-deep: #0d2d40;
+    --ocean-mid: #12435c;
+    --ocean-surface: #1a5e7a;
+    --cyan: #48cae4;
+    --cyan-bright: #90e0ef;
+    --gold: #ffd166;
+    --coral-danger: #ef476f;
+    --coral-block: #7c3aed;
+    --text-primary: #caf0f8;
+    --text-muted: #7ac4d8;
+    --border-glow: rgba(72, 202, 228, 0.2);
+    --font-pixel: "Press Start 2P", cursive;
+    --font-terminal: "VT323", monospace;
+  }
+
+  /* ── App Container ── */
+  .shark-ios-app {
+    width: 100%;
+    background: var(--ocean-abyss);
+    color: var(--text-primary);
+    position: relative;
+    min-height: calc(100dvh - 8rem);
+  }
+
+  /* ── Screens ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100dvh - 8rem);
+    width: 100%;
+    padding: 2rem 1.6rem;
+    box-sizing: border-box;
+    position: relative;
+
+    &.active {
+      display: flex;
+    }
+  }
+
+  /* scanline overlay for menu screens */
+  .screen-menu::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.06) 2px,
+      rgba(0, 0, 0, 0.06) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* ── Typography ── */
+  .pixel-title {
+    font-family: var(--font-pixel);
+    color: var(--cyan);
+    text-align: center;
+    line-height: 1.8;
+    text-shadow:
+      0 0 20px rgba(72, 202, 228, 0.6),
+      0 0 40px rgba(72, 202, 228, 0.3);
+    letter-spacing: 0.05em;
+  }
+
+  .terminal-text {
+    font-family: var(--font-terminal);
+    color: var(--text-primary);
+    font-size: 2rem;
+    line-height: 1.4;
+  }
+
+  /* ── Pixel Button ── */
+  .pixel-btn {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 1rem 2rem;
+    border: 3px solid var(--cyan);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--cyan);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition:
+      background 0.08s,
+      box-shadow 0.08s,
+      color 0.08s;
+    min-height: 44px;
+    touch-action: manipulation;
+
+    &:hover {
+      background: var(--cyan);
+      color: var(--ocean-abyss);
+      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .pixel-btn-muted {
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+    &:hover {
+      background: var(--text-muted);
+      color: var(--ocean-abyss);
+    }
+  }
+
+  .pixel-btn-danger {
+    border-color: var(--coral-danger);
+    color: var(--coral-danger);
+    &:hover {
+      background: var(--coral-danger);
+      color: #fff;
+    }
+  }
+
+  /* ── Splash Screen ── */
+  .splash-screen {
+    background: var(--ocean-abyss);
+    gap: 2rem;
+  }
+
+  .splash-canvas-wrap {
+    position: relative;
+    canvas {
+      display: block;
+    }
+  }
+
+  .splash-title {
+    font-size: 1.4rem;
+    margin: 0;
+  }
+
+  .splash-sub {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* ── Main Menu ── */
+  #menuSharkCanvas {
+    display: block;
+    margin-bottom: 1.6rem;
+    image-rendering: pixelated;
+  }
+
+  .main-menu-title {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .main-menu-sub {
+    font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+    margin: 0 0 3rem;
+  }
+
+  .main-menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 22rem;
+  }
+
+  .main-menu-buttons .pixel-btn {
+    width: 100%;
+    font-size: 0.75rem;
+    padding: 1.2rem 2rem;
+  }
+
+  .main-menu-depth {
+    font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+    margin-top: 2.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Map Selector ── */
+  .map-selector-title {
+    font-size: 0.75rem;
+    margin: 0 0 2.5rem;
+  }
+
+  .map-cards {
+    display: flex;
+    gap: 1.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .map-card {
+    border: 3px solid var(--ocean-surface);
+    border-radius: 2px;
+    padding: 2rem 2.4rem;
+    background: var(--ocean-mid);
+    cursor: pointer;
+    transition:
+      border-color 0.1s,
+      box-shadow 0.1s;
+    text-align: center;
+    min-width: 14rem;
+    touch-action: manipulation;
+
+    &:hover {
+      border-color: var(--cyan);
+    }
+
+    &.selected {
+      border-color: var(--cyan);
+      box-shadow: 0 0 18px rgba(72, 202, 228, 0.35);
+    }
+  }
+
+  .map-card-name {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    color: var(--cyan);
+    margin: 0 0 0.6rem;
+    display: block;
+  }
+
+  .map-card-size {
+    font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .map-card-score {
+    font-family: var(--font-terminal);
+    font-size: 1.8rem;
+    color: var(--gold);
+    display: block;
+  }
+
+  .map-card-score-label {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .map-back-btn {
+    margin-top: 1rem;
+  }
+
+  /* ── Game Screen ── */
+  .game-screen {
+    padding: 0;
+    justify-content: flex-start;
+    min-height: calc(100dvh - 8rem);
+    gap: 0;
+  }
+
+  .game-depth-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    transition: background 0.8s ease;
+
+    &.depth-1 {
+      background: var(--ocean-abyss);
+    }
+    &.depth-2 {
+      background: #071828;
+    }
+    &.depth-3 {
+      background: #040f1a;
+    }
+  }
+
+  /* ── HUD ── */
+  .ios-hud {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    box-sizing: border-box;
+    background: rgba(7, 20, 40, 0.9);
+    border-bottom: 1px solid var(--ocean-surface);
+  }
+
+  .hud-score-group {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .hud-score-item {
+    text-align: center;
+  }
+
+  .hud-score-label {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.1em;
+  }
+
+  .hud-score-value {
+    font-family: var(--font-terminal);
+    font-size: 2.2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .hud-depth-badge {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    color: var(--cyan);
+    border: 2px solid var(--cyan);
+    padding: 0.3rem 0.6rem;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+
+  .hud-menu-btn {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    background: transparent;
+    border: 2px solid var(--text-muted);
+    border-radius: 2px;
+    color: var(--text-muted);
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition:
+      border-color 0.08s,
+      color 0.08s;
+    touch-action: manipulation;
+    &:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+  }
+
+  /* ── Canvas ── */
+  .game-canvas-area {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    max-width: 600px;
+    padding: 0.4rem 0;
+  }
+
+  #gameCanvas {
+    display: block;
+    max-width: min(600px, calc(100vw - 16px));
+    aspect-ratio: 1;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  /* ── Depth Flash ── */
+  .depth-flash {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-pixel);
+    font-size: 1.4rem;
+    color: var(--cyan);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    text-shadow:
+      0 0 20px var(--cyan),
+      0 0 40px rgba(72, 202, 228, 0.5);
+    letter-spacing: 0.1em;
+
+    &.flashing {
+      animation: depth-flash-anim 1.6s ease-out forwards;
+    }
+  }
+
+  @keyframes depth-flash-anim {
+    0% {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    15% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+
+  /* ── Game Over Overlay ── */
+  .game-over-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 8, 20, 0.88);
+    z-index: 30;
+
+    &.visible {
+      display: flex;
+    }
+  }
+
+  .game-over-title {
+    font-family: var(--font-pixel);
+    font-size: 1.4rem;
+    color: var(--coral-danger);
+    text-shadow: 0 0 20px rgba(239, 71, 111, 0.7);
+    margin: 0 0 0.8rem;
+    letter-spacing: 0.1em;
+  }
+
+  .game-over-score {
+    font-family: var(--font-terminal);
+    font-size: 3.2rem;
+    color: var(--gold);
+    margin: 0 0 2rem;
+    line-height: 1;
+  }
+
+  .game-over-buttons {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1.2rem;
+  }
+
+  .submit-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .name-input-row {
+    display: none;
+    gap: 0.6rem;
+
+    &.visible {
+      display: flex;
+    }
+  }
+
+  .name-input {
+    font-family: var(--font-terminal);
+    font-size: 1.8rem;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid var(--cyan);
+    border-radius: 2px;
+    background: rgba(72, 202, 228, 0.08);
+    color: var(--text-primary);
+    width: 14rem;
+    outline: none;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+    &:focus {
+      box-shadow: 0 0 8px rgba(72, 202, 228, 0.4);
+    }
+  }
+
+  .submit-status {
+    font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--cyan);
+    min-height: 1.8rem;
+  }
+
+  /* ── D-Pad ── */
+  .dpad {
+    display: none;
+    width: 100%;
+    max-width: 600px;
+    padding: 0.6rem 1.2rem 1.2rem;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
+    background: rgba(7, 20, 40, 0.9);
+    border-top: 1px solid var(--ocean-surface);
+  }
+
+  @media (pointer: coarse) {
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 0.5rem;
+      max-width: 28rem;
+      margin: 0 auto;
+    }
+  }
+
+  .dpad-btn {
+    appearance: none;
+    width: 100%;
+    aspect-ratio: 1;
+    border: 3px solid var(--cyan);
+    border-radius: 4px;
+    background: rgba(72, 202, 228, 0.05);
+    color: var(--cyan);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      background 0.08s,
+      box-shadow 0.08s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    min-height: 5.5rem;
+
+    svg {
+      width: 2.4rem;
+      height: 2.4rem;
+      fill: var(--cyan);
+      stroke: none;
+    }
+
+    &.pressed,
+    &:active {
+      background: rgba(72, 202, 228, 0.22);
+      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
+    }
+  }
+
+  .dpad-up {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .dpad-left {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .dpad-right {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .dpad-down {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .dpad-center {
+    grid-column: 2;
+    grid-row: 2;
+    border: none;
+    background: none;
+    pointer-events: none;
+  }
+
+  /* ── Leaderboard Screen ── */
+  .leaderboard-screen {
+    align-items: flex-start;
+    padding: 2rem 1.2rem;
+  }
+
+  .lb-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .lb-title {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    color: var(--cyan);
+    margin: 0;
+    flex: 1;
+  }
+
+  .lb-map-label {
+    font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--text-muted);
+    display: block;
+    text-align: right;
+  }
+
+  .lb-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .lb-table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-family: var(--font-terminal);
+    font-size: 1.8rem;
+
+    thead th {
+      font-family: var(--font-pixel);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.6rem 0.8rem;
+      border-bottom: 2px solid var(--ocean-surface);
+      text-align: left;
+    }
+
+    tbody td {
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid rgba(26, 94, 122, 0.4);
+      color: var(--text-primary);
+    }
+
+    tbody tr:hover td {
+      background: rgba(72, 202, 228, 0.04);
+    }
+
+    tbody tr.highlight td {
+      background: rgba(72, 202, 228, 0.1);
+    }
+
+    td.lb-score {
+      color: var(--gold);
+      font-size: 2.2rem;
+      text-align: center;
+    }
+
+    td.lb-date {
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    td.lb-rank {
+      width: 4rem;
+      text-align: center;
+      font-size: 1.6rem;
+    }
+  }
+
+  .medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .medal-gold {
+    background: linear-gradient(145deg, #f7dc6f, #d4a017);
+    color: #5c4300;
+    border: 2px solid #c9960c;
+  }
+  .medal-silver {
+    background: linear-gradient(145deg, #d5d5d5, #a0a0a0);
+    color: #4a4a4a;
+    border: 2px solid #909090;
+  }
+  .medal-bronze {
+    background: linear-gradient(145deg, #dea06e, #b87333);
+    color: #5a3510;
+    border: 2px solid #a0612a;
+  }
+
+  .lb-empty {
+    font-family: var(--font-terminal);
+    font-size: 1.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  /* ── Settings Screen ── */
+  .settings-screen {
+    align-items: center;
+    padding: 2rem 1.6rem;
+  }
+
+  .settings-screen .lb-header {
+    width: 100%;
+    max-width: 36rem;
+  }
+
+  .settings-title {
+    font-size: 0.75rem;
+    margin: 0 0 2.5rem;
+  }
+
+  .settings-rows {
+    width: 100%;
+    max-width: 36rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--ocean-surface);
+  }
+
+  .settings-row-label {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    letter-spacing: 0.06em;
+  }
+
+  .settings-row-sub {
+    font-family: var(--font-terminal);
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 0.3rem;
+  }
+
+  .pixel-toggle {
+    position: relative;
+    width: 4.4rem;
+    height: 2.4rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--ocean-surface);
+      border: 2px solid var(--ocean-surface);
+      border-radius: 2px;
+      transition:
+        background 0.1s,
+        border-color 0.1s;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 1.4rem;
+      height: 1.4rem;
+      background: var(--text-muted);
+      border-radius: 2px;
+      transition:
+        transform 0.1s,
+        background 0.1s;
+    }
+
+    input:checked ~ .toggle-track {
+      background: rgba(72, 202, 228, 0.2);
+      border-color: var(--cyan);
+    }
+
+    input:checked ~ .toggle-track .toggle-knob {
+      transform: translateX(2rem);
+      background: var(--cyan);
+    }
+  }
+
+  .settings-version {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-top: 3rem;
+  }
+</style>
+
+<BaseLayout
+  pageTitle={blogData.title}
+  showTypographyHero={showTypographyHero}
+  description={blogData.description}
+  fullWidthBody={fullWidthBody}>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+  </Fragment>
+
+  <div class="shark-ios-app" id="sharkIosApp">
+    <!-- ── Screen 1: Splash ── LaunchView.swift -->
+    <div id="screen-splash" class="screen splash-screen active">
+      <canvas id="splashSharkCanvas" width="160" height="160"></canvas>
+      <h1 class="pixel-title splash-title">SHARK<br />THIEF</h1>
+      <p class="splash-sub">LOADING...</p>
+    </div>
+
+    <!-- ── Screen 2: Main Menu ── MainMenuView.swift -->
+    <div id="screen-main-menu" class="screen screen-menu">
+      <canvas id="menuSharkCanvas" width="120" height="120"></canvas>
+      <h2 class="pixel-title main-menu-title">SHARK THIEF</h2>
+      <p class="main-menu-sub">OCEAN ARCADE</p>
+      <div class="main-menu-buttons">
+        <button class="pixel-btn" id="menuPlayBtn">PLAY</button>
+        <button class="pixel-btn pixel-btn-muted" id="menuLeaderboardBtn"
+          >LEADERBOARD</button
+        >
+        <button class="pixel-btn pixel-btn-muted" id="menuSettingsBtn"
+          >SETTINGS</button
+        >
+      </div>
+      <p class="main-menu-depth" id="menuDepthLabel"></p>
+    </div>
+
+    <!-- ── Screen 3: Map Selector ── MapSelectorView.swift -->
+    <div id="screen-map-selector" class="screen screen-menu">
+      <h2 class="pixel-title map-selector-title">SELECT DEPTH</h2>
+      <div class="map-cards">
+        <div class="map-card selected" data-map="small" id="mapCardSmall">
+          <span class="map-card-name">REEF</span>
+          <span class="map-card-size">20 × 20</span>
+          <span class="map-card-score-label">BEST</span>
+          <span class="map-card-score" id="mapScoreSmall">0</span>
+        </div>
+        <div class="map-card" data-map="medium" id="mapCardMedium">
+          <span class="map-card-name">ABYSS</span>
+          <span class="map-card-size">30 × 30</span>
+          <span class="map-card-score-label">BEST</span>
+          <span class="map-card-score" id="mapScoreMedium">0</span>
+        </div>
+      </div>
+      <button class="pixel-btn" id="mapPlayBtn">DIVE IN</button>
+      <button class="pixel-btn pixel-btn-muted map-back-btn" id="mapBackBtn"
+        >BACK</button
+      >
+    </div>
+
+    <!-- ── Screen 4: Game ── GameView.swift -->
+    <div id="screen-game" class="screen game-screen">
+      <div class="game-depth-wrapper depth-1" id="gameDepthWrapper">
+        <!-- HUDView.swift -->
+        <div class="ios-hud">
+          <button class="hud-menu-btn" id="hudMenuBtn">MENU</button>
+          <div class="hud-score-group">
+            <div class="hud-score-item">
+              <span class="hud-score-label">SCORE</span>
+              <span class="hud-score-value" id="hudScore">0</span>
+            </div>
+            <div class="hud-score-item">
+              <span class="hud-score-label">BEST</span>
+              <span class="hud-score-value" id="hudBest">0</span>
+            </div>
+          </div>
+          <div class="hud-depth-badge" id="hudDepthBadge">DEPTH 1</div>
+        </div>
+
+        <!-- Canvas area -->
+        <div class="game-canvas-area">
+          <canvas id="gameCanvas" width="600" height="600"></canvas>
+          <div class="depth-flash" id="depthFlash"></div>
+
+          <!-- GameOverView.swift — overlay on frozen canvas -->
+          <div class="game-over-overlay" id="gameOverOverlay">
+            <h2 class="game-over-title">YOU DIED</h2>
+            <p class="game-over-score">SCORE: <span id="finalScore">0</span></p>
+            <div class="submit-area">
+              <div id="submitPrompt">
+                <button class="pixel-btn" id="wantToSubmitBtn"
+                  >SUBMIT SCORE</button
+                >
+              </div>
+              <div class="name-input-row" id="nameInputRow">
+                <input
+                  class="name-input"
+                  type="text"
+                  id="playerName"
+                  placeholder="YOUR NAME"
+                  maxlength="20"
+                  autocomplete="off"
+                />
+                <button class="pixel-btn" id="submitScoreBtn">GO</button>
+              </div>
+              <p class="submit-status" id="submitStatus"></p>
+            </div>
+            <div class="game-over-buttons">
+              <button class="pixel-btn" id="playAgainBtn">DIVE AGAIN</button>
+              <button class="pixel-btn pixel-btn-muted" id="gameOverMenuBtn"
+                >SURFACE</button
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- DPadView.swift -->
+        <div class="dpad" id="dpad">
+          <button class="dpad-btn dpad-up" data-dir="up" aria-label="Move up">
+            <svg viewBox="0 0 24 24"><path d="M12 4 L22 20 L2 20 Z"></path></svg
+            >
+          </button>
+          <button
+            class="dpad-btn dpad-left"
+            data-dir="left"
+            aria-label="Move left">
+            <svg viewBox="0 0 24 24"><path d="M4 12 L20 2 L20 22 Z"></path></svg
+            >
+          </button>
+          <div class="dpad-center"></div>
+          <button
+            class="dpad-btn dpad-right"
+            data-dir="right"
+            aria-label="Move right">
+            <svg viewBox="0 0 24 24"><path d="M20 12 L4 2 L4 22 Z"></path></svg>
+          </button>
+          <button
+            class="dpad-btn dpad-down"
+            data-dir="down"
+            aria-label="Move down">
+            <svg viewBox="0 0 24 24"><path d="M12 20 L2 4 L22 4 Z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Screen 5: Leaderboard ── LeaderboardView.swift -->
+    <div id="screen-leaderboard" class="screen leaderboard-screen">
+      <div class="lb-header">
+        <button class="pixel-btn pixel-btn-muted" id="lbBackBtn">BACK</button>
+        <div>
+          <h2 class="lb-title">LEADERBOARD</h2>
+          <span class="lb-map-label" id="lbMapLabel">ABYSS (30×30)</span>
+        </div>
+      </div>
+      <div class="lb-table-wrap">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAME</th>
+              <th>SCORE</th>
+              <th>DATE</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <tr><td colspan="4" class="lb-empty">LOADING...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Screen 6: Settings ── SettingsView.swift -->
+    <div id="screen-settings" class="screen settings-screen">
+      <div class="lb-header">
+        <button class="pixel-btn pixel-btn-muted" id="settingsBackBtn"
+          >BACK</button
+        >
+        <h2 class="pixel-title settings-title">SETTINGS</h2>
+      </div>
+      <div class="settings-rows">
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">COLORBLIND MODE</span>
+            <span class="settings-row-sub">Grid lines only</span>
+          </div>
+          <label class="pixel-toggle" aria-label="Toggle colorblind mode">
+            <input type="checkbox" id="settingsColorblind" />
+            <div class="toggle-track">
+              <div class="toggle-knob"></div>
+            </div>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">HAPTIC FEEDBACK</span>
+            <span class="settings-row-sub">Vibration on move</span>
+          </div>
+          <label class="pixel-toggle" aria-label="Toggle haptic feedback">
+            <input type="checkbox" id="settingsHaptics" checked />
+            <div class="toggle-track">
+              <div class="toggle-knob"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <p class="settings-version">SHARK THIEF iOS v0.1.0 — WEB PROTOTYPE</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // ╔══════════════════════════════════════════════════════╗
+  // ║  SHARK THIEF iOS — Web Prototype                     ║
+  // ║  Code sections mirror the Swift file architecture   ║
+  // ╚══════════════════════════════════════════════════════╝
+
+  // ===== GameConfig =====  →  GameConfig.swift
+
+  type MapSize = "small" | "medium";
+  const MAP_GRIDS: Record<MapSize, number> = { small: 20, medium: 30 };
+  const ANIM_DURATION = 80; // ms — matches iOS 80ms ease-out quad
+  const MIN_ENEMY_DIST = 5; // min Manhattan distance for enemy spawn
+  const PICKUP_RATE = 0.00025; // per cell per move
+  const SUPER_RATE_OF_PICKUP = 0.0175; // fraction of new pickups that become super
+  const PICKUP_INIT = 0.05; // 5% of cells on init
+  const SUPER_INIT = 1 / 40; // 1 in 40 init pickups become super
+
+  // ===== GameState =====  →  GameState.swift
+
+  interface Enemy {
+    x: number;
+    y: number;
+  }
+  interface BigEnemy {
+    x: number;
+    y: number;
+  }
+  interface Leviathan {
+    x: number;
+    y: number;
+  }
+
+  let currentMap: MapSize = "small";
+  let GRID = MAP_GRIDS[currentMap];
+  let CELL = 0; // set after canvas size is known
+
+  let shark = { x: 0, y: 0 };
+  let sharkDir: "right" | "left" | "up" | "down" = "right";
+  let score = 0;
+  let highScore = 0;
+  let moveCount = 0;
+  let gameOver = false;
+
+  // Smooth shark animation state
+  let sharkVisualX = 0,
+    sharkVisualY = 0;
+  let sharkFromX = 0,
+    sharkFromY = 0;
+  let animStartTime = 0;
+  let animRafId: number | null = null;
+
+  // ===== GridState =====  →  GridState.swift
+
+  let colors: string[][] = [];
+  let pickups: boolean[][] = [];
+  let superPickups: boolean[][] = [];
+  let coral: boolean[][] = []; // Depth 2: impassable barrier tiles
+
+  // ===== EnemyAI (state) =====  →  Enemy.swift / BigEnemy.swift
+
+  let enemies: Enemy[] = [];
+  let bigEnemies: BigEnemy[] = [];
+  let leviathan: Leviathan | null = null; // Depth 3: 3×3 mega enemy
+
+  // ===== DepthSystem =====  →  DepthSystem.swift
+
+  let currentDepth = 1;
+
+  function getDepthForScore(s: number): number {
+    if (s >= 200) return 3;
+    if (s >= 100) return 2;
+    return 1;
+  }
+
+  function checkDepthTransition() {
+    const newDepth = getDepthForScore(score);
+    if (newDepth <= currentDepth) return;
+    currentDepth = newDepth;
+    hudDepthBadge.textContent = `DEPTH ${currentDepth}`;
+
+    const flash = document.getElementById("depthFlash")!;
+    flash.textContent = `DEPTH ${currentDepth}`;
+    flash.classList.remove("flashing");
+    void (flash as HTMLElement).offsetWidth;
+    flash.classList.add("flashing");
+
+    const wrapper = document.getElementById("gameDepthWrapper")!;
+    wrapper.className = `game-depth-wrapper depth-${currentDepth}`;
+
+    if (currentDepth === 2) spawnCoral();
+    if (currentDepth === 3) spawnLeviathan();
+  }
+
+  // ===== SpawnManager =====  →  SpawnManager.swift
+
+  function spawnEnemy(): Enemy {
+    let ex: number, ey: number;
+    let attempts = 0;
+    do {
+      ex = Math.floor(Math.random() * GRID);
+      ey = Math.floor(Math.random() * GRID);
+      attempts++;
+      if (attempts > 1000) break;
+    } while (
+      Math.abs(ex - shark.x) + Math.abs(ey - shark.y) < MIN_ENEMY_DIST ||
+      enemies.some((e) => e.x === ex && e.y === ey) ||
+      coral[ey]?.[ex]
+    );
+    return { x: ex, y: ey };
+  }
+
+  function spawnBigEnemy(): BigEnemy {
+    let ex: number, ey: number;
+    let attempts = 0;
+    do {
+      ex = Math.floor(Math.random() * (GRID - 1));
+      ey = Math.floor(Math.random() * (GRID - 1));
+      attempts++;
+      if (attempts > 1000) break;
+    } while (
+      Math.min(
+        Math.abs(ex - shark.x) + Math.abs(ey - shark.y),
+        Math.abs(ex + 1 - shark.x) + Math.abs(ey - shark.y),
+        Math.abs(ex - shark.x) + Math.abs(ey + 1 - shark.y),
+        Math.abs(ex + 1 - shark.x) + Math.abs(ey + 1 - shark.y),
+      ) < MIN_ENEMY_DIST ||
+      bigEnemies.some((b) => bigEnemyOverlaps(ex, ey, b.x, b.y)) ||
+      coral[ey]?.[ex] ||
+      coral[ey]?.[ex + 1] ||
+      coral[ey + 1]?.[ex] ||
+      coral[ey + 1]?.[ex + 1]
+    );
+    return { x: ex, y: ey };
+  }
+
+  function spawnCoral() {
+    // N ≈ 2% of grid cells
+    const N = Math.max(5, Math.floor(GRID * GRID * 0.02));
+    let placed = 0,
+      attempts = 0;
+    while (placed < N && attempts < 2000) {
+      attempts++;
+      const cx = Math.floor(Math.random() * GRID);
+      const cy = Math.floor(Math.random() * GRID);
+      if (coral[cy][cx]) continue;
+      if (cx === shark.x && cy === shark.y) continue;
+      if (Math.abs(cx - shark.x) + Math.abs(cy - shark.y) < 4) continue;
+      if (enemies.some((e) => e.x === cx && e.y === cy)) continue;
+      if (
+        bigEnemies.some(
+          (be) => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1,
+        )
+      )
+        continue;
+      if (pickups[cy][cx] || superPickups[cy][cx]) continue;
+      coral[cy][cx] = true;
+      placed++;
+    }
+  }
+
+  function spawnLeviathan() {
+    if (leviathan) return; // max one at a time
+    let lx: number, ly: number;
+    let attempts = 0;
+    do {
+      lx = Math.floor(Math.random() * (GRID - 2));
+      ly = Math.floor(Math.random() * (GRID - 2));
+      attempts++;
+      if (attempts > 1000) break;
+    } while (
+      Math.min(
+        Math.abs(lx - shark.x) + Math.abs(ly - shark.y),
+        Math.abs(lx + 2 - shark.x) + Math.abs(ly - shark.y),
+        Math.abs(lx - shark.x) + Math.abs(ly + 2 - shark.y),
+        Math.abs(lx + 2 - shark.x) + Math.abs(ly + 2 - shark.y),
+      ) < 7 ||
+      [0, 1, 2].some((dx) => [0, 1, 2].some((dy) => coral[ly + dy]?.[lx + dx]))
+    );
+    leviathan = { x: lx, y: ly };
+  }
+
+  // ===== CollisionDetector =====  →  CollisionDetector.swift
+
+  function bigEnemyOverlaps(
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+  ): boolean {
+    return ax < bx + 2 && ax + 2 > bx && ay < by + 2 && ay + 2 > by;
+  }
+
+  function leviathanCollision(): boolean {
+    if (!leviathan) return false;
+    return (
+      shark.x >= leviathan.x &&
+      shark.x <= leviathan.x + 2 &&
+      shark.y >= leviathan.y &&
+      shark.y <= leviathan.y + 2
+    );
+  }
+
+  // ===== EnemyAI =====  →  EnemyAI.swift
+
+  function moveEnemiesAI() {
+    // Regular enemies: Manhattan-first, avoid coral and each other
+    for (const e of enemies) {
+      const diffX = shark.x - e.x;
+      const diffY = shark.y - e.y;
+      let tx = e.x,
+        ty = e.y;
+      if (Math.abs(diffX) >= Math.abs(diffY)) {
+        tx += Math.sign(diffX);
+      } else {
+        ty += Math.sign(diffY);
+      }
+      // Clamp to grid
+      tx = Math.max(0, Math.min(GRID - 1, tx));
+      ty = Math.max(0, Math.min(GRID - 1, ty));
+      const occupied = enemies.some((o) => o !== e && o.x === tx && o.y === ty);
+      const blockedByCoral = !!coral[ty]?.[tx];
+      if (!occupied && !blockedByCoral) {
+        e.x = tx;
+        e.y = ty;
+      }
+    }
+
+    // Big enemies: same AI, clamped to GRID-2 (2×2 block)
+    for (const be of bigEnemies) {
+      const diffX = shark.x - be.x;
+      const diffY = shark.y - be.y;
+      let tx = be.x,
+        ty = be.y;
+      if (Math.abs(diffX) >= Math.abs(diffY)) {
+        tx += Math.sign(diffX);
+      } else {
+        ty += Math.sign(diffY);
+      }
+      tx = Math.max(0, Math.min(GRID - 2, tx));
+      ty = Math.max(0, Math.min(GRID - 2, ty));
+      const blocked = bigEnemies.some(
+        (o) => o !== be && bigEnemyOverlaps(tx, ty, o.x, o.y),
+      );
+      const hitsCoral =
+        coral[ty]?.[tx] ||
+        coral[ty]?.[tx + 1] ||
+        coral[ty + 1]?.[tx] ||
+        coral[ty + 1]?.[tx + 1];
+      if (!blocked && !hitsCoral) {
+        be.x = tx;
+        be.y = ty;
+      }
+    }
+  }
+
+  function moveLeviathanAI() {
+    if (!leviathan) return;
+    const diffX = shark.x - leviathan.x;
+    const diffY = shark.y - leviathan.y;
+    let tx = leviathan.x,
+      ty = leviathan.y;
+    if (Math.abs(diffX) >= Math.abs(diffY)) {
+      tx += Math.sign(diffX);
+    } else {
+      ty += Math.sign(diffY);
+    }
+    tx = Math.max(0, Math.min(GRID - 3, tx));
+    ty = Math.max(0, Math.min(GRID - 3, ty));
+    const hitsCoral = [0, 1, 2].some((dx) =>
+      [0, 1, 2].some((dy) => coral[ty + dy]?.[tx + dx]),
+    );
+    if (!hitsCoral) {
+      leviathan.x = tx;
+      leviathan.y = ty;
+    }
+  }
+
+  // ===== GameEngine =====  →  GameEngine.swift
+
+  function init() {
+    score = 0;
+    moveCount = 0;
+    gameOver = false;
+    currentDepth = 1;
+
+    hudScore.textContent = "0";
+    hudDepthBadge.textContent = "DEPTH 1";
+    gameOverOverlay.classList.remove("visible");
+
+    const wrapper = document.getElementById("gameDepthWrapper")!;
+    wrapper.className = "game-depth-wrapper depth-1";
+
+    // GridState — tile colors
+    colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomTileColor()),
+    );
+
+    // GridState — pickups (5% density on init)
+    pickups = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => Math.random() < PICKUP_INIT),
+    );
+
+    // GridState — super pickups (1/40 of pickups)
+    superPickups = Array.from({ length: GRID }, (_, r) =>
+      Array.from({ length: GRID }, (_, c) => {
+        if (pickups[r][c] && Math.random() < SUPER_INIT) {
+          pickups[r][c] = false;
+          return true;
+        }
+        return false;
+      }),
+    );
+
+    // GridState — coral (cleared; spawned at Depth 2)
+    coral = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+
+    // EnemyAI state — cleared
+    bigEnemies = [];
+    leviathan = null;
+
+    // Place shark at random position, not on a pickup
+    shark.x = Math.floor(Math.random() * GRID);
+    shark.y = Math.floor(Math.random() * GRID);
+    pickups[shark.y][shark.x] = false;
+    superPickups[shark.y][shark.x] = false;
+
+    // Snap visual position
+    sharkVisualX = shark.x;
+    sharkVisualY = shark.y;
+
+    // Load high score from UserDefaultsService
+    highScore = getHighScore();
+    hudBest.textContent = String(highScore);
+
+    // SpawnManager — one initial enemy
+    enemies = [spawnEnemy()];
+
+    draw();
+  }
+
+  function moveShark(dx: number, dy: number) {
+    if (gameOver) return;
+
+    const nx = shark.x + dx;
+    const ny = shark.y + dy;
+
+    // CollisionDetector — bounds check
+    if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) return;
+
+    // CollisionDetector — coral check (Depth 2)
+    if (coral[ny][nx]) return;
+
+    shark.x = nx;
+    shark.y = ny;
+    moveCount++;
+
+    // Track facing direction  →  SharkNode.swift rotation
+    if (dx === 1) sharkDir = "right";
+    else if (dx === -1) sharkDir = "left";
+    else if (dy === 1) sharkDir = "down";
+    else if (dy === -1) sharkDir = "up";
+
+    // Check pickup (1 point + spawn enemy)
+    if (pickups[ny][nx]) {
+      pickups[ny][nx] = false;
+      score++;
+      hudScore.textContent = String(score);
+      enemies.push(spawnEnemy());
+      checkDepthTransition();
+    }
+
+    // Check super pickup (15 points + spawn big enemy)
+    if (superPickups[ny][nx]) {
+      superPickups[ny][nx] = false;
+      score += 15;
+      hudScore.textContent = String(score);
+      bigEnemies.push(spawnBigEnemy());
+      checkDepthTransition();
+    }
+
+    // SpawnManager — random pickup growth
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (
+          !pickups[r][c] &&
+          !superPickups[r][c] &&
+          !coral[r][c] &&
+          Math.random() < PICKUP_RATE
+        ) {
+          if (Math.random() < SUPER_RATE_OF_PICKUP) {
+            superPickups[r][c] = true;
+          } else {
+            pickups[r][c] = true;
+          }
+        }
+      }
+    }
+
+    // EnemyAI — regular + big enemies move every 2 player moves
+    if (moveCount % 2 === 0) {
+      moveEnemiesAI();
+    }
+
+    // EnemyAI — Leviathan moves every player move (Depth 3)
+    moveLeviathanAI();
+
+    // CollisionDetector — death checks
+    for (const e of enemies) {
+      if (e.x === shark.x && e.y === shark.y) {
+        endGame();
+        return;
+      }
+    }
+    for (const be of bigEnemies) {
+      if (
+        shark.x >= be.x &&
+        shark.x <= be.x + 1 &&
+        shark.y >= be.y &&
+        shark.y <= be.y + 1
+      ) {
+        endGame();
+        return;
+      }
+    }
+    if (leviathanCollision()) {
+      endGame();
+      return;
+    }
+
+    startSharkAnim();
+  }
+
+  function endGame() {
+    gameOver = true;
+    sharkVisualX = shark.x;
+    sharkVisualY = shark.y;
+    draw();
+
+    // UserDefaultsService — persist high score
+    if (score > highScore) {
+      highScore = score;
+      saveHighScore(highScore);
+      hudBest.textContent = String(highScore);
+    }
+
+    finalScoreEl.textContent = String(score);
+    submitPrompt.style.display = score > 0 ? "block" : "none";
+    nameInputRow.classList.remove("visible");
+    submitScoreBtn.disabled = false;
+    submitStatus.textContent = "";
+    playerNameInput.value = localStorage.getItem("sharkPlayerName") || "";
+    gameOverOverlay.classList.add("visible");
+  }
+
+  // ===== Renderer =====  →  GameScene.swift
+
+  // Ocean tile palette — mid-depth blues/teals, readable but not black
+  const TILE_COLORS = [
+    "#1e5f7a",
+    "#226b88",
+    "#1a6070",
+    "#256073",
+    "#1d5568",
+    "#247080",
+    "#1f6878",
+    "#235d72",
+    "#1b6275",
+    "#20586a",
+  ];
+
+  function randomTileColor(): string {
+    return TILE_COLORS[Math.floor(Math.random() * TILE_COLORS.length)];
+  }
+
+  let colorblindMode = localStorage.getItem("sharkColorblind") === "true";
+
+  function draw() {
+    const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d")!;
+
+    if (colorblindMode) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#48cae4";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= GRID; i++) {
+        const pos =
+          i === GRID ? canvas.width - 0.5 : Math.round(i * CELL) + 0.5;
+        ctx.moveTo(pos, 0);
+        ctx.lineTo(pos, canvas.height);
+        ctx.moveTo(0, pos);
+        ctx.lineTo(canvas.width, pos);
+      }
+      ctx.stroke();
+    } else {
+      // Background — ocean floor between tiles
+      ctx.fillStyle = "#143d4f";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid tiles
+      for (let r = 0; r < GRID; r++) {
+        for (let c = 0; c < GRID; c++) {
+          ctx.fillStyle = colors[r][c];
+          ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
+        }
+      }
+    }
+
+    // Coral barriers (Depth 2) — purple pixel blocks
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (!coral[r][c]) continue;
+        const cx = c * CELL,
+          cy = r * CELL;
+        ctx.fillStyle = "#4c1d95";
+        ctx.fillRect(cx, cy, CELL, CELL);
+        ctx.fillStyle = "#7c3aed";
+        ctx.fillRect(cx + 1, cy + 1, CELL - 2, CELL - 2);
+        // Pixel highlight corners
+        if (CELL >= 8) {
+          ctx.fillStyle = "#a78bfa";
+          const dot = Math.max(2, Math.floor(CELL * 0.15));
+          ctx.fillRect(cx + 2, cy + 2, dot, dot);
+          ctx.fillRect(cx + CELL - dot - 2, cy + 2, dot, dot);
+        }
+      }
+    }
+
+    // Pickups — gold squares
+    const pad = CELL * 0.2;
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (!pickups[r][c]) continue;
+        const px = c * CELL + pad,
+          py = r * CELL + pad,
+          ps = CELL - pad * 2;
+        ctx.fillStyle = "#7a5500";
+        ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2);
+        ctx.fillStyle = "#ffd166";
+        ctx.fillRect(px, py, ps, ps);
+      }
+    }
+
+    // Super pickups — purple with "15" label
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (!superPickups[r][c]) continue;
+        const px = c * CELL + pad,
+          py = r * CELL + pad,
+          ps = CELL - pad * 2;
+        ctx.fillStyle = "#4a0060";
+        ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2);
+        ctx.fillStyle = "#c77dff";
+        ctx.fillRect(px, py, ps, ps);
+        if (CELL >= 16) {
+          ctx.fillStyle = "#fff";
+          ctx.font = `bold ${Math.max(8, CELL * 0.35)}px monospace`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("15", c * CELL + CELL / 2, r * CELL + CELL / 2);
+        }
+      }
+    }
+
+    // Regular enemies — 1×1 red squares
+    for (const e of enemies) {
+      ctx.fillStyle = "#7f1d1d";
+      ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL);
+    }
+
+    // Big enemies — 2×2 red squares
+    for (const be of bigEnemies) {
+      const bx = be.x * CELL,
+        by = be.y * CELL,
+        bw = CELL * 2;
+      ctx.fillStyle = "#7f1d1d";
+      ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(bx, by, bw, bw);
+    }
+
+    // Leviathan — 3×3 glowing mega enemy (Depth 3)
+    if (leviathan) {
+      const lx = leviathan.x * CELL,
+        ly = leviathan.y * CELL,
+        lw = CELL * 3;
+      const canvas2d = document.getElementById(
+        "gameCanvas",
+      ) as HTMLCanvasElement;
+      const ctx2 = canvas2d.getContext("2d")!;
+      ctx2.shadowColor = "#ef476f";
+      ctx2.shadowBlur = 18;
+      ctx2.fillStyle = "#7f1d1d";
+      ctx2.fillRect(lx - 2, ly - 2, lw + 4, lw + 4);
+      ctx2.fillStyle = "#ef476f";
+      ctx2.fillRect(lx, ly, lw, lw);
+      ctx2.fillStyle = "#be123c";
+      ctx2.fillRect(lx + 3, ly + 3, lw - 6, lw - 6);
+      ctx2.shadowBlur = 0;
+    }
+
+    // ===== SharkRenderer =====  →  SharkNode.swift
+    drawSharkOnCtx(ctx, sharkVisualX, sharkVisualY, CELL, sharkDir);
+  }
+
+  function drawSharkOnCtx(
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    cellSize: number,
+    dir: string,
+    tailWag: number = 0, // -1 to 1: drives tail fin counter-oscillation
+  ) {
+    const x = cx * cellSize;
+    const y = cy * cellSize;
+    const w = cellSize;
+    const h = cellSize;
+
+    ctx.save();
+
+    // Direction transform — shark faces RIGHT by default
+    const midX = x + w / 2;
+    const midY = y + h / 2;
+    ctx.translate(midX, midY);
+    if (dir === "left") ctx.scale(-1, 1);
+    else if (dir === "down") ctx.rotate(Math.PI / 2);
+    else if (dir === "up") ctx.rotate(-Math.PI / 2);
+    ctx.translate(-midX, -midY);
+
+    // Pixel-snapped rect helper — min 1px so tiny cells still render
+    const R = (fx: number, fy: number, fw: number, fh: number) =>
+      ctx.fillRect(
+        Math.round(x + fx * w),
+        Math.round(y + fy * h),
+        Math.max(1, Math.round(fw * w)),
+        Math.max(1, Math.round(fh * h)),
+      );
+
+    // 5-color pixel art palette — natural shark counter-shading
+    // Light grey-blue body + white belly pops against the teal ocean tiles
+    const OUTLINE = "#0a1e28";
+    const BODY = "#7aaab8"; // cool shark grey — clearly lighter than tiles
+    const DARK_FIN = "#4a7a8a"; // darker grey-teal for fins and shadow
+    const HIGHLIGHT = "#c0dae2"; // pale blue-white top highlight
+    const BELLY = "#f0f8fa"; // near-white underbelly
+
+    // 1. Outline pass (dark slab drawn slightly larger)
+    ctx.fillStyle = OUTLINE;
+    R(0.06, 0.27, 0.82, 0.46); // body slab
+    R(0.0, 0.12, 0.14, 0.22); // tail top lobe outline
+    R(0.0, 0.62, 0.14, 0.22); // tail bottom lobe outline
+    // Dorsal fin outline (triangle)
+    ctx.beginPath();
+    ctx.moveTo(Math.round(x + 0.34 * w), Math.round(y + 0.27 * h));
+    ctx.lineTo(Math.round(x + 0.5 * w), Math.round(y + 0.01 * h));
+    ctx.lineTo(Math.round(x + 0.67 * w), Math.round(y + 0.27 * h));
+    ctx.closePath();
+    ctx.fill();
+
+    // 2. Body
+    ctx.fillStyle = BODY;
+    R(0.08, 0.29, 0.78, 0.42);
+
+    // 3. Dorsal fin
+    ctx.fillStyle = DARK_FIN;
+    ctx.beginPath();
+    ctx.moveTo(Math.round(x + 0.36 * w), Math.round(y + 0.29 * h));
+    ctx.lineTo(Math.round(x + 0.5 * w), Math.round(y + 0.05 * h));
+    ctx.lineTo(Math.round(x + 0.65 * w), Math.round(y + 0.29 * h));
+    ctx.closePath();
+    ctx.fill();
+
+    // 4. Tail fins
+    ctx.fillStyle = DARK_FIN;
+    R(0.01, 0.14, 0.11, 0.16); // top lobe
+    R(0.01, 0.64, 0.11, 0.16); // bottom lobe
+
+    // 5. Top highlight strip
+    ctx.fillStyle = HIGHLIGHT;
+    R(0.14, 0.29, 0.36, 0.09);
+
+    // 6. Belly
+    ctx.fillStyle = BELLY;
+    R(0.18, 0.52, 0.5, 0.14);
+
+    // 7. Pectoral fin hint
+    ctx.fillStyle = DARK_FIN;
+    R(0.36, 0.62, 0.2, 0.09);
+
+    // 8. Eye
+    ctx.fillStyle = "#d8eef4"; // light eye
+    R(0.69, 0.33, 0.1, 0.14);
+    ctx.fillStyle = "#08181f"; // dark pupil
+    R(0.71, 0.35, 0.06, 0.09);
+    ctx.fillStyle = "#ffffff";
+    R(0.7, 0.34, 0.02, 0.03); // glint
+
+    // 9. Mouth notch
+    ctx.fillStyle = OUTLINE;
+    R(0.84, 0.56, 0.08, 0.08);
+
+    ctx.restore();
+  }
+
+  // Smooth animation  →  SKAction in GameScene.swift
+  function startSharkAnim() {
+    sharkFromX = sharkVisualX;
+    sharkFromY = sharkVisualY;
+    animStartTime = performance.now();
+    if (animRafId) cancelAnimationFrame(animRafId);
+    animRafId = requestAnimationFrame(tickAnim);
+  }
+
+  function tickAnim(now: number) {
+    const t = Math.min(1, (now - animStartTime) / ANIM_DURATION);
+    const ease = 1 - (1 - t) * (1 - t);
+    sharkVisualX = sharkFromX + (shark.x - sharkFromX) * ease;
+    sharkVisualY = sharkFromY + (shark.y - sharkFromY) * ease;
+    draw();
+    if (t < 1) {
+      animRafId = requestAnimationFrame(tickAnim);
+    } else {
+      animRafId = null;
+    }
+  }
+
+  // ===== ScreenManager =====  →  RootNavigationView.swift
+
+  type ScreenId =
+    | "splash"
+    | "main-menu"
+    | "map-selector"
+    | "game"
+    | "leaderboard"
+    | "settings";
+
+  function showScreen(id: ScreenId) {
+    document
+      .querySelectorAll(".screen")
+      .forEach((s) => s.classList.remove("active"));
+    const target = document.getElementById(`screen-${id}`);
+    if (target) target.classList.add("active");
+  }
+
+  // ===== DPad =====  →  DPadView.swift
+
+  function execDir(dir: string) {
+    switch (dir) {
+      case "up":
+        moveShark(0, -1);
+        break;
+      case "down":
+        moveShark(0, 1);
+        break;
+      case "left":
+        moveShark(-1, 0);
+        break;
+      case "right":
+        moveShark(1, 0);
+        break;
+    }
+  }
+
+  function vibrate(ms: number) {
+    const enabled = localStorage.getItem("sharkHaptics") !== "false";
+    if (enabled && navigator.vibrate) navigator.vibrate(ms);
+  }
+
+  document.querySelectorAll(".dpad-btn").forEach((btn) => {
+    const el = btn as HTMLElement;
+    let repeatTimer: ReturnType<typeof setInterval> | null = null;
+
+    const press = () => el.classList.add("pressed");
+    const release = () => {
+      el.classList.remove("pressed");
+      if (repeatTimer) {
+        clearInterval(repeatTimer);
+        repeatTimer = null;
+      }
+    };
+
+    const startMove = (e: Event) => {
+      e.preventDefault();
+      press();
+      const dir = el.dataset.dir!;
+      vibrate(12);
+      execDir(dir);
+      repeatTimer = setTimeout(() => {
+        repeatTimer = setInterval(() => {
+          vibrate(8);
+          execDir(dir);
+        }, 100);
+      }, 200) as unknown as ReturnType<typeof setInterval>;
+    };
+
+    btn.addEventListener("touchstart", startMove, { passive: false });
+    btn.addEventListener("touchend", release);
+    btn.addEventListener("touchcancel", release);
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      vibrate(12);
+      execDir(el.dataset.dir!);
+      press();
+      setTimeout(release, 150);
+    });
+  });
+
+  // ===== HUD =====  →  HUDView.swift
+
+  const hudScore = document.getElementById("hudScore")!;
+  const hudBest = document.getElementById("hudBest")!;
+  const hudDepthBadge = document.getElementById("hudDepthBadge")!;
+
+  // ===== Services =====  →  UserDefaultsService.swift + GameCenterService.swift
+
+  function hsKey(): string {
+    return currentMap === "medium"
+      ? "sharkIosHighScore"
+      : `sharkIosHighScore-${currentMap}`;
+  }
+  function getHighScore(): number {
+    return parseInt(localStorage.getItem(hsKey()) || "0", 10);
+  }
+  function saveHighScore(v: number) {
+    localStorage.setItem(hsKey(), String(v));
+  }
+
+  // ── Leaderboard (GameCenterService.swift) ──
+
+  const MOCK_SCORES = [
+    { name: "SharkMaster", score: 18, date: "2026-03-14T09:23:00Z" },
+    { name: "FinFrenzy", score: 14, date: "2026-03-13T22:15:00Z" },
+    { name: "OceanKing", score: 11, date: "2026-03-14T14:02:00Z" },
+    { name: "DeepDiver", score: 9, date: "2026-03-12T18:45:00Z" },
+    { name: "WaveCatcher", score: 7, date: "2026-03-14T11:30:00Z" },
+    { name: "CoralQueen", score: 5, date: "2026-03-11T20:10:00Z" },
+    { name: "TideRunner", score: 4, date: "2026-03-13T16:55:00Z" },
+    { name: "ReefRaider", score: 3, date: "2026-03-10T08:40:00Z" },
+  ];
+
+  async function fetchLeaderboard() {
+    try {
+      const res = await fetch(`/api/scores?map=${currentMap}`);
+      if (!res.ok) throw new Error("failed");
+      const scores = await res.json();
+      renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES);
+    } catch {
+      renderLeaderboard(MOCK_SCORES);
+    }
+  }
+
+  function formatDate(iso: string): string {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  }
+
+  let lastSubmittedDate: string | null = null;
+
+  function renderLeaderboard(
+    scores: { name: string; score: number; date?: string }[],
+  ) {
+    const tbody = document.getElementById("leaderboardBody")!;
+    if (!scores.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" class="lb-empty">NO SCORES YET</td></tr>';
+      return;
+    }
+    const esc = (s: string) =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    const medalCls = ["medal-gold", "medal-silver", "medal-bronze"];
+    tbody.innerHTML = scores
+      .map((s, i) => {
+        const hi =
+          lastSubmittedDate && s.date === lastSubmittedDate
+            ? ' class="highlight"'
+            : "";
+        const rank =
+          i < 3
+            ? `<span class="medal ${medalCls[i]}">${i + 1}</span>`
+            : `${i + 1}`;
+        return `<tr${hi}><td class="lb-rank">${rank}</td><td>${esc(s.name)}</td><td class="lb-score">${s.score}</td><td class="lb-date">${s.date ? formatDate(s.date) : ""}</td></tr>`;
+      })
+      .join("");
+  }
+
+  // DOM refs for game-over UI
+  const gameOverOverlay = document.getElementById("gameOverOverlay")!;
+  const finalScoreEl = document.getElementById("finalScore")!;
+  const submitPrompt = document.getElementById("submitPrompt")!;
+  const submitStatus = document.getElementById("submitStatus")!;
+  const nameInputRow = document.getElementById("nameInputRow")!;
+  const submitScoreBtn = document.getElementById(
+    "submitScoreBtn",
+  )! as HTMLButtonElement;
+  const playerNameInput = document.getElementById(
+    "playerName",
+  )! as HTMLInputElement;
+
+  document.getElementById("wantToSubmitBtn")!.addEventListener("click", () => {
+    submitPrompt.style.display = "none";
+    nameInputRow.classList.add("visible");
+    playerNameInput.focus();
+  });
+
+  submitScoreBtn.addEventListener("click", async () => {
+    const name = playerNameInput.value.trim();
+    if (!name) {
+      submitStatus.textContent = "ENTER YOUR NAME";
+      return;
+    }
+
+    const lower = name.toLowerCase();
+    const stripped = lower.replace(/[^a-z]/g, "");
+    const bad = [
+      "ass",
+      "asshole",
+      "bastard",
+      "bitch",
+      "bollocks",
+      "bullshit",
+      "cock",
+      "cunt",
+      "damn",
+      "dick",
+      "douche",
+      "fag",
+      "faggot",
+      "fuck",
+      "goddamn",
+      "jackass",
+      "motherfucker",
+      "nigger",
+      "nigga",
+      "piss",
+      "prick",
+      "pussy",
+      "shit",
+      "slut",
+      "twat",
+      "whore",
+      "wanker",
+      "chink",
+      "gook",
+      "kike",
+      "spic",
+      "wetback",
+      "retard",
+      "tranny",
+      "dyke",
+      "blowjob",
+      "dildo",
+      "jizz",
+      "porn",
+      "tits",
+      "penis",
+      "vagina",
+      "anal",
+      "cum",
+      "orgasm",
+      "nazi",
+      "hitler",
+      "kkk",
+      "rape",
+      "molest",
+      "pedo",
+      "pedophile",
+      "fuk",
+      "fuc",
+      "sh1t",
+      "b1tch",
+    ];
+    if (bad.some((w) => lower.includes(w) || stripped.includes(w))) {
+      submitStatus.textContent = "INVALID NAME";
+      return;
+    }
+
+    submitScoreBtn.disabled = true;
+    submitStatus.textContent = "SUBMITTING...";
+    localStorage.setItem("sharkPlayerName", name);
+
+    try {
+      const res = await fetch(`/api/scores?map=${currentMap}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, score }),
+      });
+      if (!res.ok) {
+        submitStatus.textContent = "FAILED — TRY AGAIN";
+        submitScoreBtn.disabled = false;
+        return;
+      }
+      const scores = await res.json();
+      const submitted = scores.find(
+        (s: any) => s.name === name && s.score === score && s.date,
+      );
+      lastSubmittedDate = submitted?.date || null;
+      renderLeaderboard(scores);
+      lastSubmittedDate = null;
+      submitStatus.textContent = "SCORE SUBMITTED!";
+      nameInputRow.classList.remove("visible");
+    } catch {
+      submitStatus.textContent = "FAILED — TRY AGAIN";
+      submitScoreBtn.disabled = false;
+    }
+  });
+
+  playerNameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submitScoreBtn.click();
+  });
+
+  // ===== Keyboard Controls =====  →  GameView.swift
+
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement
+    )
+      return;
+    switch (e.key) {
+      case "ArrowUp":
+      case "w":
+      case "W":
+        e.preventDefault();
+        moveShark(0, -1);
+        break;
+      case "ArrowDown":
+      case "s":
+      case "S":
+        e.preventDefault();
+        moveShark(0, 1);
+        break;
+      case "ArrowLeft":
+      case "a":
+      case "A":
+        e.preventDefault();
+        moveShark(-1, 0);
+        break;
+      case "ArrowRight":
+      case "d":
+      case "D":
+        e.preventDefault();
+        moveShark(1, 0);
+        break;
+    }
+  });
+
+  // ===== Navigation Wiring =====  →  RootNavigationView.swift
+
+  // Splash → Main Menu (auto)
+  setTimeout(() => showScreen("main-menu"), 1200);
+
+  // Main Menu buttons
+  document
+    .getElementById("menuPlayBtn")!
+    .addEventListener("click", () => showScreen("map-selector"));
+  document
+    .getElementById("menuLeaderboardBtn")!
+    .addEventListener("click", () => {
+      fetchLeaderboard();
+      showScreen("leaderboard");
+    });
+  document
+    .getElementById("menuSettingsBtn")!
+    .addEventListener("click", () => showScreen("settings"));
+
+  // Map selector
+  const MAP_LABELS: Record<MapSize, string> = {
+    small: "REEF (20×20)",
+    medium: "ABYSS (30×30)",
+  };
+  let selectedMap: MapSize = "small";
+
+  document.querySelectorAll(".map-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      selectedMap = (card as HTMLElement).dataset.map as MapSize;
+      document
+        .querySelectorAll(".map-card")
+        .forEach((c) => c.classList.remove("selected"));
+      card.classList.add("selected");
+      refreshMapScores();
+    });
+  });
+
+  function refreshMapScores() {
+    const small = parseInt(
+      localStorage.getItem("sharkIosHighScore-small") || "0",
+      10,
+    );
+    const medium = parseInt(
+      localStorage.getItem("sharkIosHighScore") || "0",
+      10,
+    );
+    document.getElementById("mapScoreSmall")!.textContent = String(small);
+    document.getElementById("mapScoreMedium")!.textContent = String(medium);
+  }
+
+  document.getElementById("mapPlayBtn")!.addEventListener("click", () => {
+    currentMap = selectedMap;
+    GRID = MAP_GRIDS[currentMap];
+    const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    CELL = canvas.width / GRID;
+
+    document.getElementById("lbMapLabel")!.textContent = MAP_LABELS[currentMap];
+
+    showScreen("game");
+    init();
+    fetchLeaderboard();
+  });
+
+  document
+    .getElementById("mapBackBtn")!
+    .addEventListener("click", () => showScreen("main-menu"));
+
+  // Leaderboard back
+  document
+    .getElementById("lbBackBtn")!
+    .addEventListener("click", () => showScreen("main-menu"));
+
+  // HUD menu button — back to main menu during gameplay
+  document.getElementById("hudMenuBtn")!.addEventListener("click", () => {
+    gameOver = true; // stop input
+    const label = document.getElementById("menuDepthLabel")!;
+    label.textContent = currentDepth > 1 ? `REACHED DEPTH ${currentDepth}` : "";
+    showScreen("main-menu");
+  });
+
+  // Game Over buttons
+  document
+    .getElementById("playAgainBtn")!
+    .addEventListener("click", () => init());
+  document.getElementById("gameOverMenuBtn")!.addEventListener("click", () => {
+    const label = document.getElementById("menuDepthLabel")!;
+    label.textContent = currentDepth > 1 ? `REACHED DEPTH ${currentDepth}` : "";
+    showScreen("main-menu");
+  });
+
+  // Settings back
+  document
+    .getElementById("settingsBackBtn")!
+    .addEventListener("click", () => showScreen("main-menu"));
+
+  // Settings toggles
+  const settingsColorblind = document.getElementById(
+    "settingsColorblind",
+  ) as HTMLInputElement;
+  const settingsHaptics = document.getElementById(
+    "settingsHaptics",
+  ) as HTMLInputElement;
+
+  settingsColorblind.checked =
+    localStorage.getItem("sharkColorblind") === "true";
+  settingsHaptics.checked = localStorage.getItem("sharkHaptics") !== "false";
+
+  settingsColorblind.addEventListener("change", () => {
+    colorblindMode = settingsColorblind.checked;
+    localStorage.setItem("sharkColorblind", String(colorblindMode));
+  });
+  settingsHaptics.addEventListener("change", () => {
+    localStorage.setItem("sharkHaptics", String(settingsHaptics.checked));
+  });
+
+  // ===== Startup =====  →  SharkThiefApp.swift
+
+  // Draw splash shark
+  const splashCanvas = document.getElementById(
+    "splashSharkCanvas",
+  ) as HTMLCanvasElement;
+  if (splashCanvas) {
+    const splashCtx = splashCanvas.getContext("2d")!;
+    drawSharkOnCtx(splashCtx, 0, 0, splashCanvas.width, "right");
+  }
+
+  // Draw menu shark
+  const menuSharkCanvas = document.getElementById(
+    "menuSharkCanvas",
+  ) as HTMLCanvasElement;
+  if (menuSharkCanvas) {
+    const menuCtx = menuSharkCanvas.getContext("2d")!;
+    drawSharkOnCtx(menuCtx, 0, 0, menuSharkCanvas.width, "right");
+  }
+
+  // Init map score display
+  refreshMapScores();
+</script>

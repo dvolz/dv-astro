@@ -1,0 +1,16 @@
+{
+	"name": "Shark Thief",
+	"short_name": "Shark Thief",
+	"start_url": "/play/shark-thief",
+	"display": "standalone",
+	"background_color": "#fff7f2",
+	"theme_color": "#29435c",
+	"orientation": "portrait",
+	"icons": [
+		{
+			"src": "/images/shark-icon-180.png",
+			"sizes": "180x180",
+			"type": "image/png"
+		}
+	]
+}
