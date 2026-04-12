@@ -36,6 +36,11 @@ const fullWidthBody = true;
   }
 
   /* ── App Container ── */
+  :global(main):has(.shark-ios-app) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .shark-ios-app {
     width: 100%;
     background: var(--ocean-abyss);
@@ -1070,6 +1075,65 @@ const fullWidthBody = true;
 
   let currentDepth = 1;
 
+  interface DyingEnemy {
+    x: number;
+    y: number;
+    isBig: boolean; // 2×2 if true
+    startTime: number; // performance.now() when animation begins
+  }
+  const DYING_DURATION = 450; // ms per enemy
+  let dyingEnemies: DyingEnemy[] = [];
+  let dyingRafId: number | null = null;
+
+  function startDyingLoop() {
+    if (dyingRafId) return;
+    function tick() {
+      const now = performance.now();
+      dyingEnemies = dyingEnemies.filter(de => now - de.startTime < DYING_DURATION);
+      draw();
+      if (dyingEnemies.length > 0) {
+        dyingRafId = requestAnimationFrame(tick);
+      } else {
+        dyingRafId = null;
+      }
+    }
+    dyingRafId = requestAnimationFrame(tick);
+  }
+
+  // Keep 5 farthest enemies, dissolve the closest — closest disappear first (0ms delay)
+  function clearCloseEnemies() {
+    type EnemyRef = { x: number; y: number; isBig: boolean };
+    const all: EnemyRef[] = [
+      ...enemies.map(e => ({ x: e.x, y: e.y, isBig: false })),
+      ...bigEnemies.map(e => ({ x: e.x, y: e.y, isBig: true })),
+    ];
+    if (all.length === 0) return;
+
+    const dist = (p: EnemyRef) =>
+      Math.abs(p.x - shark.x) + Math.abs(p.y - shark.y);
+
+    all.sort((a, b) => dist(b) - dist(a)); // farthest first
+    const keep = new Set(all.slice(0, 5).map(p => `${p.x},${p.y},${p.isBig}`));
+    const toRemove = all.filter(p => !keep.has(`${p.x},${p.y},${p.isBig}`));
+    if (toRemove.length === 0) return;
+
+    // Stagger: closest enemies disappear first (0ms), farthest-removed last (200ms)
+    const maxD = Math.max(...toRemove.map(dist));
+    const minD = Math.min(...toRemove.map(dist));
+    const range = Math.max(1, maxD - minD);
+    const now = performance.now();
+
+    for (const p of toRemove) {
+      const delay = ((dist(p) - minD) / range) * 200; // close=0ms, far=200ms
+      dyingEnemies.push({ x: p.x, y: p.y, isBig: p.isBig, startTime: now + delay });
+    }
+
+    enemies = enemies.filter(e => keep.has(`${e.x},${e.y},false`));
+    bigEnemies = bigEnemies.filter(e => keep.has(`${e.x},${e.y},true`));
+
+    startDyingLoop();
+  }
+
   function getDepthForScore(s: number): number {
     if (s >= 200) return 3;
     if (s >= 100) return 2;
@@ -1091,6 +1155,7 @@ const fullWidthBody = true;
     const wrapper = document.getElementById("gameDepthWrapper")!;
     wrapper.className = `game-depth-wrapper depth-${currentDepth}`;
 
+    clearCloseEnemies();
     if (currentDepth === 2) spawnCoral();
     if (currentDepth === 3) spawnLeviathan();
   }
@@ -1335,6 +1400,10 @@ const fullWidthBody = true;
     // Load high score from UserDefaultsService
     highScore = getHighScore();
     hudBest.textContent = String(highScore);
+
+    // Reset dying enemies
+    dyingEnemies = [];
+    if (dyingRafId) { cancelAnimationFrame(dyingRafId); dyingRafId = null; }
 
     // Reset shimmer state and start loop
     shimmerIntensity.fill(0);
@@ -1598,6 +1667,37 @@ const fullWidthBody = true;
           py = r * CELL + pad,
           ps = CELL - pad * 2;
         drawShellPickup(ctx, px, py, ps);
+      }
+    }
+
+    // Dying enemies — sink + fade (depth transition dissolve)
+    if (dyingEnemies.length > 0) {
+      const now = performance.now();
+      for (const de of dyingEnemies) {
+        const elapsed = now - de.startTime;
+        if (elapsed < 0) continue; // stagger delay not yet reached
+        const t = Math.min(1, elapsed / DYING_DURATION);
+        const ease = 1 - t * t; // ease-out fade
+        const drift = t * CELL * 0.22; // sink into the reef floor
+        const inset = t * CELL * 0.3; // shrink inward
+        ctx.save();
+        ctx.globalAlpha = ease;
+        if (de.isBig) {
+          const bx = de.x * CELL + inset, by = de.y * CELL + inset + drift;
+          const bw = Math.max(0, CELL * 2 - inset * 2);
+          ctx.fillStyle = "#120a1e";
+          ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
+          ctx.fillStyle = "#2d1a4a";
+          ctx.fillRect(bx, by, bw, bw);
+        } else {
+          const ex = de.x * CELL + inset, ey = de.y * CELL + inset + drift;
+          const ew = Math.max(0, CELL - inset * 2);
+          ctx.fillStyle = "#0a1824";
+          ctx.fillRect(ex - 1, ey - 1, ew + 2, ew + 2);
+          ctx.fillStyle = "#162d40";
+          ctx.fillRect(ex, ey, ew, ew);
+        }
+        ctx.restore();
       }
     }
 
