@@ -1623,14 +1623,14 @@ const fullWidthBody = true;
       ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL);
     }
 
-    // Big enemies — 2×2 swamp-green squares (distinct from regular navy)
+    // Big enemies — 2×2 deep purple squares (understated, distinct from regular navy)
     for (const be of bigEnemies) {
       const bx = be.x * CELL,
         by = be.y * CELL,
         bw = CELL * 2;
-      ctx.fillStyle = "#0a1a0a";
+      ctx.fillStyle = "#120a1e";
       ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
-      ctx.fillStyle = "#1a3d1a";
+      ctx.fillStyle = "#2d1a4a";
       ctx.fillRect(bx, by, bw, bw);
     }
 
