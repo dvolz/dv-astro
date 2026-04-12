@@ -462,34 +462,245 @@ const fullWidthBody = true;
     line-height: 1;
   }
 
-  .hud-depth-badge {
+  /* HUD buttons share the pixel-btn language at compact HUD scale */
+  .hud-btn {
     font-family: var(--font-pixel);
-    font-size: 0.75rem;
-    color: var(--cyan);
-    border: 2px solid var(--cyan);
-    padding: 0.3rem 0.6rem;
-    border-radius: 2px;
-    letter-spacing: 0.08em;
-  }
-
-  .hud-menu-btn {
-    font-family: var(--font-pixel);
-    font-size: 1.1rem;
-    background: transparent;
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    padding: 0.55rem 0.9rem;
     border: 2px solid var(--text-muted);
     border-radius: 2px;
+    background: transparent;
     color: var(--text-muted);
-    padding: 0.9rem 1.3rem;
     cursor: pointer;
-    letter-spacing: 0.05em;
-    transition:
-      border-color 0.08s,
-      color 0.08s;
+    text-transform: uppercase;
     touch-action: manipulation;
+    transition: background 0.08s, color 0.08s, border-color 0.08s, box-shadow 0.08s;
+    min-height: 36px;
+    white-space: nowrap;
+    flex-shrink: 0;
+
     &:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
+      background: var(--text-muted);
+      color: var(--ocean-abyss);
     }
+    &:active { transform: scale(0.95); }
+  }
+
+  /* Depth button: color shifts per depth, plus the [?] info icon */
+  .hud-depth-btn {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+
+    &:hover {
+      background: var(--cyan);
+      color: var(--ocean-abyss);
+      box-shadow: 0 0 10px rgba(72, 202, 228, 0.5);
+    }
+    &.depth-2 {
+      border-color: #daa070;
+      color: #daa070;
+      &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(218,160,112,0.5); }
+    }
+    &.depth-3 {
+      border-color: #9d6fe0;
+      color: #9d6fe0;
+      &:hover { background: #9d6fe0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(157,111,224,0.5); }
+    }
+  }
+
+  .hud-info-icon {
+    font-family: var(--font-terminal);
+    font-size: 1.15em;
+    line-height: 1;
+    opacity: 0.75;
+  }
+
+  /* ── Depth Info Overlay ── */
+  .depth-info-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(4, 12, 24, 0.92);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem 3rem;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    overflow-y: auto;
+
+    &.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+  }
+
+  .depth-info-panel {
+    background: var(--ocean-deep);
+    border: 3px solid var(--cyan);
+    border-radius: 2px;
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+    transform: translateY(10px);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+
+    .depth-info-overlay.visible & {
+      transform: translateY(0);
+    }
+  }
+
+  .depth-info-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.4rem 1.4rem 1.1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .depth-info-badge {
+    font-family: var(--font-pixel);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.45rem;
+    color: var(--cyan); /* set by JS per depth */
+  }
+
+  .depth-info-name {
+    font-family: var(--font-pixel);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+
+  .depth-info-rules {
+    padding: 1.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Rules content is injected via innerHTML — must use :global() anchored to
+     the static .depth-info-rules parent so Astro's scope hash still gates it */
+  .depth-info-rules :global(.depth-rules-section-label) {
+    font-family: var(--font-pixel);
+    font-size: 0.52rem;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .depth-info-rules :global(.depth-rule-row) {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.8rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    align-items: start;
+  }
+
+  .depth-info-rules :global(.depth-rule-key) {
+    font-family: var(--font-pixel);
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+    padding-top: 0.2rem;
+  }
+
+  .depth-info-rules :global(.depth-rule-val) {
+    font-family: var(--font-terminal);
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
+  .depth-info-scene {
+    padding: 1.4rem;
+  }
+
+  .depth-scene-section-label {
+    font-family: var(--font-pixel);
+    font-size: 0.52rem;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    margin-bottom: 1rem;
+  }
+
+  .depth-scene-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.9rem;
+  }
+
+  #depthSceneCanvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    display: block;
+  }
+
+  .depth-scene-caption {
+    font-family: var(--font-terminal);
+    font-size: 1.35rem;
+    color: var(--text-muted);
+    text-align: center;
+    min-height: 2.2em;
+    margin: 0 0 1.2rem;
+    line-height: 1.4;
+  }
+
+  .depth-scene-controls {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Scene control buttons reuse hud-btn but with depth color override */
+  .depth-scene-ctrl {
+    font-size: 0.62rem;
+    padding: 0.6rem 1.1rem;
+  }
+
+  /* Move counter pill — sits below the mini canvas */
+  .depth-scene-move-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .depth-scene-move-pip {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.08);
+    transition: background 0.12s, border-color 0.12s;
+
+    &.shark-pip {
+      border-color: #7aaab8;
+      &.filled { background: #7aaab8; }
+    }
+    &.enemy-pip {
+      border-color: #162d40;
+      &.filled { background: #162d40; }
+    }
+  }
+
+  .depth-scene-move-label {
+    font-family: var(--font-pixel);
+    font-size: 0.46rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
   }
 
   /* ── Canvas ── */
@@ -825,6 +1036,123 @@ const fullWidthBody = true;
     box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
   }
 
+  /* ── Leaderboard Tab Bar ── */
+  .lb-tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.2rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .lb-tab {
+    font-family: var(--font-pixel);
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
+    padding: 0.5rem 0.85rem;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    min-height: 36px;
+    transition: background 0.08s, color 0.08s, border-color 0.08s;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: var(--text-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    &[aria-selected="true"],
+    &.active {
+      background: var(--cyan);
+      border-color: var(--cyan);
+      color: var(--ocean-abyss);
+    }
+
+    &.lb-tab-disabled,
+    &:disabled {
+      opacity: 0.32;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+
+  /* Shark Score [?] inline help button */
+  .lb-shark-help {
+    background: none;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    font-family: var(--font-pixel);
+    font-size: 0.42rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-left: 0.45rem;
+    vertical-align: middle;
+    touch-action: manipulation;
+    transition: color 0.08s, border-color 0.08s;
+    min-height: 0;
+    &:hover { color: var(--gold); border-color: var(--gold); }
+    &:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  }
+
+  /* Shark Score formula popup — gold border override */
+  .shark-score-panel {
+    border-color: var(--gold) !important;
+  }
+
+  .shark-score-rules {
+    padding: 1.2rem 1.4rem 1.6rem;
+  }
+
+  .shark-score-rules :global(.depth-rules-section-label) {
+    font-family: var(--font-pixel);
+    font-size: 0.52rem;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .shark-score-rules :global(.depth-rule-row) {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.8rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    align-items: start;
+  }
+
+  .shark-score-rules :global(.depth-rule-key) {
+    font-family: var(--font-pixel);
+    font-size: 0.52rem;
+    letter-spacing: 0.05em;
+    padding-top: 0.2rem;
+    color: var(--gold);
+  }
+
+  .shark-score-rules :global(.depth-rule-val) {
+    font-family: var(--font-terminal);
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
   .medal-gold {
     background: linear-gradient(145deg, #f7dc6f, #d4a017);
     color: #5c4300;
@@ -1065,7 +1393,7 @@ const fullWidthBody = true;
       <div class="game-depth-wrapper depth-1" id="gameDepthWrapper">
         <!-- HUDView.swift -->
         <div class="ios-hud">
-          <button class="hud-menu-btn" id="hudMenuBtn">MENU</button>
+          <button class="hud-btn" id="hudMenuBtn">MENU</button>
           <div class="hud-score-group">
             <div class="hud-score-item">
               <span class="hud-score-label">SCORE</span>
@@ -1076,7 +1404,10 @@ const fullWidthBody = true;
               <span class="hud-score-value" id="hudBest">0</span>
             </div>
           </div>
-          <div class="hud-depth-badge" id="hudDepthBadge">DEPTH 1</div>
+          <button class="hud-btn hud-depth-btn" id="hudDepthBtn">
+            <span id="hudDepthLabel">DEPTH 1</span>
+            <span class="hud-info-icon">[?]</span>
+          </button>
         </div>
 
         <!-- Canvas area -->
@@ -1152,12 +1483,20 @@ const fullWidthBody = true;
         <button class="pixel-btn pixel-btn-muted" id="lbBackBtn">BACK</button>
         <div>
           <h2 class="lb-title">LEADERBOARD</h2>
-          <span class="lb-map-label" id="lbMapLabel">25×25</span>
+          <span class="lb-map-label" id="lbMapLabel">SHARK THIEF</span>
         </div>
+      </div>
+      <!-- Tab bar -->
+      <div class="lb-tab-bar" role="tablist" aria-label="Leaderboard categories">
+        <button class="lb-tab active" role="tab" aria-selected="true"  data-category="high_score">HIGH SCORE</button>
+        <button class="lb-tab"        role="tab" aria-selected="false" data-category="d1_time">D1 TIME</button>
+        <button class="lb-tab"        role="tab" aria-selected="false" data-category="d2_time">D2 TIME</button>
+        <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d3_time" disabled>D3 TIME</button>
+        <button class="lb-tab"        role="tab" aria-selected="false" data-category="shark_score">SHARK SCORE</button>
       </div>
       <div class="lb-table-wrap">
         <table class="lb-table">
-          <thead>
+          <thead id="lbTableHead">
             <tr>
               <th>#</th>
               <th>NAME</th>
@@ -1223,6 +1562,83 @@ const fullWidthBody = true;
         <div class="dev-panel-btns" id="devJumpBtns"></div>
       </div>
       <p class="settings-version">SHARK THIEF iOS v0.1.0 — WEB PROTOTYPE</p>
+    </div>
+
+    <!-- ── Depth Info Overlay ── -->
+    <div class="depth-info-overlay" id="depthInfoOverlay">
+      <div class="depth-info-panel" id="depthInfoPanel">
+        <div class="depth-info-header">
+          <div>
+            <div class="depth-info-badge" id="depthInfoBadge">DEPTH 1</div>
+            <div class="depth-info-name" id="depthInfoName">SURFACE REEF</div>
+          </div>
+          <button class="hud-btn" id="depthInfoClose">✕ BACK</button>
+        </div>
+        <div class="depth-info-rules" id="depthInfoRules">
+          <!-- populated by JS -->
+        </div>
+        <div class="depth-info-scene">
+          <div class="depth-scene-section-label">► HOW IT WORKS</div>
+          <div class="depth-scene-canvas-wrap">
+            <canvas id="depthSceneCanvas" width="200" height="200"></canvas>
+          </div>
+          <div class="depth-scene-move-row" id="depthMoveRow">
+            <span class="depth-scene-move-label">YOU</span>
+            <div class="depth-scene-move-pip shark-pip" id="movePip1"></div>
+            <div class="depth-scene-move-pip shark-pip" id="movePip2"></div>
+            <span class="depth-scene-move-label">ENEMY</span>
+            <div class="depth-scene-move-pip enemy-pip" id="enemyPip1"></div>
+          </div>
+          <p class="depth-scene-caption" id="depthSceneCaption">—</p>
+          <div class="depth-scene-controls">
+            <button class="hud-btn depth-scene-ctrl" id="depthScenePlay">▶ PLAY</button>
+            <button class="hud-btn depth-scene-ctrl" id="depthScenePause" style="display:none">⏸ PAUSE</button>
+            <button class="hud-btn depth-scene-ctrl" id="depthSceneReset" style="display:none">↺ RESET</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Shark Score Formula Popup ── -->
+    <div class="depth-info-overlay" id="sharkScorePopup">
+      <div class="depth-info-panel shark-score-panel">
+        <div class="depth-info-header">
+          <div>
+            <div class="depth-info-badge" style="color:var(--gold)">SCORING FORMULA</div>
+            <div class="depth-info-name">SHARK SCORE</div>
+          </div>
+          <button class="hud-btn" id="sharkScorePopupClose">✕ BACK</button>
+        </div>
+        <div class="depth-info-rules shark-score-rules">
+          <div class="depth-rules-section-label">► THE FORMULA</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">FORMULA</span>
+            <span class="depth-rule-val">SHARK SCORE = SCORE² ÷ TIME (seconds)</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">EXAMPLE</span>
+            <span class="depth-rule-val">Score 250 in 90s → 250² ÷ 90 = 694</span>
+          </div>
+          <div class="depth-rules-section-label" style="margin-top:1.4rem">► DESIGN INTENT</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">HIGH SCORE</span>
+            <span class="depth-rule-val">Matters most — doubling your score quadruples Shark Score.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">FAST TIME</span>
+            <span class="depth-rule-val">Acts as a multiplier — cutting time in half doubles Shark Score.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">BALANCE</span>
+            <span class="depth-rule-val">A high score at average speed still ranks well. Neither extreme dominates.</span>
+          </div>
+          <div class="depth-rules-section-label" style="margin-top:1.4rem">► NOTE</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">TUNABLE</span>
+            <span class="depth-rule-val">The exponent (currently 2) may be adjusted as the game grows to keep the leaderboard meaningful across all score ranges.</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </BaseLayout>
@@ -1298,6 +1714,13 @@ const fullWidthBody = true;
 
   let currentDepth = 1;
 
+  // ===== TimingService =====  →  TimingService.swift
+
+  let gameStartTime = 0;        // performance.now() when current run started
+  let totalTimeMs = 0;          // accumulated ms when game ends
+  let levelStartTime = 0;       // performance.now() when current depth started
+  let levelTimes: number[] = []; // ms spent in each depth [depth1ms, depth2ms, ...]
+
   interface DyingEnemy {
     x: number;
     y: number;
@@ -1366,8 +1789,10 @@ const fullWidthBody = true;
   function checkDepthTransition() {
     const newDepth = getDepthForScore(score);
     if (newDepth <= currentDepth) return;
+    levelTimes.push(performance.now() - levelStartTime);
+    levelStartTime = performance.now();
     currentDepth = newDepth;
-    hudDepthBadge.textContent = `DEPTH ${currentDepth}`;
+    updateHudDepth(currentDepth);
 
     const flash = document.getElementById("depthFlash")!;
     flash.textContent = `DEPTH ${currentDepth}`;
@@ -1594,9 +2019,13 @@ const fullWidthBody = true;
     moveCount = 0;
     gameOver = false;
     currentDepth = 1;
+    gameStartTime = performance.now();
+    levelStartTime = performance.now();
+    levelTimes = [];
+    totalTimeMs = 0;
 
     hudScore.textContent = "0";
-    hudDepthBadge.textContent = "DEPTH 1";
+    updateHudDepth(1);
     gameOverOverlay.classList.remove("visible");
 
     const wrapper = document.getElementById("gameDepthWrapper")!;
@@ -1791,6 +2220,8 @@ const fullWidthBody = true;
 
   function endGame() {
     gameOver = true;
+    totalTimeMs = performance.now() - gameStartTime;
+    levelTimes.push(performance.now() - levelStartTime);
     clearSave(); // player died — no restore
     sharkVisualX = shark.x;
     sharkVisualY = shark.y;
@@ -1801,6 +2232,12 @@ const fullWidthBody = true;
       highScore = score;
       saveHighScore(highScore);
       hudBest.textContent = String(highScore);
+    }
+
+    // UserDefaultsService — persist best Shark Score
+    const sharkScore = calcSharkScore(score, totalTimeMs);
+    if (sharkScore > getSharkBest()) {
+      saveSharkBest(sharkScore);
     }
 
     finalScoreEl.textContent = String(score);
@@ -2387,19 +2824,45 @@ const fullWidthBody = true;
 
   const hudScore = document.getElementById("hudScore")!;
   const hudBest = document.getElementById("hudBest")!;
-  const hudDepthBadge = document.getElementById("hudDepthBadge")!;
+  const hudDepthBtn = document.getElementById("hudDepthBtn")!;
+  const hudDepthLabel = document.getElementById("hudDepthLabel")!;
+
+  const DEPTH_META: Record<number, { color: string; glow: string; name: string }> = {
+    1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)", name: "SURFACE REEF" },
+    2: { color: "#daa070", glow: "rgba(218,160,112,0.5)", name: "REEF" },
+    3: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)", name: "ABYSS" },
+  };
+
+  function updateHudDepth(depth: number) {
+    hudDepthLabel.textContent = `DEPTH ${depth}`;
+    hudDepthBtn.className = `hud-btn hud-depth-btn${depth > 1 ? ` depth-${depth}` : ""}`;
+  }
 
   // ===== Services =====  →  UserDefaultsService.swift + GameCenterService.swift
 
   const HS_KEY = "sharkIosHighScore";
   const SAVE_KEY = "sharkIosSave";
   const MAX_DEPTH_KEY = "sharkMaxDepth";
+  const SHARK_BEST_KEY = "sharkTotalBest";
 
   function getHighScore(): number {
     return parseInt(localStorage.getItem(HS_KEY) || "0", 10);
   }
   function saveHighScore(v: number) {
     localStorage.setItem(HS_KEY, String(v));
+  }
+
+  function getSharkBest(): number {
+    return parseInt(localStorage.getItem(SHARK_BEST_KEY) || "0", 10);
+  }
+  function saveSharkBest(v: number) {
+    localStorage.setItem(SHARK_BEST_KEY, String(v));
+  }
+
+  function calcSharkScore(s: number, totalMs: number): number {
+    if (totalMs <= 0) return 0;
+    const secs = totalMs / 1000;
+    return Math.floor((s * s) / secs);
   }
 
   // ===== SaveManager =====  →  SaveManager.swift
@@ -2429,6 +2892,9 @@ const fullWidthBody = true;
       enemies,
       bigEnemies,
       leviathan,
+      runElapsedMs: performance.now() - gameStartTime,
+      levelElapsedMs: performance.now() - levelStartTime,
+      levelTimes,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
   }
@@ -2475,11 +2941,17 @@ const fullWidthBody = true;
     leviathan = save.leviathan || null;
     gameOver = false;
 
+    // Restore timing so the live clock continues from saved elapsed time
+    gameStartTime = performance.now() - (save.runElapsedMs || 0);
+    levelStartTime = performance.now() - (save.levelElapsedMs || 0);
+    levelTimes = save.levelTimes || [];
+    totalTimeMs = 0;
+
     // Update HUD
     hudScore.textContent = String(score);
     highScore = getHighScore();
     hudBest.textContent = String(highScore);
-    hudDepthBadge.textContent = `DEPTH ${currentDepth}`;
+    updateHudDepth(currentDepth);
 
     // Depth wrapper
     const wrapper = document.getElementById("gameDepthWrapper")!;
@@ -2508,7 +2980,7 @@ const fullWidthBody = true;
     if (targetDepth >= 2) {
       currentDepth = 2;
       // Score stays 0 — high scores require playing through all levels
-      hudDepthBadge.textContent = "DEPTH 2";
+      updateHudDepth(2);
       const wrapper = document.getElementById("gameDepthWrapper")!;
       wrapper.className = "game-depth-wrapper depth-2";
       // No ammonite shells at depth 2+
@@ -2528,7 +3000,7 @@ const fullWidthBody = true;
     }
     if (targetDepth >= 3) {
       currentDepth = 3;
-      hudDepthBadge.textContent = "DEPTH 3";
+      updateHudDepth(3);
       const wrapper = document.getElementById("gameDepthWrapper")!;
       wrapper.className = "game-depth-wrapper depth-3";
       spawnLeviathan();
@@ -2580,71 +3052,132 @@ const fullWidthBody = true;
   // ── Leaderboard (GameCenterService.swift) ──
 
   const MOCK_SCORES = [
-    { name: "SharkMaster", score: 18, date: "2026-03-14T09:23:00Z" },
-    { name: "FinFrenzy", score: 14, date: "2026-03-13T22:15:00Z" },
-    { name: "OceanKing", score: 11, date: "2026-03-14T14:02:00Z" },
-    { name: "DeepDiver", score: 9, date: "2026-03-12T18:45:00Z" },
-    { name: "WaveCatcher", score: 7, date: "2026-03-14T11:30:00Z" },
-    { name: "CoralQueen", score: 5, date: "2026-03-11T20:10:00Z" },
-    { name: "TideRunner", score: 4, date: "2026-03-13T16:55:00Z" },
-    { name: "ReefRaider", score: 3, date: "2026-03-10T08:40:00Z" },
+    { name: "SharkMaster",  score: 285, date: "2026-03-14T09:23:00Z", totalTimeMs: 78400,  levelTimes: [42100, 36300],        sharkScore: 1036 },
+    { name: "FinFrenzy",    score: 240, date: "2026-03-13T22:15:00Z", totalTimeMs: 91200,  levelTimes: [53000, 38200],        sharkScore:  631 },
+    { name: "OceanKing",    score: 210, date: "2026-03-14T14:02:00Z", totalTimeMs: 67500,  levelTimes: [67500],               sharkScore:  653 },
+    { name: "DeepDiver",    score: 190, date: "2026-03-12T18:45:00Z", totalTimeMs: 84300,  levelTimes: [48200, 36100],        sharkScore:  428 },
+    { name: "WaveCatcher",  score: 160, date: "2026-03-14T11:30:00Z", totalTimeMs: 55100,  levelTimes: [55100],               sharkScore:  465 },
+    { name: "CoralQueen",   score: 130, date: "2026-03-11T20:10:00Z", totalTimeMs: 48700,  levelTimes: [48700],               sharkScore:  347 },
+    { name: "TideRunner",   score: 105, date: "2026-03-13T16:55:00Z", totalTimeMs: 39200,  levelTimes: [39200],               sharkScore:  281 },
+    { name: "ReefRaider",   score:  80, date: "2026-03-10T08:40:00Z", totalTimeMs: 31500,  levelTimes: [31500],               sharkScore:  203 },
   ];
 
-  async function fetchLeaderboard() {
+  type LbEntry = {
+    name: string;
+    score: number;
+    date?: string;
+    totalTimeMs?: number;
+    levelTimes?: number[];
+    sharkScore?: number;
+  };
+
+  let activeLeaderboardTab = "high_score";
+
+  async function fetchLeaderboard(category: string = activeLeaderboardTab) {
+    activeLeaderboardTab = category;
+    updateTabUI(category);
     try {
-      const res = await fetch(`/api/scores?map=reef25`);
+      const res = await fetch(`/api/scores?map=shark-thief-v2&category=${category}`);
       if (!res.ok) throw new Error("failed");
-      const scores = await res.json();
-      renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES);
+      const scores: LbEntry[] = await res.json();
+      renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES, category);
     } catch {
-      renderLeaderboard(MOCK_SCORES);
+      renderLeaderboard(MOCK_SCORES, category);
     }
+  }
+
+  function updateTabUI(category: string) {
+    document.querySelectorAll<HTMLButtonElement>(".lb-tab").forEach(btn => {
+      const active = btn.dataset.category === category;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
   }
 
   function formatDate(iso: string): string {
     try {
       const d = new Date(iso);
-      return d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+      const month = d.toLocaleString("en-US", { month: "short" });
+      const day = d.getDate();
+      const year = String(d.getFullYear()).slice(2);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      return `${month} ${day} '${year} ${hh}:${mm}`;
     } catch {
       return "";
     }
   }
 
+  function formatMs(ms: number): string {
+    if (!ms) return "—";
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    const centis = Math.floor((ms % 1000) / 10);
+    return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}.${String(centis).padStart(2, "0")}`;
+  }
+
   let lastSubmittedDate: string | null = null;
 
-  function renderLeaderboard(
-    scores: { name: string; score: number; date?: string }[],
-  ) {
+  function renderLeaderboard(scores: LbEntry[], category: string = "high_score") {
+    const thead = document.getElementById("lbTableHead")!;
     const tbody = document.getElementById("leaderboardBody")!;
+
+    const isTime  = category === "d1_time" || category === "d2_time" || category === "d3_time";
+    const isShark = category === "shark_score";
+    const depthIdx = category === "d1_time" ? 0 : category === "d2_time" ? 1 : 2;
+
+    // Update column headers
+    if (isTime) {
+      thead.innerHTML = `<tr><th>#</th><th>NAME</th><th>TIME</th><th>DATE</th></tr>`;
+    } else if (isShark) {
+      thead.innerHTML = `<tr><th>#</th><th>NAME</th><th>SHARK SCORE <button class="lb-shark-help" id="lbSharkHelpBtn" aria-label="Shark Score formula info">[?]</button></th><th>DATE</th></tr>`;
+      document.getElementById("lbSharkHelpBtn")?.addEventListener("click", () => {
+        document.getElementById("sharkScorePopup")!.classList.add("visible");
+      });
+    } else {
+      thead.innerHTML = `<tr><th>#</th><th>NAME</th><th>SCORE</th><th>DATE</th></tr>`;
+    }
+
     if (!scores.length) {
-      tbody.innerHTML =
-        '<tr><td colspan="4" class="lb-empty">NO SCORES YET</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="lb-empty">NO SCORES YET</td></tr>';
       return;
     }
+
     const esc = (s: string) =>
-      s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     const medalCls = ["medal-gold", "medal-silver", "medal-bronze"];
-    tbody.innerHTML = scores
-      .map((s, i) => {
-        const hi =
-          lastSubmittedDate && s.date === lastSubmittedDate
-            ? ' class="highlight"'
-            : "";
-        const rank =
-          i < 3
-            ? `<span class="medal ${medalCls[i]}">${i + 1}</span>`
-            : `${i + 1}`;
-        return `<tr${hi}><td class="lb-rank">${rank}</td><td>${esc(s.name)}</td><td class="lb-score">${s.score}</td><td class="lb-date">${s.date ? formatDate(s.date) : ""}</td></tr>`;
-      })
-      .join("");
+
+    // Sort per category
+    let sorted = [...scores];
+    if (isTime) {
+      sorted = sorted.filter(s => s.levelTimes && s.levelTimes[depthIdx]);
+      sorted.sort((a, b) => (a.levelTimes![depthIdx] ?? Infinity) - (b.levelTimes![depthIdx] ?? Infinity));
+    } else if (isShark) {
+      sorted.sort((a, b) => (b.sharkScore ?? 0) - (a.sharkScore ?? 0));
+    } else {
+      sorted.sort((a, b) => b.score - a.score);
+    }
+
+    if (!sorted.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="lb-empty">NO DATA YET</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = sorted.map((s, i) => {
+      const hi = lastSubmittedDate && s.date === lastSubmittedDate ? ' class="highlight"' : "";
+      const rank = i < 3 ? `<span class="medal ${medalCls[i]}">${i + 1}</span>` : `${i + 1}`;
+      const dateStr = s.date ? formatDate(s.date) : "";
+      let valueCell: string;
+      if (isTime) {
+        valueCell = `<td class="lb-score">${formatMs(s.levelTimes?.[depthIdx] ?? 0)}</td>`;
+      } else if (isShark) {
+        valueCell = `<td class="lb-score">${s.sharkScore ?? "—"}</td>`;
+      } else {
+        valueCell = `<td class="lb-score">${s.score}</td>`;
+      }
+      return `<tr${hi}><td class="lb-rank">${rank}</td><td>${esc(s.name)}</td>${valueCell}<td class="lb-date">${dateStr}</td></tr>`;
+    }).join("");
   }
 
   // DOM refs for game-over UI
@@ -2743,10 +3276,11 @@ const fullWidthBody = true;
     localStorage.setItem("sharkPlayerName", name);
 
     try {
-      const res = await fetch(`/api/scores?map=reef25`, {
+      const sharkScore = calcSharkScore(score, totalTimeMs);
+      const res = await fetch(`/api/scores?map=shark-thief-v2`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, score }),
+        body: JSON.stringify({ name, score, totalTimeMs, levelTimes, sharkScore }),
       });
       if (!res.ok) {
         submitStatus.textContent = "FAILED — TRY AGAIN";
@@ -2758,7 +3292,7 @@ const fullWidthBody = true;
         (s: any) => s.name === name && s.score === score && s.date,
       );
       lastSubmittedDate = submitted?.date || null;
-      renderLeaderboard(scores);
+      renderLeaderboard(scores, activeLeaderboardTab);
       lastSubmittedDate = null;
       submitStatus.textContent = "SCORE SUBMITTED!";
       nameInputRow.classList.remove("visible");
@@ -2866,6 +3400,27 @@ const fullWidthBody = true;
     .getElementById("lbBackBtn")!
     .addEventListener("click", () => showScreen("main-menu"));
 
+  // Leaderboard tab switching
+  document.querySelectorAll<HTMLButtonElement>(".lb-tab:not(:disabled)").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const cat = btn.dataset.category;
+      if (cat && cat !== activeLeaderboardTab) fetchLeaderboard(cat);
+    });
+    btn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); btn.click(); }
+    });
+  });
+
+  // Shark Score formula popup
+  document.getElementById("sharkScorePopupClose")!.addEventListener("click", () => {
+    document.getElementById("sharkScorePopup")!.classList.remove("visible");
+  });
+  document.getElementById("sharkScorePopup")!.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) {
+      (e.currentTarget as HTMLElement).classList.remove("visible");
+    }
+  });
+
   // HUD menu button — back to main menu during gameplay
   document.getElementById("hudMenuBtn")!.addEventListener("click", () => {
     if (!gameOver) saveGame(); // persist so player can CONTINUE
@@ -2920,6 +3475,486 @@ const fullWidthBody = true;
     if (shimmerMode && !shimmerRafId && !gameOver) {
       shimmerRafId = requestAnimationFrame(tickShimmer);
     }
+  });
+
+  // ===== Depth Info System =====
+
+  // ── Mini canvas constants ────────────────────────────────────────
+  const MINI_CS = 40; // cell size: 5×5 grid = 200×200 canvas
+  const MINI_N = 5;
+
+  // Pre-seeded tile color grids so the board looks like the real game every render
+  // Uses the same TILE_COLORS palette, deterministic so it doesn't flicker
+  const MINI_TILE_COLORS_D1 = (() => {
+    const seed = [0,3,1,4,2, 2,0,4,1,3, 4,2,0,3,1, 1,4,2,0,3, 3,1,3,2,0];
+    return seed.map(i => TILE_COLORS[i % TILE_COLORS.length]);
+  })();
+  const MINI_TILE_COLORS_D2 = (() => {
+    const seed = [1,4,0,3,2, 3,0,2,4,1, 0,3,4,1,2, 2,1,3,0,4, 4,2,1,3,0];
+    return seed.map(i => TILE_COLORS[i % TILE_COLORS.length]);
+  })();
+
+  function eio(t: number) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  // ── Mini draw functions — exact same visuals as the real game ────
+
+  function miniBackground(ctx: CanvasRenderingContext2D, depth: number) {
+    // ocean floor between tiles
+    ctx.fillStyle = "#0f5262";
+    ctx.fillRect(0, 0, 200, 200);
+    const tileGrid = depth === 2 ? MINI_TILE_COLORS_D2 : MINI_TILE_COLORS_D1;
+    for (let r = 0; r < MINI_N; r++) {
+      for (let c = 0; c < MINI_N; c++) {
+        ctx.fillStyle = tileGrid[r * MINI_N + c];
+        ctx.fillRect(c*MINI_CS, r*MINI_CS, MINI_CS, MINI_CS);
+      }
+    }
+  }
+
+  function miniDrawCoral(ctx: CanvasRenderingContext2D, col: number, row: number) {
+    // Identical to real game coral barrier render
+    const cx = col*MINI_CS, cy = row*MINI_CS;
+    ctx.fillStyle = "#7a4a30";
+    ctx.fillRect(cx, cy, MINI_CS, MINI_CS);
+    ctx.fillStyle = "#c8906a";
+    ctx.fillRect(cx+1, cy+1, MINI_CS-2, MINI_CS-2);
+    ctx.fillStyle = "#e0b898";
+    const dot = Math.max(2, Math.floor(MINI_CS * 0.15));
+    ctx.fillRect(cx+2, cy+2, dot, dot);
+    ctx.fillRect(cx+MINI_CS-dot-2, cy+2, dot, dot);
+  }
+
+  function miniDrawCoin(ctx: CanvasRenderingContext2D, col: number, row: number) {
+    // Gold square pickup — same as real game
+    const pad = MINI_CS * 0.2;
+    const px = col*MINI_CS + pad, py = row*MINI_CS + pad, ps = MINI_CS - pad*2;
+    ctx.fillStyle = "#7a5500";
+    ctx.fillRect(px-1, py-1, ps+2, ps+2);
+    ctx.fillStyle = "#ffd166";
+    ctx.fillRect(px, py, ps, ps);
+  }
+
+  function miniDrawAmmonite(ctx: CanvasRenderingContext2D, col: number, row: number, alpha: number) {
+    // Calls real drawShellPickup with alpha
+    const pad = MINI_CS * 0.2;
+    const px = col*MINI_CS + pad, py = row*MINI_CS + pad, ps = MINI_CS - pad*2;
+    ctx.save(); ctx.globalAlpha = alpha;
+    drawShellPickup(ctx, px, py, ps);
+    ctx.restore();
+  }
+
+  function miniDrawCoralShell(ctx: CanvasRenderingContext2D, col: number, row: number, alpha: number) {
+    // Calls real drawCoralShell with alpha
+    const pad = MINI_CS * 0.2;
+    const px = col*MINI_CS + pad, py = row*MINI_CS + pad, ps = MINI_CS - pad*2;
+    ctx.save(); ctx.globalAlpha = alpha;
+    drawCoralShell(ctx, px, py, ps);
+    ctx.restore();
+  }
+
+  function miniDrawEnemy(ctx: CanvasRenderingContext2D, vx: number, vy: number, alpha: number) {
+    // Real game enemy rendering — 1×1 dark navy
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#0a1824";
+    ctx.fillRect(vx*MINI_CS - 1, vy*MINI_CS - 1, MINI_CS + 2, MINI_CS + 2);
+    ctx.fillStyle = "#162d40";
+    ctx.fillRect(vx*MINI_CS, vy*MINI_CS, MINI_CS, MINI_CS);
+    ctx.restore();
+  }
+
+  function miniDrawBigEnemy(ctx: CanvasRenderingContext2D, col: number, row: number, alpha: number) {
+    // Real game big enemy — 2×2 deep purple
+    const bx = col*MINI_CS, by = row*MINI_CS, bw = MINI_CS*2;
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#120a1e";
+    ctx.fillRect(bx-1, by-1, bw+2, bw+2);
+    ctx.fillStyle = "#2d1a4a";
+    ctx.fillRect(bx, by, bw, bw);
+    ctx.restore();
+  }
+
+  function miniDrawShark(ctx: CanvasRenderingContext2D, vx: number, vy: number, dir: string) {
+    // Calls real drawSharkOnCtx at mini cell size
+    drawSharkOnCtx(ctx, vx, vy, MINI_CS, dir);
+  }
+
+  function miniDrawLabel(ctx: CanvasRenderingContext2D, col: number, row: number, text: string, alpha: number) {
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.font = "bold 10px monospace";
+    ctx.fillStyle = "#ffd166";
+    ctx.textAlign = "center";
+    ctx.fillText(text, (col+0.5)*MINI_CS, row*MINI_CS - 3);
+    ctx.restore();
+  }
+
+  // ── Move pip updater ─────────────────────────────────────────────
+  // Shows: [YOU ●●] [ENEMY ●] to explain the 2:1 move ratio
+  function updateMovePips(sharkMovesDone: number) {
+    // sharkMovesDone: 0=none, 1=first, 2=second(+enemy moved)
+    const pip1 = document.getElementById("movePip1");
+    const pip2 = document.getElementById("movePip2");
+    const epip1 = document.getElementById("enemyPip1");
+    if (!pip1 || !pip2 || !epip1) return;
+
+    const turn = sharkMovesDone % 2; // 0 or 1 within the 2-move cycle
+    const cycle = Math.floor(sharkMovesDone / 2); // completed cycles
+
+    pip1.classList.toggle("filled", sharkMovesDone >= 1);
+    pip2.classList.toggle("filled", sharkMovesDone >= 2);
+    // Enemy pip lights when enemy has just moved (every 2nd shark move)
+    epip1.classList.toggle("filled", cycle >= 1 || (sharkMovesDone > 0 && turn === 0));
+  }
+
+  // ── Animation state ──────────────────────────────────────────────
+  let miniRaf: number | null = null;
+  let miniElapsed = 0;
+  let miniLastTick = 0;
+  let miniPlaying = false;
+  let miniDone = false;
+  let miniDepth = 1;
+  const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 999 };
+
+  function miniTick(now: number) {
+    const delta = now - miniLastTick;
+    miniLastTick = now;
+    miniElapsed += delta;
+    renderMiniScene(miniDepth, miniElapsed);
+    if (miniElapsed >= MINI_TOTAL[miniDepth]) {
+      miniDone = true; miniPlaying = false; miniRaf = null;
+      syncMiniControls(); return;
+    }
+    miniRaf = requestAnimationFrame(miniTick);
+  }
+
+  function renderMiniScene(depth: number, elapsed: number) {
+    const canvas = document.getElementById("depthSceneCanvas") as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    ctx.clearRect(0, 0, 200, 200);
+    if (depth === 1) renderD1(ctx, elapsed);
+    else if (depth === 2) renderD2(ctx, elapsed);
+    else renderD3(ctx, elapsed);
+  }
+
+  function setMiniCaption(text: string) {
+    const el = document.getElementById("depthSceneCaption");
+    if (el) el.textContent = text;
+  }
+
+  // ── Depth 1 scene ────────────────────────────────────────────────
+  // Board: shark (0,2)→right, ammonite (3,2), enemy (4,0)
+  // Move 1 (500ms): shark→(1,2), enemy waits
+  // Move 2 (900ms): shark→(2,2), ENEMY STEPS (4,0)→(3,1)
+  // Move 3 (1300ms): shark→(3,2), collects ammonite, +10 flash
+  // Big enemy spawns (1700ms)
+  // Move 4 (2400ms): shark→(3,1) up, ENEMY STEPS (3,1)→(2,2)
+  // Hold (3000ms+)
+  function renderD1(ctx: CanvasRenderingContext2D, elapsed: number) {
+    const M1 = 500, M1E = 850;    // move 1: shark slides
+    const M2 = 900, M2E = 1250;   // move 2: shark slides + enemy steps
+    const M3 = 1300, M3E = 1650;  // move 3: collect ammonite
+    const FLASH = 1900;           // +10 pts visible
+    const BSPAWN = 2100, BSPAWN_E = 2500; // big enemy fades in
+    const M4 = 2600, M4E = 2950;  // move 4: shark up + enemy steps
+    const DONE = MINI_TOTAL[1];
+    const e = Math.min(elapsed, DONE);
+
+    // Shark visual position
+    let svx = 0, svy = 2, sdir = "right";
+    if (e < M1) { svx = 0; }
+    else if (e < M1E) { svx = eio((e-M1)/(M1E-M1)); }
+    else if (e < M2) { svx = 1; }
+    else if (e < M2E) { svx = 1 + eio((e-M2)/(M2E-M2)); }
+    else if (e < M3) { svx = 2; }
+    else if (e < M3E) { svx = 2 + eio((e-M3)/(M3E-M3)); }
+    else if (e < M4) { svx = 3; }
+    else if (e < M4E) { svy = 2 - eio((e-M4)/(M4E-M4)); svx = 3; sdir = "up"; }
+    else { svx = 3; svy = 1; sdir = "up"; }
+
+    // Enemy visual position (starts (4,4), moves on moves 2 and 4)
+    // Move 2: shark at (2,2) → diffX=-2,diffY=-2 → horizontal → (4,4)→(3,4)
+    // Move 4: shark at (3,1) → diffX=0,diffY=-3  → vertical   → (3,4)→(3,3)
+    let evx = 4, evy = 4;
+    if (e >= M2E) {
+      if (e < M2E + 350) {
+        const t = (e - M2E) / 350;
+        evx = 4 - eio(t); evy = 4;          // (4,4)→(3,4) horizontal
+      } else { evx = 3; evy = 4; }
+    }
+    if (e >= M4E) {
+      const t2start = M4E, t2end = M4E + 350;
+      if (e < t2end) {
+        const t = (e - t2start) / 350;
+        evx = 3; evy = 4 - eio(t);          // (3,4)→(3,3) vertical
+      } else { evx = 3; evy = 3; }
+    }
+
+    const ammoniteAlpha = e >= M3 ? Math.max(0, 1 - eio(Math.min(1,(e-M3)/(M3E-M3)))*1.8) : 1;
+    const plusAlpha = e >= M3E && e < FLASH ? Math.sin(((e-M3E)/(FLASH-M3E))*Math.PI) : 0;
+    const bigEAlpha = e >= BSPAWN ? eio(Math.min(1,(e-BSPAWN)/(BSPAWN_E-BSPAWN))) : 0;
+
+    // pip state: how many moves the shark has done so far
+    const sharkMovesDone = e < M1 ? 0 : e < M2 ? 1 : e < M3 ? 2 : e < M4 ? 3 : 4;
+    updateMovePips(sharkMovesDone);
+
+    miniBackground(ctx, 1);
+    [[0,1],[2,3],[4,3],[3,4]].forEach(([c,r]) => miniDrawCoin(ctx, c, r));
+    if (bigEAlpha > 0) miniDrawBigEnemy(ctx, 0, 0, bigEAlpha);
+    if (ammoniteAlpha > 0) miniDrawAmmonite(ctx, 3, 2, ammoniteAlpha);
+    if (plusAlpha > 0) miniDrawLabel(ctx, 3, 2, "+10 PTS", plusAlpha);
+    miniDrawEnemy(ctx, evx, evy, 1);
+    miniDrawShark(ctx, svx, svy, sdir);
+
+    if (e < M1) setMiniCaption("FIND THE PURPLE AMMONITE");
+    else if (e < M1E) setMiniCaption("MOVE 1 — ENEMY WAITS...");
+    else if (e < M2E) setMiniCaption("MOVE 2 — ENEMY ADVANCES!");
+    else if (e < M3E) setMiniCaption("MOVE 3 — COLLECT THE AMMONITE!");
+    else if (e < FLASH) setMiniCaption("+10 PTS — AMMONITE COLLECTED!");
+    else if (e < BSPAWN_E) setMiniCaption("A BIG 2×2 ENEMY SPAWNS!");
+    else if (e < M4E) setMiniCaption("MOVE 4 — ENEMY HUNTS AGAIN!");
+    else setMiniCaption("REACH 100 PTS TO DESCEND");
+  }
+
+  // ── Depth 2 scene ────────────────────────────────────────────────
+  // Board: shark (0,2), coral shell (2,2), enemy (4,0), spawned enemy (4,4)
+  // Move 1 (500ms): shark→(1,2), enemy waits
+  // Move 2: shark tries (2,2), BOUNCES BACK + ENEMY STEPS (4,0)→(3,0) horizontal
+  //   Shell → barrier, +5 flash, new enemy spawns at (4,4)
+  // Move 3: shark→(1,1) up
+  // Move 4: shark→(2,1) right + ENEMY (3,0)→(2,0) horizontal, SPAWNED (4,4)→(4,3) vertical
+  // Hold
+  function renderD2(ctx: CanvasRenderingContext2D, elapsed: number) {
+    const M1 = 500, M1E = 850;        // move 1
+    const BOUNCE_S = 950, BOUNCE_E = 1600; // move 2: shark bounces
+    const TRANSFORM = 1800;           // shell→barrier flash end
+    const SPAWN_E = 2200;             // spawned enemy fades in
+    const M3 = 2300, M3E = 2650;      // move 3 shark up
+    const M4 = 2750, M4E = 3100;      // move 4 shark right + enemy moves
+    const DONE = MINI_TOTAL[2];
+    const e = Math.min(elapsed, DONE);
+
+    // Shark position
+    let svx = 0, svy = 2, sdir = "right";
+    if (e < M1) { svx = 0; }
+    else if (e < M1E) { svx = eio((e-M1)/(M1E-M1)); }
+    else if (e < BOUNCE_S) { svx = 1; }
+    else if (e < BOUNCE_E) {
+      // sin bounce: lunge then rebound
+      const t = (e-BOUNCE_S)/(BOUNCE_E-BOUNCE_S);
+      svx = 1 + Math.sin(t * Math.PI) * 0.42;
+    }
+    else if (e < M3) { svx = 1; }
+    else if (e < M3E) { svy = 2 - eio((e-M3)/(M3E-M3)); svx = 1; sdir = "up"; }
+    else if (e < M4) { svx = 1; svy = 1; sdir = "up"; }
+    else if (e < M4E) { svx = 1 + eio((e-M4)/(M4E-M4)); svy = 1; sdir = "right"; }
+    else { svx = 2; svy = 1; sdir = "right"; }
+
+    // Enemy A: starts (4,0), moves on move 2 and move 4
+    // Move 2: shark at (1,2) → diffX=-3,diffY=2  → horizontal → (4,0)→(3,0)
+    // Move 4: shark at (2,1) → diffX=-1,diffY=1  → horizontal (tie) → (3,0)→(2,0)
+    let evx = 4, evy = 0;
+    if (e >= BOUNCE_E) {
+      const es = BOUNCE_E, ee = BOUNCE_E + 350;
+      if (e < ee) { const t=(e-es)/350; evx=4-eio(t); evy=0; }  // (4,0)→(3,0) horizontal
+      else { evx = 3; evy = 0; }
+    }
+    if (e >= M4E) {
+      const es = M4E, ee = M4E + 350;
+      if (e < ee) { const t=(e-es)/350; evx=3-eio(t); evy=0; }  // (3,0)→(2,0) horizontal
+      else { evx = 2; evy = 0; }
+    }
+
+    // Spawned enemy: fades in after shell interaction, then moves on move 4
+    // Move 4: shark at (2,1) → diffX=-2,diffY=-3 → vertical → (4,4)→(4,3)
+    const spawnedAlpha = e >= TRANSFORM ? eio(Math.min(1,(e-TRANSFORM)/(SPAWN_E-TRANSFORM))) : 0;
+    let sevx = 4, sevy = 4;
+    if (e >= M4E) {
+      const es = M4E, ee = M4E + 350;
+      if (e < ee) { const t=(e-es)/350; sevx=4; sevy=4-eio(t); }  // (4,4)→(4,3) vertical
+      else { sevx = 4; sevy = 3; }
+    }
+
+    // Shell→barrier
+    const shellAlpha = e >= BOUNCE_E ? Math.max(0, 1 - eio(Math.min(1,(e-BOUNCE_E)/200))*2) : 1;
+    const barrierVisible = e >= BOUNCE_E;
+    const barrierFlashAlpha = e >= BOUNCE_E && e < TRANSFORM
+      ? Math.sin(((e-BOUNCE_E)/(TRANSFORM-BOUNCE_E)) * Math.PI * 2) * 0.5
+      : 0;
+    const plusAlpha = e >= BOUNCE_E && e < BOUNCE_E+500
+      ? Math.sin(((e-BOUNCE_E)/500) * Math.PI)
+      : 0;
+
+    const sharkMovesDone = e < M1 ? 0 : e < BOUNCE_S ? 1 : e < M3 ? 2 : e < M4 ? 3 : 4;
+    updateMovePips(sharkMovesDone);
+
+    miniBackground(ctx, 2);
+    // Ambient coral barriers to establish depth-2 feel
+    miniDrawCoral(ctx, 0, 4);
+    miniDrawCoral(ctx, 2, 4);
+    [[1,0],[4,1],[0,3],[3,4]].forEach(([c,r]) => miniDrawCoin(ctx, c, r));
+
+    if (barrierVisible) {
+      miniDrawCoral(ctx, 2, 2);
+      if (barrierFlashAlpha > 0) {
+        ctx.save(); ctx.globalAlpha = barrierFlashAlpha;
+        ctx.fillStyle = "#daa070";
+        ctx.fillRect(2*MINI_CS+2, 2*MINI_CS+2, MINI_CS-4, MINI_CS-4);
+        ctx.restore();
+      }
+    }
+    if (shellAlpha > 0) miniDrawCoralShell(ctx, 2, 2, shellAlpha);
+    if (plusAlpha > 0) miniDrawLabel(ctx, 2, 2, "+5 PTS", plusAlpha);
+    if (spawnedAlpha > 0) miniDrawEnemy(ctx, sevx, sevy, spawnedAlpha);
+    miniDrawEnemy(ctx, evx, evy, 1);
+    miniDrawShark(ctx, svx, svy, sdir);
+
+    if (e < M1) setMiniCaption("THE CORAL SHELL BLOCKS THE PATH...");
+    else if (e < BOUNCE_S) setMiniCaption("MOVE 1 — ENEMY WAITS...");
+    else if (e < BOUNCE_E) setMiniCaption("MOVE 2 — CAN'T BE COLLECTED!");
+    else if (e < TRANSFORM) setMiniCaption("+5 PTS — SHELL HARDENS INTO A WALL!");
+    else if (e < SPAWN_E) setMiniCaption("A NEW ENEMY RELEASED...");
+    else if (e < M3E) setMiniCaption("MOVE 3 — NAVIGATE AROUND THE BARRIER...");
+    else if (e < M4E) setMiniCaption("MOVE 4 — ENEMY ADVANCES AGAIN!");
+    else setMiniCaption("BARRIERS RESHAPE THE REEF PERMANENTLY");
+  }
+
+  // ── Depth 3 placeholder ──────────────────────────────────────────
+  function renderD3(ctx: CanvasRenderingContext2D, _e: number) {
+    // Dark version of the tile grid
+    ctx.fillStyle = "#040f1a";
+    ctx.fillRect(0, 0, 200, 200);
+    for (let r = 0; r < MINI_N; r++) {
+      for (let c = 0; c < MINI_N; c++) {
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = MINI_TILE_COLORS_D1[r*MINI_N+c];
+        ctx.fillRect(c*MINI_CS, r*MINI_CS, MINI_CS, MINI_CS);
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.save();
+    ctx.font = "bold 52px monospace";
+    ctx.fillStyle = "rgba(157,111,224,0.4)";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("?", 100, 100);
+    ctx.restore();
+    setMiniCaption("DEPTH 3 IS UNCHARTED TERRITORY...");
+    updateMovePips(0);
+  }
+
+  // ── Rules content ────────────────────────────────────────────────
+  const DEPTH_RULES: Record<number, Array<{key: string; val: string; keyColor?: string}>> = {
+    1: [
+      { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+      { key: "COINS",     val: "+1 PT — SPAWNS 1 ENEMY" },
+      { key: "AMMONITE",  val: "+10 PTS — SPAWNS BIG 2×2 ENEMY", keyColor: "#9b59e0" },
+      { key: "DESCEND",   val: "REACH 100 PTS" },
+    ],
+    2: [
+      { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+      { key: "COINS",     val: "+1 PT — SPAWNS 1 ENEMY" },
+      { key: "CORAL",     val: "+5 PTS — CONVERTS TO BARRIER — SPAWNS 1 ENEMY", keyColor: "#daa070" },
+      { key: "BARRIERS",  val: "PERMANENT IMPASSABLE WALLS" },
+      { key: "ON ENTRY",  val: "ENEMIES RESET TO 5 FARTHEST FROM YOU" },
+      { key: "DESCEND",   val: "REACH 200 PTS" },
+    ],
+    3: [
+      { key: "STATUS",    val: "THIS DEPTH IS NOT YET CHARTED." },
+      { key: "LEVIATHAN", val: "A 3×3 MEGA ENEMY — MOVE RATE TBD", keyColor: "#9d6fe0" },
+      { key: "SHELL",     val: "PIECE AND PARAMETERS TBD" },
+    ],
+  };
+
+  function buildRulesHTML(depth: number): string {
+    const meta = DEPTH_META[depth] ?? DEPTH_META[1];
+    const rows = DEPTH_RULES[depth] ?? [];
+    const html = rows.map(r => {
+      const kc = r.keyColor ?? meta.color;
+      return `<div class="depth-rule-row"><span class="depth-rule-key" style="color:${kc}">${r.key}</span><span class="depth-rule-val">${r.val}</span></div>`;
+    }).join("");
+    return `<div class="depth-rules-section-label">► RULES</div>${html}`;
+  }
+
+  // ── Open / Close ─────────────────────────────────────────────────
+  const MINI_OPEN_CAPTIONS: Record<number, string> = {
+    1: "FIND THE PURPLE AMMONITE",
+    2: "THE CORAL SHELL BLOCKS THE PATH...",
+    3: "DEPTH 3 IS UNCHARTED TERRITORY...",
+  };
+
+  function openDepthInfo(depth: number) {
+    miniDepth = depth;
+    miniElapsed = 0; miniPlaying = false; miniDone = false;
+    if (miniRaf) { cancelAnimationFrame(miniRaf); miniRaf = null; }
+
+    const meta = DEPTH_META[depth] ?? DEPTH_META[1];
+    (document.getElementById("depthInfoBadge") as HTMLElement).textContent = `DEPTH ${depth}`;
+    (document.getElementById("depthInfoBadge") as HTMLElement).style.color = meta.color;
+    (document.getElementById("depthInfoName") as HTMLElement).textContent = meta.name;
+    (document.getElementById("depthInfoPanel") as HTMLElement).style.borderColor = meta.color;
+    (document.getElementById("depthInfoRules") as HTMLElement).innerHTML = buildRulesHTML(depth);
+
+    // Apply depth color to scene ctrl buttons
+    ["depthScenePlay","depthScenePause","depthSceneReset"].forEach(id => {
+      const el = document.getElementById(id) as HTMLElement;
+      el.style.borderColor = meta.color;
+      el.style.color = meta.color;
+    });
+
+    updateMovePips(0);
+    renderMiniScene(depth, 0);
+    setMiniCaption(MINI_OPEN_CAPTIONS[depth] ?? "");
+    syncMiniControls();
+    document.getElementById("depthInfoOverlay")!.classList.add("visible");
+  }
+
+  function closeDepthInfo() {
+    if (miniRaf) { cancelAnimationFrame(miniRaf); miniRaf = null; }
+    miniPlaying = false;
+    document.getElementById("depthInfoOverlay")!.classList.remove("visible");
+  }
+
+  function syncMiniControls() {
+    const play  = document.getElementById("depthScenePlay")!  as HTMLButtonElement;
+    const pause = document.getElementById("depthScenePause")! as HTMLButtonElement;
+    const reset = document.getElementById("depthSceneReset")! as HTMLButtonElement;
+    if (miniDone) {
+      play.style.display = "none"; pause.style.display = "none"; reset.style.display = "inline-flex";
+    } else if (miniPlaying) {
+      play.style.display = "none"; pause.style.display = "inline-flex"; reset.style.display = "none";
+    } else {
+      play.style.display = "inline-flex"; pause.style.display = "none";
+      reset.style.display = miniElapsed > 0 ? "inline-flex" : "none";
+    }
+  }
+
+  // ── Button wiring ────────────────────────────────────────────────
+  hudDepthBtn.addEventListener("click", () => openDepthInfo(currentDepth));
+  document.getElementById("depthInfoClose")!.addEventListener("click", closeDepthInfo);
+  document.getElementById("depthInfoOverlay")!.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeDepthInfo();
+  });
+
+  document.getElementById("depthScenePlay")!.addEventListener("click", () => {
+    if (miniDone) return;
+    miniPlaying = true; miniLastTick = performance.now();
+    miniRaf = requestAnimationFrame(miniTick);
+    syncMiniControls();
+  });
+
+  document.getElementById("depthScenePause")!.addEventListener("click", () => {
+    if (!miniPlaying) return;
+    miniPlaying = false;
+    if (miniRaf) { cancelAnimationFrame(miniRaf); miniRaf = null; }
+    syncMiniControls();
+  });
+
+  document.getElementById("depthSceneReset")!.addEventListener("click", () => {
+    if (miniRaf) { cancelAnimationFrame(miniRaf); miniRaf = null; }
+    miniElapsed = 0; miniPlaying = false; miniDone = false;
+    updateMovePips(0);
+    renderMiniScene(miniDepth, 0);
+    setMiniCaption(MINI_OPEN_CAPTIONS[miniDepth] ?? "");
+    syncMiniControls();
   });
 
   // ===== Dev Panel =====
