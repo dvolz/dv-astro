@@ -20,9 +20,9 @@ const fullWidthBody = true;
   /* ── Design Tokens ── */
   .shark-ios-app {
     --ocean-abyss: #0a1f2e;
-    --ocean-deep: #0d2d40;
-    --ocean-mid: #12435c;
-    --ocean-surface: #1a5e7a;
+    --ocean-deep: #0d3545;
+    --ocean-mid: #0f5262;
+    --ocean-surface: #1d7e92;
     --cyan: #48cae4;
     --cyan-bright: #90e0ef;
     --gold: #ffd166;
@@ -182,7 +182,7 @@ const fullWidthBody = true;
   }
 
   .main-menu-title {
-    font-size: 1rem;
+    font-size: 2rem;
     margin: 0 0 0.5rem;
   }
 
@@ -203,7 +203,7 @@ const fullWidthBody = true;
 
   .main-menu-buttons .pixel-btn {
     width: 100%;
-    font-size: 0.75rem;
+    font-size: 1.05rem;
     padding: 1.2rem 2rem;
   }
 
@@ -217,7 +217,7 @@ const fullWidthBody = true;
 
   /* ── Map Selector ── */
   .map-selector-title {
-    font-size: 0.75rem;
+    font-size: 1.85rem;
     margin: 0 0 2.5rem;
   }
 
@@ -254,7 +254,7 @@ const fullWidthBody = true;
 
   .map-card-name {
     font-family: var(--font-pixel);
-    font-size: 0.7rem;
+    font-size: 1.4rem;
     color: var(--cyan);
     margin: 0 0 0.6rem;
     display: block;
@@ -262,7 +262,7 @@ const fullWidthBody = true;
 
   .map-card-size {
     font-family: var(--font-terminal);
-    font-size: 1.6rem;
+    font-size: 2rem;
     color: var(--text-muted);
     display: block;
     margin-bottom: 1rem;
@@ -270,14 +270,15 @@ const fullWidthBody = true;
 
   .map-card-score {
     font-family: var(--font-terminal);
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     color: var(--gold);
     display: block;
+    line-height: 1.2;
   }
 
   .map-card-score-label {
     font-family: var(--font-pixel);
-    font-size: 0.7rem;
+    font-size: 1rem;
     color: var(--text-muted);
     display: block;
     margin-bottom: 0.2rem;
@@ -1431,10 +1432,10 @@ const fullWidthBody = true;
       checkDepthTransition();
     }
 
-    // Check super pickup (15 points + spawn big enemy)
+    // Check super pickup (10 points + spawn big enemy)
     if (superPickups[ny][nx]) {
       superPickups[ny][nx] = false;
-      score += 15;
+      score += 10;
       hudScore.textContent = String(score);
       bigEnemies.push(spawnBigEnemy());
       checkDepthTransition();
@@ -1516,18 +1517,18 @@ const fullWidthBody = true;
 
   // ===== Renderer =====  →  GameScene.swift
 
-  // Ocean tile palette — mid-depth blues/teals, readable but not black
+  // Ocean tile palette — shallow sunlit reef, cyan-turquoise, clearly lighter than deep
   const TILE_COLORS = [
-    "#1e5f7a",
-    "#226b88",
-    "#1a6070",
-    "#256073",
-    "#1d5568",
-    "#247080",
-    "#1f6878",
-    "#235d72",
-    "#1b6275",
-    "#20586a",
+    "#1d7e92",
+    "#228898",
+    "#1a7888",
+    "#268498",
+    "#1e8090",
+    "#248898",
+    "#1c7682",
+    "#247c8e",
+    "#1e7e8e",
+    "#207a8c",
   ];
 
   function randomTileColor(): string {
@@ -1556,7 +1557,7 @@ const fullWidthBody = true;
       ctx.stroke();
     } else {
       // Background — ocean floor between tiles
-      ctx.fillStyle = "#143d4f";
+      ctx.fillStyle = "#0f5262";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Grid tiles
@@ -1603,43 +1604,33 @@ const fullWidthBody = true;
       }
     }
 
-    // Super pickups — purple with "15" label
+    // Super pickups — Ecco-style conch shell (10 pts)
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (!superPickups[r][c]) continue;
         const px = c * CELL + pad,
           py = r * CELL + pad,
           ps = CELL - pad * 2;
-        ctx.fillStyle = "#4a0060";
-        ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2);
-        ctx.fillStyle = "#c77dff";
-        ctx.fillRect(px, py, ps, ps);
-        if (CELL >= 16) {
-          ctx.fillStyle = "#fff";
-          ctx.font = `bold ${Math.max(8, CELL * 0.35)}px monospace`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("15", c * CELL + CELL / 2, r * CELL + CELL / 2);
-        }
+        drawShellPickup(ctx, px, py, ps);
       }
     }
 
-    // Regular enemies — 1×1 red squares
+    // Regular enemies — 1×1 shadow-creature squares (dark navy silhouette)
     for (const e of enemies) {
-      ctx.fillStyle = "#7f1d1d";
+      ctx.fillStyle = "#0a1824";
       ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2);
-      ctx.fillStyle = "#ef4444";
+      ctx.fillStyle = "#162d40";
       ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL);
     }
 
-    // Big enemies — 2×2 red squares
+    // Big enemies — 2×2 swamp-green squares (distinct from regular navy)
     for (const be of bigEnemies) {
       const bx = be.x * CELL,
         by = be.y * CELL,
         bw = CELL * 2;
-      ctx.fillStyle = "#7f1d1d";
+      ctx.fillStyle = "#0a1a0a";
       ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
-      ctx.fillStyle = "#ef4444";
+      ctx.fillStyle = "#1a3d1a";
       ctx.fillRect(bx, by, bw, bw);
     }
 
@@ -1652,19 +1643,80 @@ const fullWidthBody = true;
         "gameCanvas",
       ) as HTMLCanvasElement;
       const ctx2 = canvas2d.getContext("2d")!;
-      ctx2.shadowColor = "#ef476f";
+      ctx2.shadowColor = "#0d3550";
       ctx2.shadowBlur = 18;
-      ctx2.fillStyle = "#7f1d1d";
+      ctx2.fillStyle = "#070f18";
       ctx2.fillRect(lx - 2, ly - 2, lw + 4, lw + 4);
-      ctx2.fillStyle = "#ef476f";
+      ctx2.fillStyle = "#0f2035";
       ctx2.fillRect(lx, ly, lw, lw);
-      ctx2.fillStyle = "#be123c";
+      ctx2.fillStyle = "#162840";
       ctx2.fillRect(lx + 3, ly + 3, lw - 6, lw - 6);
       ctx2.shadowBlur = 0;
     }
 
     // ===== SharkRenderer =====  →  SharkNode.swift
     drawSharkOnCtx(ctx, sharkVisualX, sharkVisualY, CELL, sharkDir);
+  }
+
+  // ===== ShellRenderer =====  →  moon-snail / ammonite shell, purple, round
+  function drawShellPickup(
+    ctx: CanvasRenderingContext2D,
+    px: number,
+    py: number,
+    ps: number,
+  ) {
+    // Round shell — arcs give a natural circular silhouette, no boxy edges.
+    // Offset inner whorls create the nautilus/moon-snail spiral cross-section.
+    ctx.save();
+    const cx = px + ps / 2;
+    const cy = py + ps / 2;
+    const r = (ps - 1) / 2;
+
+    // Outer dark ring
+    ctx.fillStyle = "#180530";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shell body — vivid mid-purple
+    ctx.fillStyle = "#6a28b0";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.86, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner whorl — lighter purple, shifted upper-left (spiral offset)
+    const wx = cx - r * 0.18;
+    const wy = cy - r * 0.18;
+    ctx.fillStyle = "#9848d8";
+    ctx.beginPath();
+    ctx.arc(wx, wy, r * 0.52, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Deep whorl — dark purple
+    ctx.fillStyle = "#4a1888";
+    ctx.beginPath();
+    ctx.arc(wx - r * 0.1, wy - r * 0.1, r * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center eye — lavender
+    ctx.fillStyle = "#c088e8";
+    ctx.beginPath();
+    ctx.arc(wx - r * 0.14, wy - r * 0.14, r * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Catch-light on upper-right face
+    ctx.fillStyle = "#d8b0f8";
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.3, cy - r * 0.35, r * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
+    // White specular gleam
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.35, cy - r * 0.38, r * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   }
 
   function drawSharkOnCtx(
@@ -1711,8 +1763,8 @@ const fullWidthBody = true;
     // 1. Outline pass (dark slab drawn slightly larger)
     ctx.fillStyle = OUTLINE;
     R(0.06, 0.27, 0.82, 0.46); // body slab
-    R(0.0, 0.12, 0.14, 0.22); // tail top lobe outline
-    R(0.0, 0.62, 0.14, 0.22); // tail bottom lobe outline
+    R(0.0, 0.12 - tailWag * 0.07, 0.14, 0.22); // tail top lobe outline
+    R(0.0, 0.62 + tailWag * 0.07, 0.14, 0.22); // tail bottom lobe outline
     // Dorsal fin outline (triangle)
     ctx.beginPath();
     ctx.moveTo(Math.round(x + 0.34 * w), Math.round(y + 0.27 * h));
@@ -1734,10 +1786,10 @@ const fullWidthBody = true;
     ctx.closePath();
     ctx.fill();
 
-    // 4. Tail fins
+    // 4. Tail fins — lobes counter-oscillate when tailWag != 0
     ctx.fillStyle = DARK_FIN;
-    R(0.01, 0.14, 0.11, 0.16); // top lobe
-    R(0.01, 0.64, 0.11, 0.16); // bottom lobe
+    R(0.01, 0.14 - tailWag * 0.07, 0.11, 0.16); // top lobe
+    R(0.01, 0.64 + tailWag * 0.07, 0.11, 0.16); // bottom lobe
 
     // 5. Top highlight strip
     ctx.fillStyle = HIGHLIGHT;
@@ -2246,13 +2298,33 @@ const fullWidthBody = true;
     drawSharkOnCtx(splashCtx, 0, 0, splashCanvas.width, "right");
   }
 
-  // Draw menu shark
+  // Animate menu shark — breathing scale + vertical bob + tail wag
   const menuSharkCanvas = document.getElementById(
     "menuSharkCanvas",
   ) as HTMLCanvasElement;
   if (menuSharkCanvas) {
     const menuCtx = menuSharkCanvas.getContext("2d")!;
-    drawSharkOnCtx(menuCtx, 0, 0, menuSharkCanvas.width, "right");
+    const mw = menuSharkCanvas.width;
+    const mh = menuSharkCanvas.height;
+    let mt = 0;
+    function menuSharkFrame() {
+      mt += 0.032;
+      menuCtx.clearRect(0, 0, mw, mh);
+      menuCtx.save();
+      // Breathing: subtle scale pulse centred on canvas
+      const breathe = 1 + 0.028 * Math.sin(mt * 1.3);
+      menuCtx.translate(mw / 2, mh / 2);
+      menuCtx.scale(breathe, breathe);
+      menuCtx.translate(-mw / 2, -mh / 2);
+      // Gentle vertical float
+      menuCtx.translate(0, Math.sin(mt * 0.75) * 3);
+      // Tail lobes counter-oscillate at a different frequency
+      const tailWag = Math.sin(mt * 2.4) * 0.85;
+      drawSharkOnCtx(menuCtx, 0, 0, mw, "right", tailWag);
+      menuCtx.restore();
+      requestAnimationFrame(menuSharkFrame);
+    }
+    requestAnimationFrame(menuSharkFrame);
   }
 
   // Init map score display

@@ -1,0 +1,64 @@
+---
+const { title, url } = Astro.props
+---
+
+<style lang="scss">
+	.ios-display-frame {
+		position: relative;
+		overflow: hidden;
+	}
+	.ios-display-grid {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		grid-template-rows: repeat(4, 1fr);
+		gap: 2px;
+		opacity: 0.55;
+		pointer-events: none;
+	}
+	.ios-display-cell {
+		border-radius: 1px;
+	}
+	.ios-display-title {
+		position: relative;
+		z-index: 1;
+		font-family: var(--a-font);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin: 0;
+		color: #caf0f8;
+	}
+</style>
+
+<a class="blogPost" href={url}>
+	<div class="frame ios-display-frame" style="background:#0f5262">
+		<div class="ios-display-grid">
+			<div class="ios-display-cell" style="background:#1d7e92"></div>
+			<div class="ios-display-cell" style="background:#228898"></div>
+			<div class="ios-display-cell" style="background:#1a7888"></div>
+			<div class="ios-display-cell" style="background:#268498"></div>
+			<div class="ios-display-cell" style="background:#1e8090"></div>
+			<div class="ios-display-cell" style="background:#248898"></div>
+			<div class="ios-display-cell" style="background:#248898"></div>
+			<div class="ios-display-cell" style="background:#1d7e92"></div>
+			<div class="ios-display-cell" style="background:#7aaab8"></div>
+			<div class="ios-display-cell" style="background:#1a7888"></div>
+			<div class="ios-display-cell" style="background:#228898"></div>
+			<div class="ios-display-cell" style="background:#1e8090"></div>
+			<div class="ios-display-cell" style="background:#1a7888"></div>
+			<div class="ios-display-cell" style="background:#f0f8fa"></div>
+			<div class="ios-display-cell" style="background:#1d7e92"></div>
+			<div class="ios-display-cell" style="background:#228898"></div>
+			<div class="ios-display-cell" style="background:#ffd166"></div>
+			<div class="ios-display-cell" style="background:#1e8090"></div>
+			<div class="ios-display-cell" style="background:#6a28b0"></div>
+			<div class="ios-display-cell" style="background:#1d7e92"></div>
+			<div class="ios-display-cell" style="background:#228898"></div>
+			<div class="ios-display-cell" style="background:#1e8090"></div>
+			<div class="ios-display-cell" style="background:#162d40"></div>
+			<div class="ios-display-cell" style="background:#0a1f2e"></div>
+		</div>
+		<p class="ios-display-title">{title}</p>
+	</div>
+</a>
