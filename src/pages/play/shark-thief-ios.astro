@@ -952,6 +952,57 @@ const fullWidthBody = true;
     color: var(--text-muted);
     margin-top: 3rem;
   }
+
+  /* ── Dev Panel ── */
+  .dev-panel {
+    width: 100%;
+    max-width: 36rem;
+    margin-top: 2.4rem;
+    border: 2px dashed rgba(255, 209, 102, 0.4);
+    border-radius: 2px;
+    padding: 1.2rem 1.4rem;
+    box-sizing: border-box;
+  }
+
+  .dev-panel-label {
+    font-family: var(--font-pixel);
+    font-size: 0.55rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    margin: 0 0 1rem;
+    text-transform: uppercase;
+  }
+
+  .dev-panel-btns {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .dev-panel-btns :global(button) {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    padding: 0.6rem 1rem;
+    border: 2px solid rgba(255, 209, 102, 0.5);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    opacity: 0.75;
+    touch-action: manipulation;
+    transition: background 0.08s, opacity 0.08s;
+
+    &:hover {
+      background: rgba(255, 209, 102, 0.15);
+      opacity: 1;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
 </style>
 
 <BaseLayout
@@ -1166,6 +1217,10 @@ const fullWidthBody = true;
             </div>
           </label>
         </div>
+      </div>
+      <div class="dev-panel">
+        <p class="dev-panel-label">⚠ DEV — JUMP TO DEPTH</p>
+        <div class="dev-panel-btns" id="devJumpBtns"></div>
       </div>
       <p class="settings-version">SHARK THIEF iOS v0.1.0 — WEB PROTOTYPE</p>
     </div>
@@ -2866,6 +2921,28 @@ const fullWidthBody = true;
       shimmerRafId = requestAnimationFrame(tickShimmer);
     }
   });
+
+  // ===== Dev Panel =====
+  (function buildDevPanel() {
+    const container = document.getElementById("devJumpBtns")!;
+    const depths = [
+      { label: "DEPTH 1", depth: 1, color: "#48cae4" },
+      { label: "DEPTH 2", depth: 2, color: "#daa070" },
+      { label: "DEPTH 3", depth: 3, color: "#9d6fe0" },
+    ];
+    depths.forEach(({ label, depth, color }) => {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      btn.style.borderColor = color;
+      btn.style.color = color;
+      btn.addEventListener("click", () => {
+        clearSave();
+        initAtDepth(depth);
+        showScreen("game");
+      });
+      container.appendChild(btn);
+    });
+  })();
 
   // ===== Startup =====  →  SharkThiefApp.swift
 
