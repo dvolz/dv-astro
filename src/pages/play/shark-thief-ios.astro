@@ -2452,8 +2452,7 @@ const fullWidthBody = true;
 
     if (targetDepth >= 2) {
       currentDepth = 2;
-      score = 100;
-      hudScore.textContent = "100";
+      // Score stays 0 — high scores require playing through all levels
       hudDepthBadge.textContent = "DEPTH 2";
       const wrapper = document.getElementById("gameDepthWrapper")!;
       wrapper.className = "game-depth-wrapper depth-2";
@@ -2474,8 +2473,6 @@ const fullWidthBody = true;
     }
     if (targetDepth >= 3) {
       currentDepth = 3;
-      score = 200;
-      hudScore.textContent = "200";
       hudDepthBadge.textContent = "DEPTH 3";
       const wrapper = document.getElementById("gameDepthWrapper")!;
       wrapper.className = "game-depth-wrapper depth-3";
