@@ -429,37 +429,68 @@ const fullWidthBody = true;
     width: 100%;
     max-width: 600px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8rem 1.2rem;
+    flex-direction: column;
     box-sizing: border-box;
     background: rgba(7, 20, 40, 0.9);
+  }
+
+  /* Row 1 — controls */
+  .hud-row-1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1.2rem;
     border-bottom: 1px solid var(--ocean-surface);
   }
 
-  .hud-score-group {
+  /* Row 2 — stats bar */
+  .hud-row-2 {
     display: flex;
-    gap: 2rem;
+    align-items: center;
+    padding: 0.4rem 1.2rem;
   }
 
-  .hud-score-item {
-    text-align: center;
+  .hud-stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
   }
 
-  .hud-score-label {
+  .hud-stat-label {
     font-family: var(--font-pixel);
-    font-size: 0.75rem;
+    font-size: 0.48rem;
     color: var(--text-muted);
-    display: block;
-    margin-bottom: 0.2rem;
     letter-spacing: 0.1em;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
   }
 
-  .hud-score-value {
+  .hud-stat-value {
     font-family: var(--font-terminal);
+    font-size: 1.6rem;
+    color: var(--text-primary);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .hud-stat-score {
     font-size: 2.2rem;
     color: var(--gold);
-    line-height: 1;
+  }
+
+  .hud-stat-divider {
+    width: 1px;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+    margin: 0 0.6rem;
+  }
+
+  @media (pointer: coarse) {
+    .hud-stat-value { font-size: 1.3rem; }
+    .hud-stat-score { font-size: 2.2rem; } /* score stays large */
   }
 
   /* HUD buttons share the pixel-btn language at compact HUD scale */
@@ -1393,21 +1424,31 @@ const fullWidthBody = true;
       <div class="game-depth-wrapper depth-1" id="gameDepthWrapper">
         <!-- HUDView.swift -->
         <div class="ios-hud">
-          <button class="hud-btn" id="hudMenuBtn">MENU</button>
-          <div class="hud-score-group">
-            <div class="hud-score-item">
-              <span class="hud-score-label">SCORE</span>
-              <span class="hud-score-value" id="hudScore">0</span>
+          <!-- Row 1: controls -->
+          <div class="hud-row hud-row-1">
+            <button class="hud-btn" id="hudMenuBtn">MENU</button>
+            <button class="hud-btn hud-depth-btn" id="hudDepthBtn">
+              <span id="hudDepthLabel">DEPTH 1</span>
+              <span class="hud-info-icon">[?]</span>
+            </button>
+          </div>
+          <!-- Row 2: stats bar -->
+          <div class="hud-row hud-row-2">
+            <div class="hud-stat-block">
+              <span class="hud-stat-label">SCORE</span>
+              <span class="hud-stat-value hud-stat-score" id="hudScore">0</span>
             </div>
-            <div class="hud-score-item">
-              <span class="hud-score-label">BEST</span>
-              <span class="hud-score-value" id="hudBest">0</span>
+            <div class="hud-stat-divider" aria-hidden="true"></div>
+            <div class="hud-stat-block">
+              <span class="hud-stat-label">TIME</span>
+              <span class="hud-stat-value" id="hudTime">00:00</span>
+            </div>
+            <div class="hud-stat-divider" aria-hidden="true"></div>
+            <div class="hud-stat-block">
+              <span class="hud-stat-label">LV TIME</span>
+              <span class="hud-stat-value" id="hudLvTime">00:00</span>
             </div>
           </div>
-          <button class="hud-btn hud-depth-btn" id="hudDepthBtn">
-            <span id="hudDepthLabel">DEPTH 1</span>
-            <span class="hud-info-icon">[?]</span>
-          </button>
         </div>
 
         <!-- Canvas area -->
@@ -1595,6 +1636,84 @@ const fullWidthBody = true;
             <button class="hud-btn depth-scene-ctrl" id="depthScenePause" style="display:none">⏸ PAUSE</button>
             <button class="hud-btn depth-scene-ctrl" id="depthSceneReset" style="display:none">↺ RESET</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Game Guide Popup ── -->
+    <div class="depth-info-overlay" id="gameGuideOverlay">
+      <div class="depth-info-panel shark-score-panel">
+        <div class="depth-info-header">
+          <div>
+            <div class="depth-info-badge" style="color:var(--gold)">PLAYER GUIDE</div>
+            <div class="depth-info-name">SHARK THIEF</div>
+          </div>
+          <button class="hud-btn" id="gameGuideClose">✕ BACK</button>
+        </div>
+        <div class="depth-info-rules shark-score-rules">
+
+          <div class="depth-rules-section-label">① WHAT IS SHARK THIEF?</div>
+          <div class="depth-rule-row" style="grid-template-columns:1fr">
+            <span class="depth-rule-val">Navigate a shark through a grid ocean, collecting coins and rare shell pieces while staying ahead of enemies that spawn every time you score.</span>
+          </div>
+          <div class="depth-rule-row" style="grid-template-columns:1fr; margin-top:0.4rem">
+            <span class="depth-rule-val">Casual players can dive in immediately — move, grab coins, survive. Strategic players can go deeper: every mechanic has a rule, and the Shark Score formula rewards both points and speed. Both audiences are playing the same game.</span>
+          </div>
+
+          <div class="depth-rules-section-label" style="margin-top:1.6rem">② HOW TO PLAY</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">MOVE</span>
+            <span class="depth-rule-val">Arrow keys or D-pad — one cell per turn.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">COINS</span>
+            <span class="depth-rule-val">Collect gold squares for +1 pt. Each coin spawns an enemy.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">ENEMIES</span>
+            <span class="depth-rule-val">Hunt you. Move 1 step every 2 player moves. Touch = game over.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">DEPTH</span>
+            <span class="depth-rule-val">Reach score thresholds (100, 200…) to descend. Board changes each depth.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">SHELL</span>
+            <span class="depth-rule-val">Each depth has a unique shell with a special mechanic. Tap [DEPTH ?] in-game for details.</span>
+          </div>
+
+          <div class="depth-rules-section-label" style="margin-top:1.6rem">③ SCORING</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">SCORE</span>
+            <span class="depth-rule-val">Points earned in a single run. Coins = 1 pt. Shells = variable.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">HIGH SCORE</span>
+            <span class="depth-rule-val">Your best single-run Score ever recorded. Stored locally and on the leaderboard.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">SHARK SCORE</span>
+            <span class="depth-rule-val">SCORE² ÷ TIME (seconds). Doubling your score quadruples it. Cutting your time in half doubles it.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">TOTAL TIME</span>
+            <span class="depth-rule-val">Wall-clock seconds from game start until death. Pausing stops the clock.</span>
+          </div>
+
+          <div class="depth-rules-section-label" style="margin-top:1.6rem">④ TIPS</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">ENEMIES</span>
+            <span class="depth-rule-val">Every coin you grab spawns a new enemy — the board gets harder fast. Pick coins deliberately, not greedily.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">CORAL</span>
+            <span class="depth-rule-val">At Depth 2, coral barriers are permanent. Plan routes before the board fills up.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">EFFICIENCY</span>
+            <span class="depth-rule-val">Shark Score rewards points AND speed. Being efficient beats grinding a high score slowly.</span>
+          </div>
+
         </div>
       </div>
     </div>
@@ -2024,8 +2143,12 @@ const fullWidthBody = true;
     levelTimes = [];
     totalTimeMs = 0;
 
+    stopHudClock();
     hudScore.textContent = "0";
+    hudTimeEl.textContent  = "00:00";
+    hudLvTime.textContent  = "00:00";
     updateHudDepth(1);
+    startHudClock();
     gameOverOverlay.classList.remove("visible");
 
     const wrapper = document.getElementById("gameDepthWrapper")!;
@@ -2074,7 +2197,6 @@ const fullWidthBody = true;
 
     // Load high score from UserDefaultsService
     highScore = getHighScore();
-    hudBest.textContent = String(highScore);
 
     // Reset dying enemies
     dyingEnemies = [];
@@ -2222,6 +2344,10 @@ const fullWidthBody = true;
     gameOver = true;
     totalTimeMs = performance.now() - gameStartTime;
     levelTimes.push(performance.now() - levelStartTime);
+    stopHudClock();
+    // Freeze clock displays at final time
+    hudTimeEl.textContent = formatClockSec(Math.floor(totalTimeMs / 1000));
+    hudLvTime.textContent = formatClockSec(Math.floor((levelTimes[levelTimes.length - 1]) / 1000));
     clearSave(); // player died — no restore
     sharkVisualX = shark.x;
     sharkVisualY = shark.y;
@@ -2231,7 +2357,6 @@ const fullWidthBody = true;
     if (score > highScore) {
       highScore = score;
       saveHighScore(highScore);
-      hudBest.textContent = String(highScore);
     }
 
     // UserDefaultsService — persist best Shark Score
@@ -2822,10 +2947,33 @@ const fullWidthBody = true;
 
   // ===== HUD =====  →  HUDView.swift
 
-  const hudScore = document.getElementById("hudScore")!;
-  const hudBest = document.getElementById("hudBest")!;
-  const hudDepthBtn = document.getElementById("hudDepthBtn")!;
+  const hudScore   = document.getElementById("hudScore")!;
+  const hudTimeEl  = document.getElementById("hudTime")!;
+  const hudLvTime  = document.getElementById("hudLvTime")!;
+  const hudDepthBtn   = document.getElementById("hudDepthBtn")!;
   const hudDepthLabel = document.getElementById("hudDepthLabel")!;
+
+  let hudClockInterval: ReturnType<typeof setInterval> | null = null;
+
+  function formatClockSec(totalSec: number): string {
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  }
+
+  function startHudClock() {
+    stopHudClock();
+    hudClockInterval = setInterval(() => {
+      if (gameOver) return;
+      const nowMs = performance.now();
+      hudTimeEl.textContent  = formatClockSec(Math.floor((nowMs - gameStartTime)  / 1000));
+      hudLvTime.textContent  = formatClockSec(Math.floor((nowMs - levelStartTime) / 1000));
+    }, 500);
+  }
+
+  function stopHudClock() {
+    if (hudClockInterval) { clearInterval(hudClockInterval); hudClockInterval = null; }
+  }
 
   const DEPTH_META: Record<number, { color: string; glow: string; name: string }> = {
     1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)", name: "SURFACE REEF" },
@@ -2950,8 +3098,8 @@ const fullWidthBody = true;
     // Update HUD
     hudScore.textContent = String(score);
     highScore = getHighScore();
-    hudBest.textContent = String(highScore);
     updateHudDepth(currentDepth);
+    startHudClock();
 
     // Depth wrapper
     const wrapper = document.getElementById("gameDepthWrapper")!;
@@ -3977,7 +4125,27 @@ const fullWidthBody = true;
       });
       container.appendChild(btn);
     });
+
+    // Game Guide button
+    const guideBtn = document.createElement("button");
+    guideBtn.textContent = "GAME GUIDE";
+    guideBtn.style.borderColor = "var(--gold)";
+    guideBtn.style.color = "var(--gold)";
+    guideBtn.addEventListener("click", () => {
+      document.getElementById("gameGuideOverlay")!.classList.add("visible");
+    });
+    container.appendChild(guideBtn);
   })();
+
+  // ── Game Guide popup close ──
+  document.getElementById("gameGuideClose")!.addEventListener("click", () => {
+    document.getElementById("gameGuideOverlay")!.classList.remove("visible");
+  });
+  document.getElementById("gameGuideOverlay")!.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) {
+      (e.currentTarget as HTMLElement).classList.remove("visible");
+    }
+  });
 
   // ===== Startup =====  →  SharkThiefApp.swift
 
