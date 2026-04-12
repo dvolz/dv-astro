@@ -27,7 +27,7 @@ const fullWidthBody = true;
     --cyan-bright: #90e0ef;
     --gold: #ffd166;
     --coral-danger: #ef476f;
-    --coral-block: #c45038;
+    --coral-block: #c8906a;
     --text-primary: #caf0f8;
     --text-muted: #7ac4d8;
     --border-glow: rgba(72, 202, 228, 0.2);
@@ -773,6 +773,7 @@ const fullWidthBody = true;
     input:checked ~ .toggle-track {
       background: rgba(72, 202, 228, 0.2);
       border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(72, 202, 228, 0.7), 0 0 20px rgba(72, 202, 228, 0.3);
     }
 
     input:checked ~ .toggle-track .toggle-knob {
@@ -981,6 +982,18 @@ const fullWidthBody = true;
           </div>
           <label class="pixel-toggle" aria-label="Toggle haptic feedback">
             <input type="checkbox" id="settingsHaptics" checked />
+            <div class="toggle-track">
+              <div class="toggle-knob"></div>
+            </div>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span class="settings-row-label">WATER SHIMMER</span>
+            <span class="settings-row-sub">Animated light on tiles</span>
+          </div>
+          <label class="pixel-toggle" aria-label="Toggle water shimmer">
+            <input type="checkbox" id="settingsShimmer" />
             <div class="toggle-track">
               <div class="toggle-knob"></div>
             </div>
@@ -1323,6 +1336,12 @@ const fullWidthBody = true;
     highScore = getHighScore();
     hudBest.textContent = String(highScore);
 
+    // Reset shimmer state and start loop
+    shimmerIntensity.fill(0);
+    shimmerSpeed.fill(0);
+    if (shimmerRafId) cancelAnimationFrame(shimmerRafId);
+    if (shimmerMode) shimmerRafId = requestAnimationFrame(tickShimmer);
+
     // SpawnManager — one initial enemy
     enemies = [spawnEnemy()];
 
@@ -1464,6 +1483,30 @@ const fullWidthBody = true;
   }
 
   let colorblindMode = localStorage.getItem("sharkColorblind") === "true";
+  let shimmerMode = localStorage.getItem("sharkShimmer") === "true";
+
+  // Per-cell shimmer state — intensity 0→1→0, speed drives direction
+  const shimmerIntensity = new Float32Array(GRID * GRID);
+  const shimmerSpeed = new Float32Array(GRID * GRID);
+  let shimmerRafId: number | null = null;
+
+  function tickShimmer() {
+    if (!shimmerMode || gameOver) { shimmerRafId = null; return; }
+    let dirty = false;
+    for (let i = 0; i < shimmerIntensity.length; i++) {
+      if (shimmerSpeed[i] !== 0) {
+        shimmerIntensity[i] = Math.max(0, Math.min(1, shimmerIntensity[i] + shimmerSpeed[i]));
+        if (shimmerIntensity[i] >= 1)       shimmerSpeed[i] = -0.04; // peak → fade
+        else if (shimmerIntensity[i] <= 0)  shimmerSpeed[i] = 0;     // done
+        dirty = true;
+      } else if (Math.random() < 0.0018) {
+        shimmerSpeed[i] = 0.032 + Math.random() * 0.02; // random rise speed
+        dirty = true;
+      }
+    }
+    if (dirty) draw();
+    shimmerRafId = requestAnimationFrame(tickShimmer);
+  }
 
   function draw() {
     const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
@@ -1495,6 +1538,21 @@ const fullWidthBody = true;
           ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
         }
       }
+
+      // Water shimmer overlay — caustic light flickers
+      if (shimmerMode) {
+        ctx.fillStyle = "#d8f4fc";
+        for (let r = 0; r < GRID; r++) {
+          for (let c = 0; c < GRID; c++) {
+            const v = shimmerIntensity[r * GRID + c];
+            if (v > 0.02) {
+              ctx.globalAlpha = v * 0.18;
+              ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
     }
 
     // Coral barriers (Depth 2) — warm coral/terracotta
@@ -1503,13 +1561,13 @@ const fullWidthBody = true;
         if (!coral[r][c]) continue;
         const cx = c * CELL,
           cy = r * CELL;
-        ctx.fillStyle = "#7a2818";
+        ctx.fillStyle = "#7a4a30";
         ctx.fillRect(cx, cy, CELL, CELL);
-        ctx.fillStyle = "#c45038";
+        ctx.fillStyle = "#c8906a";
         ctx.fillRect(cx + 1, cy + 1, CELL - 2, CELL - 2);
         // Pixel highlight corners
         if (CELL >= 8) {
-          ctx.fillStyle = "#e8785a";
+          ctx.fillStyle = "#e0b898";
           const dot = Math.max(2, Math.floor(CELL * 0.15));
           ctx.fillRect(cx + 2, cy + 2, dot, dot);
           ctx.fillRect(cx + CELL - dot - 2, cy + 2, dot, dot);
@@ -2155,9 +2213,14 @@ const fullWidthBody = true;
     "settingsHaptics",
   ) as HTMLInputElement;
 
+  const settingsShimmer = document.getElementById(
+    "settingsShimmer",
+  ) as HTMLInputElement;
+
   settingsColorblind.checked =
     localStorage.getItem("sharkColorblind") === "true";
   settingsHaptics.checked = localStorage.getItem("sharkHaptics") !== "false";
+  settingsShimmer.checked = shimmerMode;
 
   settingsColorblind.addEventListener("change", () => {
     colorblindMode = settingsColorblind.checked;
@@ -2165,6 +2228,13 @@ const fullWidthBody = true;
   });
   settingsHaptics.addEventListener("change", () => {
     localStorage.setItem("sharkHaptics", String(settingsHaptics.checked));
+  });
+  settingsShimmer.addEventListener("change", () => {
+    shimmerMode = settingsShimmer.checked;
+    localStorage.setItem("sharkShimmer", String(shimmerMode));
+    if (shimmerMode && !shimmerRafId && !gameOver) {
+      shimmerRafId = requestAnimationFrame(tickShimmer);
+    }
   });
 
   // ===== Startup =====  →  SharkThiefApp.swift
