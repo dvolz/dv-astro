@@ -41,8 +41,14 @@ const fullWidthBody = true;
     padding-right: 0;
   }
 
+  :global(html):has(.shark-ios-app),
+  :global(body):has(.shark-ios-app) {
+    touch-action: manipulation;
+  }
+
   .shark-ios-app {
     width: 100%;
+    touch-action: manipulation;
     background: var(--ocean-abyss);
     color: var(--text-primary);
     position: relative;
