@@ -27,7 +27,7 @@ const fullWidthBody = true;
     --cyan-bright: #90e0ef;
     --gold: #ffd166;
     --coral-danger: #ef476f;
-    --coral-block: #7c3aed;
+    --coral-block: #c45038;
     --text-primary: #caf0f8;
     --text-muted: #7ac4d8;
     --border-glow: rgba(72, 202, 228, 0.2);
@@ -215,77 +215,27 @@ const fullWidthBody = true;
     letter-spacing: 0.1em;
   }
 
-  /* ── Map Selector ── */
-  .map-selector-title {
-    font-size: 1.85rem;
-    margin: 0 0 2.5rem;
-  }
-
-  .map-cards {
+  /* ── Main Menu Best Score ── */
+  .main-menu-best {
     display: flex;
-    gap: 1.6rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
     margin-bottom: 2rem;
   }
 
-  .map-card {
-    border: 3px solid var(--ocean-surface);
-    border-radius: 2px;
-    padding: 2rem 2.4rem;
-    background: var(--ocean-mid);
-    cursor: pointer;
-    transition:
-      border-color 0.1s,
-      box-shadow 0.1s;
-    text-align: center;
-    min-width: 14rem;
-    touch-action: manipulation;
-
-    &:hover {
-      border-color: var(--cyan);
-    }
-
-    &.selected {
-      border-color: var(--cyan);
-      box-shadow: 0 0 18px rgba(72, 202, 228, 0.35);
-    }
-  }
-
-  .map-card-name {
+  .main-menu-best-label {
     font-family: var(--font-pixel);
-    font-size: 1.4rem;
-    color: var(--cyan);
-    margin: 0 0 0.6rem;
-    display: block;
-  }
-
-  .map-card-size {
-    font-family: var(--font-terminal);
-    font-size: 2rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    display: block;
-    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
   }
 
-  .map-card-score {
+  .main-menu-best-score {
     font-family: var(--font-terminal);
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     color: var(--gold);
-    display: block;
-    line-height: 1.2;
-  }
-
-  .map-card-score-label {
-    font-family: var(--font-pixel);
-    font-size: 1rem;
-    color: var(--text-muted);
-    display: block;
-    margin-bottom: 0.2rem;
-  }
-
-  .map-back-btn {
-    margin-top: 1rem;
+    line-height: 1;
   }
 
   /* ── Game Screen ── */
@@ -365,12 +315,12 @@ const fullWidthBody = true;
 
   .hud-menu-btn {
     font-family: var(--font-pixel);
-    font-size: 0.6rem;
+    font-size: 1.1rem;
     background: transparent;
     border: 2px solid var(--text-muted);
     border-radius: 2px;
     color: var(--text-muted);
-    padding: 0.3rem 0.7rem;
+    padding: 0.9rem 1.3rem;
     cursor: pointer;
     letter-spacing: 0.05em;
     transition:
@@ -875,8 +825,12 @@ const fullWidthBody = true;
       <canvas id="menuSharkCanvas" width="120" height="120"></canvas>
       <h2 class="pixel-title main-menu-title">SHARK THIEF</h2>
       <p class="main-menu-sub">OCEAN ARCADE</p>
+      <div class="main-menu-best">
+        <span class="main-menu-best-label">BEST</span>
+        <span class="main-menu-best-score" id="menuBestScore">0</span>
+      </div>
       <div class="main-menu-buttons">
-        <button class="pixel-btn" id="menuPlayBtn">PLAY</button>
+        <button class="pixel-btn" id="menuPlayBtn">DIVE IN</button>
         <button class="pixel-btn pixel-btn-muted" id="menuLeaderboardBtn"
           >LEADERBOARD</button
         >
@@ -885,29 +839,6 @@ const fullWidthBody = true;
         >
       </div>
       <p class="main-menu-depth" id="menuDepthLabel"></p>
-    </div>
-
-    <!-- ── Screen 3: Map Selector ── MapSelectorView.swift -->
-    <div id="screen-map-selector" class="screen screen-menu">
-      <h2 class="pixel-title map-selector-title">SELECT DEPTH</h2>
-      <div class="map-cards">
-        <div class="map-card selected" data-map="small" id="mapCardSmall">
-          <span class="map-card-name">REEF</span>
-          <span class="map-card-size">20 × 20</span>
-          <span class="map-card-score-label">BEST</span>
-          <span class="map-card-score" id="mapScoreSmall">0</span>
-        </div>
-        <div class="map-card" data-map="medium" id="mapCardMedium">
-          <span class="map-card-name">ABYSS</span>
-          <span class="map-card-size">30 × 30</span>
-          <span class="map-card-score-label">BEST</span>
-          <span class="map-card-score" id="mapScoreMedium">0</span>
-        </div>
-      </div>
-      <button class="pixel-btn" id="mapPlayBtn">DIVE IN</button>
-      <button class="pixel-btn pixel-btn-muted map-back-btn" id="mapBackBtn"
-        >BACK</button
-      >
     </div>
 
     <!-- ── Screen 4: Game ── GameView.swift -->
@@ -1002,7 +933,7 @@ const fullWidthBody = true;
         <button class="pixel-btn pixel-btn-muted" id="lbBackBtn">BACK</button>
         <div>
           <h2 class="lb-title">LEADERBOARD</h2>
-          <span class="lb-map-label" id="lbMapLabel">ABYSS (30×30)</span>
+          <span class="lb-map-label" id="lbMapLabel">25×25</span>
         </div>
       </div>
       <div class="lb-table-wrap">
@@ -1069,8 +1000,6 @@ const fullWidthBody = true;
 
   // ===== GameConfig =====  →  GameConfig.swift
 
-  type MapSize = "small" | "medium";
-  const MAP_GRIDS: Record<MapSize, number> = { small: 20, medium: 30 };
   const ANIM_DURATION = 80; // ms — matches iOS 80ms ease-out quad
   const MIN_ENEMY_DIST = 5; // min Manhattan distance for enemy spawn
   const PICKUP_RATE = 0.00025; // per cell per move
@@ -1093,8 +1022,7 @@ const fullWidthBody = true;
     y: number;
   }
 
-  let currentMap: MapSize = "small";
-  let GRID = MAP_GRIDS[currentMap];
+  const GRID = 25;
   let CELL = 0; // set after canvas size is known
 
   let shark = { x: 0, y: 0 };
@@ -1569,19 +1497,19 @@ const fullWidthBody = true;
       }
     }
 
-    // Coral barriers (Depth 2) — purple pixel blocks
+    // Coral barriers (Depth 2) — warm coral/terracotta
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (!coral[r][c]) continue;
         const cx = c * CELL,
           cy = r * CELL;
-        ctx.fillStyle = "#4c1d95";
+        ctx.fillStyle = "#7a2818";
         ctx.fillRect(cx, cy, CELL, CELL);
-        ctx.fillStyle = "#7c3aed";
+        ctx.fillStyle = "#c45038";
         ctx.fillRect(cx + 1, cy + 1, CELL - 2, CELL - 2);
         // Pixel highlight corners
         if (CELL >= 8) {
-          ctx.fillStyle = "#a78bfa";
+          ctx.fillStyle = "#e8785a";
           const dot = Math.max(2, Math.floor(CELL * 0.15));
           ctx.fillRect(cx + 2, cy + 2, dot, dot);
           ctx.fillRect(cx + CELL - dot - 2, cy + 2, dot, dot);
@@ -1842,13 +1770,7 @@ const fullWidthBody = true;
 
   // ===== ScreenManager =====  →  RootNavigationView.swift
 
-  type ScreenId =
-    | "splash"
-    | "main-menu"
-    | "map-selector"
-    | "game"
-    | "leaderboard"
-    | "settings";
+  type ScreenId = "splash" | "main-menu" | "game" | "leaderboard" | "settings";
 
   function showScreen(id: ScreenId) {
     document
@@ -1856,6 +1778,7 @@ const fullWidthBody = true;
       .forEach((s) => s.classList.remove("active"));
     const target = document.getElementById(`screen-${id}`);
     if (target) target.classList.add("active");
+    if (id === "main-menu") refreshMenuBest();
   }
 
   // ===== DPad =====  →  DPadView.swift
@@ -1929,16 +1852,12 @@ const fullWidthBody = true;
 
   // ===== Services =====  →  UserDefaultsService.swift + GameCenterService.swift
 
-  function hsKey(): string {
-    return currentMap === "medium"
-      ? "sharkIosHighScore"
-      : `sharkIosHighScore-${currentMap}`;
-  }
+  const HS_KEY = "sharkIosHighScore";
   function getHighScore(): number {
-    return parseInt(localStorage.getItem(hsKey()) || "0", 10);
+    return parseInt(localStorage.getItem(HS_KEY) || "0", 10);
   }
   function saveHighScore(v: number) {
-    localStorage.setItem(hsKey(), String(v));
+    localStorage.setItem(HS_KEY, String(v));
   }
 
   // ── Leaderboard (GameCenterService.swift) ──
@@ -1956,7 +1875,7 @@ const fullWidthBody = true;
 
   async function fetchLeaderboard() {
     try {
-      const res = await fetch(`/api/scores?map=${currentMap}`);
+      const res = await fetch(`/api/scores?map=reef25`);
       if (!res.ok) throw new Error("failed");
       const scores = await res.json();
       renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES);
@@ -2107,7 +2026,7 @@ const fullWidthBody = true;
     localStorage.setItem("sharkPlayerName", name);
 
     try {
-      const res = await fetch(`/api/scores?map=${currentMap}`, {
+      const res = await fetch(`/api/scores?map=reef25`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, score }),
@@ -2177,10 +2096,19 @@ const fullWidthBody = true;
   // Splash → Main Menu (auto)
   setTimeout(() => showScreen("main-menu"), 1200);
 
+  function refreshMenuBest() {
+    document.getElementById("menuBestScore")!.textContent =
+      String(getHighScore());
+  }
+
   // Main Menu buttons
-  document
-    .getElementById("menuPlayBtn")!
-    .addEventListener("click", () => showScreen("map-selector"));
+  document.getElementById("menuPlayBtn")!.addEventListener("click", () => {
+    const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    CELL = canvas.width / GRID;
+    showScreen("game");
+    init();
+    fetchLeaderboard();
+  });
   document
     .getElementById("menuLeaderboardBtn")!
     .addEventListener("click", () => {
@@ -2190,54 +2118,6 @@ const fullWidthBody = true;
   document
     .getElementById("menuSettingsBtn")!
     .addEventListener("click", () => showScreen("settings"));
-
-  // Map selector
-  const MAP_LABELS: Record<MapSize, string> = {
-    small: "REEF (20×20)",
-    medium: "ABYSS (30×30)",
-  };
-  let selectedMap: MapSize = "small";
-
-  document.querySelectorAll(".map-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      selectedMap = (card as HTMLElement).dataset.map as MapSize;
-      document
-        .querySelectorAll(".map-card")
-        .forEach((c) => c.classList.remove("selected"));
-      card.classList.add("selected");
-      refreshMapScores();
-    });
-  });
-
-  function refreshMapScores() {
-    const small = parseInt(
-      localStorage.getItem("sharkIosHighScore-small") || "0",
-      10,
-    );
-    const medium = parseInt(
-      localStorage.getItem("sharkIosHighScore") || "0",
-      10,
-    );
-    document.getElementById("mapScoreSmall")!.textContent = String(small);
-    document.getElementById("mapScoreMedium")!.textContent = String(medium);
-  }
-
-  document.getElementById("mapPlayBtn")!.addEventListener("click", () => {
-    currentMap = selectedMap;
-    GRID = MAP_GRIDS[currentMap];
-    const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-    CELL = canvas.width / GRID;
-
-    document.getElementById("lbMapLabel")!.textContent = MAP_LABELS[currentMap];
-
-    showScreen("game");
-    init();
-    fetchLeaderboard();
-  });
-
-  document
-    .getElementById("mapBackBtn")!
-    .addEventListener("click", () => showScreen("main-menu"));
 
   // Leaderboard back
   document
@@ -2327,6 +2207,6 @@ const fullWidthBody = true;
     requestAnimationFrame(menuSharkFrame);
   }
 
-  // Init map score display
-  refreshMapScores();
+  // Init main menu best score
+  refreshMenuBest();
 </script>
