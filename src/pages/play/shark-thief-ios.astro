@@ -355,8 +355,14 @@ const fullWidthBody = true;
     }
   }
 
-  /* Depth 3: deep abyss violet */
+  /* Depth 3: nursery pink */
   .depth-sub-btns :global(.pixel-btn-d3) {
+    border-color: #e06fa0;
+    color: #e06fa0;
+    &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
+  }
+  /* Depth 4: deep abyss violet */
+  .depth-sub-btns :global(.pixel-btn-d4) {
     border-color: #9d6fe0;
     color: #9d6fe0;
 
@@ -420,6 +426,9 @@ const fullWidthBody = true;
       background: #071828;
     }
     &.depth-3 {
+      background: #0f0812;  // dark warm — nursery
+    }
+    &.depth-4 {
       background: #040f1a;
     }
   }
@@ -537,6 +546,11 @@ const fullWidthBody = true;
       &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(218,160,112,0.5); }
     }
     &.depth-3 {
+      border-color: #e06fa0;
+      color: #e06fa0;
+      &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
+    }
+    &.depth-4 {
       border-color: #9d6fe0;
       color: #9d6fe0;
       &:hover { background: #9d6fe0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(157,111,224,0.5); }
@@ -1385,27 +1399,27 @@ const fullWidthBody = true;
 
   .shark-score-rules :global(.depth-rule-row) {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1rem;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    align-items: start;
+    grid-template-columns: 6rem 1fr;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    align-items: center;
   }
 
   .shark-score-rules :global(.depth-rule-key) {
     font-family: var(--font-pixel);
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    padding-top: 0.25rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
     color: var(--gold);
     white-space: nowrap;
+    line-height: 1.4;
   }
 
   .shark-score-rules :global(.depth-rule-val) {
     font-family: var(--font-terminal);
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     color: var(--text-primary);
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   .medal-gold {
@@ -1759,6 +1773,7 @@ const fullWidthBody = true;
           <button class="lb-tab"        role="tab" aria-selected="false" data-category="d1_time">D1 TIME</button>
           <button class="lb-tab"        role="tab" aria-selected="false" data-category="d2_time">D2 TIME</button>
           <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d3_time" disabled>D3 TIME</button>
+          <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d4_time" disabled>D4 TIME</button>
           <button class="lb-tab"        role="tab" aria-selected="false" data-category="shark_score">SHARK SCORE</button>
         </div>
         <div class="lb-table-wrap">
@@ -1886,15 +1901,11 @@ const fullWidthBody = true;
         </div>
         <div class="depth-info-rules shark-score-rules">
 
-          <div class="depth-rules-section-label">① WHAT IS SHARK THIEF?</div>
-          <div class="depth-rule-row" style="grid-template-columns:1fr">
-            <span class="depth-rule-val">Navigate a shark through a grid ocean, collecting coins and rare shell pieces while staying ahead of enemies that spawn every time you score.</span>
-          </div>
-          <div class="depth-rule-row" style="grid-template-columns:1fr; margin-top:0.4rem">
-            <span class="depth-rule-val">Casual players can dive in immediately — move, grab coins, survive. Strategic players can go deeper: every mechanic has a rule, and the Shark Score formula rewards both points and speed. Both audiences are playing the same game.</span>
+          <div class="depth-summary">
+            <p class="depth-summary-text">Navigate a shark through a grid ocean, collecting coins and rare shells while staying ahead of enemies that spawn every time you score. Casual players can dive in immediately — move, grab coins, survive. Strategic players can use the rules to plan routes and maximize their Shark Score. Both audiences are playing the same game.</p>
           </div>
 
-          <div class="depth-rules-section-label" style="margin-top:1.6rem">② HOW TO PLAY</div>
+          <div class="depth-rules-section-label">► HOW TO PLAY</div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">MOVE</span>
             <span class="depth-rule-val">Arrow keys or D-pad — one cell per turn.</span>
@@ -1916,37 +1927,46 @@ const fullWidthBody = true;
             <span class="depth-rule-val">Each depth has a unique shell with a special mechanic. Tap [DEPTH ?] in-game for details.</span>
           </div>
 
-          <div class="depth-rules-section-label" style="margin-top:1.6rem">③ SCORING</div>
+          <div class="depth-rules-section-label" style="margin-top:1.4rem">► SCORING</div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">SCORE</span>
             <span class="depth-rule-val">Points earned in a single run. Coins = 1 pt. Shells = variable.</span>
           </div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">HIGH SCORE</span>
-            <span class="depth-rule-val">Your best single-run Score ever recorded. Stored locally and on the leaderboard.</span>
+            <span class="depth-rule-val">Your best single-run Score ever recorded.</span>
           </div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">SHARK SCORE</span>
-            <span class="depth-rule-val">SCORE² ÷ TIME (seconds). Doubling your score quadruples it. Cutting your time in half doubles it.</span>
+            <span class="depth-rule-val">SCORE² ÷ TIME (sec). Doubling your score quadruples it. Cutting time in half doubles it.</span>
           </div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">TOTAL TIME</span>
-            <span class="depth-rule-val">Wall-clock seconds from game start until death. Pausing stops the clock.</span>
+            <span class="depth-rule-val">Wall-clock seconds from game start until death.</span>
           </div>
 
-          <div class="depth-rules-section-label" style="margin-top:1.6rem">④ TIPS</div>
-          <div class="depth-rule-row">
-            <span class="depth-rule-key">ENEMIES</span>
-            <span class="depth-rule-val">Every coin you grab spawns a new enemy — the board gets harder fast. Pick coins deliberately, not greedily.</span>
-          </div>
-          <div class="depth-rule-row">
-            <span class="depth-rule-key">CORAL</span>
-            <span class="depth-rule-val">At Depth 2, coral barriers are permanent. Plan routes before the board fills up.</span>
-          </div>
-          <div class="depth-rule-row">
-            <span class="depth-rule-key">EFFICIENCY</span>
-            <span class="depth-rule-val">Shark Score rewards points AND speed. Being efficient beats grinding a high score slowly.</span>
-          </div>
+          <details class="depth-details">
+            <summary class="depth-details-toggle">▶ TIPS &amp; STRATEGY</summary>
+            <div class="depth-details-body">
+              <div class="depth-rules-section-label" style="margin-bottom:0.6rem">STRATEGIC LAYER</div>
+              <div class="depth-rule-row">
+                <span class="depth-rule-key">ENEMIES</span>
+                <span class="depth-rule-val">Every coin you grab spawns a new enemy — the board gets harder fast. Pick coins deliberately, not greedily.</span>
+              </div>
+              <div class="depth-rule-row">
+                <span class="depth-rule-key">CORAL</span>
+                <span class="depth-rule-val">At Depth 2, coral barriers are permanent. Plan routes before the board fills up.</span>
+              </div>
+              <div class="depth-rule-row">
+                <span class="depth-rule-key">EFFICIENCY</span>
+                <span class="depth-rule-val">Shark Score rewards points AND speed. Being efficient beats grinding a high score slowly.</span>
+              </div>
+              <div class="depth-rule-row">
+                <span class="depth-rule-key">PATHING</span>
+                <span class="depth-rule-val">Enemies step toward you every 2 moves — move laterally, not straight back. A perpendicular escape creates angles; a straight retreat compresses the gap.</span>
+              </div>
+            </div>
+          </details>
 
         </div>
       </div>
@@ -2028,7 +2048,7 @@ const fullWidthBody = true;
   // D2 coral shells: one new shell appears every CORAL_INTERVAL moves,
   //   up to CORAL_MAX_ON_BOARD at a time (excludes shells already converted to walls).
   const CORAL_INTERVAL = 15;
-  const CORAL_MAX_ON_BOARD = 4;
+  const CORAL_MAX_ON_BOARD = 6;
   let coralMovesCounter = 0;
 
   const CORAL_PICKUP_INIT = 4; // # of coral shells spawned on entering depth 2
@@ -2081,7 +2101,20 @@ const fullWidthBody = true;
 
   let enemies: Enemy[] = [];
   let bigEnemies: BigEnemy[] = [];
-  let leviathan: Leviathan | null = null; // Depth 3: 3×3 mega enemy
+  let leviathan: Leviathan | null = null; // Depth 4: 3×3 mega enemy
+
+  // ===== Depth 3 (Nursery) state =====
+
+  interface BabyShark { x: number; y: number; }
+  let babySharks: BabyShark[] = [];
+  interface BloodCell { x: number; y: number; movesRemaining: number; }
+  let bloodCells: BloodCell[] = [];
+  let sharkEgg: { x: number; y: number } | null = null;
+  let sharkPrevX = 0, sharkPrevY = 0;
+  // Position history: most-recent-first ring buffer used to chain baby sharks.
+  // history[0] = where player was 1 move ago, history[1] = 2 moves ago, etc.
+  // baby[0] targets history[0], baby[1] targets history[1], etc. — natural chain spacing.
+  let sharkPositionHistory: Array<{ x: number; y: number }> = [];
 
   // ===== DepthSystem =====  →  DepthSystem.swift
 
@@ -2120,8 +2153,8 @@ const fullWidthBody = true;
     dyingRafId = requestAnimationFrame(tick);
   }
 
-  // Keep 5 farthest enemies, dissolve the closest — closest disappear first (0ms delay)
-  function clearCloseEnemies() {
+  // Keep the N farthest enemies, dissolve the rest — closest disappear first (0ms delay)
+  function clearCloseEnemies(keepN: number) {
     type EnemyRef = { x: number; y: number; isBig: boolean };
     const all: EnemyRef[] = [
       ...enemies.map(e => ({ x: e.x, y: e.y, isBig: false })),
@@ -2133,7 +2166,7 @@ const fullWidthBody = true;
       Math.abs(p.x - shark.x) + Math.abs(p.y - shark.y);
 
     all.sort((a, b) => dist(b) - dist(a)); // farthest first
-    const keep = new Set(all.slice(0, 5).map(p => `${p.x},${p.y},${p.isBig}`));
+    const keep = new Set(all.slice(0, keepN).map(p => `${p.x},${p.y},${p.isBig}`));
     const toRemove = all.filter(p => !keep.has(`${p.x},${p.y},${p.isBig}`));
     if (toRemove.length === 0) return;
 
@@ -2155,6 +2188,7 @@ const fullWidthBody = true;
   }
 
   function getDepthForScore(s: number): number {
+    if (s >= 300) return 4;
     if (s >= 200) return 3;
     if (s >= 100) return 2;
     return 1;
@@ -2178,8 +2212,8 @@ const fullWidthBody = true;
     wrapper.className = `game-depth-wrapper depth-${currentDepth}`;
 
     updateMaxDepth(currentDepth);
-    clearCloseEnemies();
     if (currentDepth === 2) {
+      clearCloseEnemies(5);
       // Clear depth-1 ammonite shells — they don't appear below the reef
       for (let r = 0; r < GRID; r++) superPickups[r].fill(false);
       ammoniteMovesCounter = 0;
@@ -2200,8 +2234,28 @@ const fullWidthBody = true;
           placed++;
         }
       }
+    } else if (currentDepth === 3) {
+      // D2→D3 (Nursery): "all but 10 enemies survive" — remove the 10 closest
+      const totalBefore = enemies.length + bigEnemies.length;
+      clearCloseEnemies(Math.max(0, totalBefore - 10));
+      // Clear all coral barriers and pickups — Nursery has open water
+      for (let r = 0; r < GRID; r++) {
+        coral[r].fill(false);
+        coralPickups[r].fill(false);
+        superPickups[r].fill(false);
+      }
+      coralMovesCounter = 0;
+      babySharks = [];
+      bloodCells = [];
+      sharkPositionHistory = [];
+      // One shark egg on board immediately
+      spawnSharkEgg();
+    } else if (currentDepth === 4) {
+      clearCloseEnemies(5);
+      spawnLeviathan();
+    } else {
+      clearCloseEnemies(5);
     }
-    if (currentDepth === 3) spawnLeviathan();
   }
 
   // ===== SpawnManager =====  →  SpawnManager.swift
@@ -2254,6 +2308,20 @@ const fullWidthBody = true;
     );
     coralPickups[cy][cx] = true;
     coralMovesCounter = 0;
+  }
+
+  function spawnSharkEgg() {
+    let ex: number, ey: number, attempts = 0;
+    do {
+      ex = Math.floor(Math.random() * GRID);
+      ey = Math.floor(Math.random() * GRID);
+      attempts++;
+      if (attempts > 1000) return;
+    } while (
+      Math.abs(ex - shark.x) + Math.abs(ey - shark.y) < MIN_ENEMY_DIST ||
+      pickups[ey][ex] || superPickups[ey][ex] || coral[ey]?.[ex] || coralPickups[ey][ex]
+    );
+    sharkEgg = { x: ex, y: ey };
   }
 
   function spawnEnemy(): Enemy {
@@ -2486,12 +2554,18 @@ const fullWidthBody = true;
     // EnemyAI state — cleared
     bigEnemies = [];
     leviathan = null;
+    babySharks = [];
+    bloodCells = [];
+    sharkEgg = null;
 
     // Place shark at random position, not on a pickup
     shark.x = Math.floor(Math.random() * GRID);
     shark.y = Math.floor(Math.random() * GRID);
     pickups[shark.y][shark.x] = false;
     superPickups[shark.y][shark.x] = false;
+    sharkPrevX = shark.x;
+    sharkPrevY = shark.y;
+    sharkPositionHistory = [];
 
     // All grids ready — place the first ammonite
     spawnAmmoniteIfNeeded();
@@ -2551,6 +2625,13 @@ const fullWidthBody = true;
       return;
     }
 
+    sharkPrevX = shark.x;
+    sharkPrevY = shark.y;
+
+    // Record prev position in history (most-recent-first, capped at 40 entries)
+    sharkPositionHistory.unshift({ x: sharkPrevX, y: sharkPrevY });
+    if (sharkPositionHistory.length > 40) sharkPositionHistory.pop();
+
     shark.x = nx;
     shark.y = ny;
     moveCount++;
@@ -2560,6 +2641,22 @@ const fullWidthBody = true;
     else if (dx === -1) sharkDir = "left";
     else if (dy === 1) sharkDir = "down";
     else if (dy === -1) sharkDir = "up";
+
+    // Move baby sharks — chain: baby[i] follows sharkPositionHistory[i]
+    // This gives each baby a unique target 1 step further back than the one ahead of it.
+    for (let i = 0; i < babySharks.length; i++) {
+      const target = sharkPositionHistory[i];
+      if (!target) continue;
+      const b = babySharks[i];
+      const diffX = target.x - b.x;
+      const diffY = target.y - b.y;
+      if (diffX === 0 && diffY === 0) continue;
+      if (Math.abs(diffX) >= Math.abs(diffY)) {
+        b.x += Math.sign(diffX);
+      } else {
+        b.y += Math.sign(diffY);
+      }
+    }
 
     // Check pickup (1 point + spawn enemy)
     if (pickups[ny][nx]) {
@@ -2578,6 +2675,21 @@ const fullWidthBody = true;
       hudScore.textContent = String(score);
       bigEnemies.push(spawnBigEnemy());
       checkDepthTransition();
+    }
+
+    // Check shark egg (Depth 3 — 10 pts, spawns 1 enemy + 1 baby shark, egg respawns immediately)
+    if (sharkEgg && shark.x === sharkEgg.x && shark.y === sharkEgg.y) {
+      sharkEgg = null;
+      score += 10;
+      hudScore.textContent = String(score);
+      enemies.push(spawnEnemy());
+      checkDepthTransition();
+      // New baby hatches at the cell the player just left — unshift so it becomes
+      // index 0 (closest to player, following history[0]), pushing existing babies
+      // one step further back in the chain.
+      babySharks.unshift({ x: sharkPrevX, y: sharkPrevY });
+      // Immediately respawn the next egg
+      spawnSharkEgg();
     }
 
     // SpawnManager — coin growth (unchanged random rate)
@@ -2601,20 +2713,38 @@ const fullWidthBody = true;
       if (ammoniteMovesCounter >= AMMONITE_INTERVAL) {
         spawnAmmoniteIfNeeded();
       }
-    } else if (currentDepth >= 2) {
+    } else if (currentDepth === 2) {
       coralMovesCounter++;
       if (coralMovesCounter >= CORAL_INTERVAL) {
         spawnCoralPickupIfNeeded();
       }
     }
+    // Depth 3 (Nursery): egg respawns immediately on collection — no counter needed
 
     // EnemyAI — regular + big enemies move every 2 player moves
     if (moveCount % 2 === 0) {
       moveEnemiesAI();
     }
 
-    // EnemyAI — Leviathan moves every player move (Depth 3)
+    // EnemyAI — Leviathan moves every player move (Depth 4)
     moveLeviathanAI();
+
+    // Depth 3: check if any enemy moved onto a baby shark
+    for (let i = babySharks.length - 1; i >= 0; i--) {
+      const b = babySharks[i];
+      const eaten =
+        enemies.some(e => e.x === b.x && e.y === b.y) ||
+        bigEnemies.some(be => b.x >= be.x && b.x <= be.x + 1 && b.y >= be.y && b.y <= be.y + 1);
+      if (eaten) {
+        bloodCells.push({ x: b.x, y: b.y, movesRemaining: 20 });
+        babySharks.splice(i, 1);
+        score = Math.max(0, score - 5);
+        hudScore.textContent = String(score);
+      }
+    }
+    // Decay blood cells by 1 move
+    bloodCells.forEach(bc => bc.movesRemaining--);
+    bloodCells = bloodCells.filter(bc => bc.movesRemaining > 0);
 
     // CollisionDetector — death checks
     for (const e of enemies) {
@@ -2802,6 +2932,23 @@ const fullWidthBody = true;
       }
     }
 
+    // Blood cells — fades over 20 moves: first 10 barely changes, last 10 fades out
+    for (const bc of bloodCells) {
+      // movesRemaining 20→10: hold near-full (0.70→0.60), barely visible change
+      // movesRemaining 10→0: linear fade 0.60→0
+      const alpha = bc.movesRemaining > 10
+        ? 0.60 + (bc.movesRemaining - 10) / 10 * 0.10
+        : (bc.movesRemaining / 10) * 0.60;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#cc1a1a";
+      ctx.fillRect(bc.x * CELL, bc.y * CELL, CELL, CELL);
+      ctx.globalAlpha = alpha * 0.5;
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(bc.x * CELL + 2, bc.y * CELL + 2, CELL - 4, CELL - 4);
+      ctx.restore();
+    }
+
     // Pickups — gold squares
     const pad = CELL * 0.2;
     for (let r = 0; r < GRID; r++) {
@@ -2828,8 +2975,14 @@ const fullWidthBody = true;
       }
     }
 
-    // Coral shell pickups — depth-2+ cone shell (5 pts)
-    if (currentDepth >= 2) {
+    // Shark egg — Depth 3 Nursery (10 pts + baby shark)
+    if (sharkEgg) {
+      const ep = CELL * 0.06;
+      drawSharkEgg(ctx, sharkEgg.x * CELL + ep, sharkEgg.y * CELL + ep, CELL - ep * 2);
+    }
+
+    // Coral shell pickups — depth-2 only
+    if (currentDepth === 2) {
       for (let r = 0; r < GRID; r++) {
         for (let c = 0; c < GRID; c++) {
           if (!coralPickups[r][c]) continue;
@@ -2909,6 +3062,11 @@ const fullWidthBody = true;
       ctx2.fillStyle = "#162840";
       ctx2.fillRect(lx + 3, ly + 3, lw - 6, lw - 6);
       ctx2.shadowBlur = 0;
+    }
+
+    // Baby sharks — Depth 3 companions (smaller, slightly translucent)
+    for (const b of babySharks) {
+      drawBabyShark(ctx, b.x, b.y, CELL, sharkDir);
     }
 
     // ===== SharkRenderer =====  →  SharkNode.swift
@@ -3031,6 +3189,92 @@ const fullWidthBody = true;
       tipRh,
     );
 
+    ctx.restore();
+  }
+
+  // ===== SharkEggRenderer =====  →  mermaid's purse (depth-3 pickup)
+  function drawSharkEgg(ctx: CanvasRenderingContext2D, px: number, py: number, ps: number) {
+    ctx.save();
+
+    // Portrait capsule (taller than wide) — distinct from round ammonite and cone shell
+    const cw = ps * 0.58;
+    const ch = ps * 0.84;
+    const cx = px + ps / 2;
+    const cy = py + ps / 2;
+    const ox = cx - cw / 2;
+    const oy = cy - ch / 2;
+    const r  = cw * 0.38; // generous corner radius = pill shape
+
+    function pill(x: number, y: number, w: number, h: number, rad: number) {
+      ctx.beginPath();
+      ctx.moveTo(x + rad, y);
+      ctx.lineTo(x + w - rad, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+      ctx.lineTo(x + w, y + h - rad);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+      ctx.lineTo(x + rad, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+      ctx.lineTo(x, y + rad);
+      ctx.quadraticCurveTo(x, y, x + rad, y);
+      ctx.closePath();
+    }
+
+    // 1. Dark outer ring (silhouette anchor)
+    ctx.fillStyle = "#5a0800";
+    pill(ox - 1, oy - 1, cw + 2, ch + 2, r + 1);
+    ctx.fill();
+
+    // 2. Main body — deep burnt orange
+    ctx.fillStyle = "#c43a00";
+    pill(ox, oy, cw, ch, r);
+    ctx.fill();
+
+    // 3. Mid highlight — warm orange upper-left zone (translucency illusion)
+    ctx.fillStyle = "#e06020";
+    pill(ox + cw * 0.12, oy + ch * 0.08, cw * 0.62, ch * 0.48, r * 0.55);
+    ctx.fill();
+
+    // 4. Bright specular — top-left corner dot
+    ctx.fillStyle = "#ff9a50";
+    ctx.beginPath();
+    ctx.arc(cx - cw * 0.17, cy - ch * 0.24, ps * 0.065, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 5. Embryo — large dark oval, lower-center (the payload)
+    ctx.fillStyle = "#120000";
+    ctx.beginPath();
+    ctx.ellipse(cx + cw * 0.03, cy + ch * 0.10, cw * 0.21, ch * 0.27, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 6. Embryo inner — slightly lighter center for 3D mass
+    ctx.fillStyle = "#2e0500";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + ch * 0.08, cw * 0.10, ch * 0.13, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 7. Tendrils — 4 corner curls (1–2px at 20px; visible detail at larger sizes)
+    const tw = Math.max(1, ps * 0.042);
+    ctx.strokeStyle = "#3d0700";
+    ctx.lineWidth = tw;
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(ox + r * 0.8, oy - tw, ps * 0.17, Math.PI * 0.9, Math.PI * 1.65); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox + cw - r * 0.8, oy - tw, ps * 0.17, -Math.PI * 0.65, Math.PI * 0.1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox + r * 0.8, oy + ch + tw, ps * 0.17, Math.PI * 0.35, Math.PI * 1.1); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox + cw - r * 0.8, oy + ch + tw, ps * 0.17, -Math.PI * 0.1, Math.PI * 0.65); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // ===== BabySharkRenderer =====  →  smaller companion shark (Depth 3)
+  function drawBabyShark(ctx: CanvasRenderingContext2D, gx: number, gy: number, cs: number, dir: string) {
+    const scale = 0.55;
+    const offset = cs * (1 - scale) / 2;
+    ctx.save();
+    ctx.globalAlpha = 0.80;
+    ctx.translate(gx * cs + offset, gy * cs + offset);
+    ctx.scale(scale, scale);
+    // Draw at virtual grid pos (0,0) with same cellSize — reuses all shark art
+    drawSharkOnCtx(ctx, 0, 0, cs, dir);
     ctx.restore();
   }
 
@@ -3293,7 +3537,8 @@ const fullWidthBody = true;
   const DEPTH_META: Record<number, { color: string; glow: string; name: string }> = {
     1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)", name: "THE SHALLOWS" },
     2: { color: "#daa070", glow: "rgba(218,160,112,0.5)", name: "REEF" },
-    3: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)", name: "ABYSS" },
+    3: { color: "#e06fa0", glow: "rgba(224,111,160,0.5)", name: "NURSERY" },
+    4: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)", name: "ABYSS" },
   };
 
   function updateHudDepth(depth: number) {
@@ -3441,12 +3686,11 @@ const fullWidthBody = true;
     init(); // resets everything to depth 1
     if (targetDepth > 1) startedFromDepth1 = false; // dev jump — shark score ineligible
 
+    const devWrapper = document.getElementById("gameDepthWrapper")!;
     if (targetDepth >= 2) {
       currentDepth = 2;
-      // Score stays 0 — high scores require playing through all levels
       updateHudDepth(2);
-      const wrapper = document.getElementById("gameDepthWrapper")!;
-      wrapper.className = "game-depth-wrapper depth-2";
+      devWrapper.className = "game-depth-wrapper depth-2";
       // No ammonite shells at depth 2+
       for (let r = 0; r < GRID; r++) superPickups[r].fill(false);
       spawnCoral();
@@ -3465,8 +3709,23 @@ const fullWidthBody = true;
     if (targetDepth >= 3) {
       currentDepth = 3;
       updateHudDepth(3);
-      const wrapper = document.getElementById("gameDepthWrapper")!;
-      wrapper.className = "game-depth-wrapper depth-3";
+      devWrapper.className = "game-depth-wrapper depth-3";
+      // Nursery — clear coral, spawn egg
+      for (let r = 0; r < GRID; r++) {
+        coral[r].fill(false);
+        coralPickups[r].fill(false);
+        superPickups[r].fill(false);
+      }
+      babySharks = [];
+      bloodCells = [];
+      sharkPositionHistory = [];
+      spawnSharkEgg();
+    }
+    if (targetDepth >= 4) {
+      currentDepth = 4;
+      updateHudDepth(4);
+      devWrapper.className = "game-depth-wrapper depth-4";
+      sharkEgg = null;
       spawnLeviathan();
     }
 
@@ -3497,7 +3756,10 @@ const fullWidthBody = true;
       let html = `<button class="pixel-btn pixel-btn-sub" data-depth="1">DEPTH 1 — FRESH</button>`;
       html += `<button class="pixel-btn pixel-btn-sub pixel-btn-d2" data-depth="2">DEPTH 2 — REEF</button>`;
       if (maxDepth >= 3) {
-        html += `<button class="pixel-btn pixel-btn-sub pixel-btn-d3" data-depth="3">DEPTH 3 — ABYSS</button>`;
+        html += `<button class="pixel-btn pixel-btn-sub pixel-btn-d3" data-depth="3">DEPTH 3 — NURSERY</button>`;
+      }
+      if (maxDepth >= 4) {
+        html += `<button class="pixel-btn pixel-btn-sub pixel-btn-d4" data-depth="4">DEPTH 4 — ABYSS</button>`;
       }
       depthSubBtns.innerHTML = html;
       depthSubBtns.querySelectorAll("[data-depth]").forEach((btn) => {
@@ -3593,9 +3855,9 @@ const fullWidthBody = true;
     const thead = document.getElementById("lbTableHead")!;
     const tbody = document.getElementById("leaderboardBody")!;
 
-    const isTime  = category === "d1_time" || category === "d2_time" || category === "d3_time";
+    const isTime  = category === "d1_time" || category === "d2_time" || category === "d3_time" || category === "d4_time";
     const isShark = category === "shark_score";
-    const depthIdx = category === "d1_time" ? 0 : category === "d2_time" ? 1 : 2;
+    const depthIdx = category === "d1_time" ? 0 : category === "d2_time" ? 1 : category === "d3_time" ? 2 : 3;
 
     // Update column headers
     if (isTime) {
@@ -4137,7 +4399,7 @@ const fullWidthBody = true;
   let miniPlaying = false;
   let miniDone = false;
   let miniDepth = 1;
-  const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 999 };
+  const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 5400, 4: 999 };
 
   function miniTick(now: number) {
     const delta = now - miniLastTick;
@@ -4158,7 +4420,8 @@ const fullWidthBody = true;
     ctx.clearRect(0, 0, 200, 200);
     if (depth === 1) renderD1(ctx, elapsed);
     else if (depth === 2) renderD2(ctx, elapsed);
-    else renderD3(ctx, elapsed);
+    else if (depth === 3) renderD3(ctx, elapsed);
+    else renderD4(ctx, elapsed);
   }
 
   function setMiniCaption(text: string) {
@@ -4286,86 +4549,77 @@ const fullWidthBody = true;
   // Move 4: shark→(2,1) right + ENEMY (3,0)→(2,0) horizontal, SPAWNED (4,4)→(4,3) vertical
   // Hold
   function renderD2(ctx: CanvasRenderingContext2D, elapsed: number) {
-    const M1 = 500, M1E = 850;        // move 1
-    const BOUNCE_S = 950, BOUNCE_E = 1600; // move 2: shark bounces
-    const TRANSFORM = 1800;           // shell→barrier flash end
-    const BOUNCE2_S = 1950, BOUNCE2_E = 2120; // second shorter bounce
-    const SPAWN_E = 2350;             // spawned enemy fades in
-    const M3 = 2450, M3E = 2800;      // move 3 shark up
-    const M4 = 2900, M4E = 3250;      // move 4 shark right + enemy moves
-    const DONE = MINI_TOTAL[2];
+    // ── Timing ──────────────────────────────────────────────────────
+    const M1 = 900,  M1E = 1250;    // move 1: shark (0,2)→(1,2)
+    const BOUNCE_S = 1500;           // move 2: shark lunges into shell
+    const BOUNCE_E = 2200;           // bounce complete, shell hardens
+    const TRANSFORM = 2350;          // barrier flash settles
+    const SPAWN_E = 2950;            // spawned enemy fully visible
+    const M3 = 3400, M3E = 3750;    // move 3: shark (1,2)→(1,1) up
+    const M4 = 4150, M4E = 4500;    // move 4: shark (1,1)→(2,1) right
+    const DONE = MINI_TOTAL[2];      // 5200ms
     const e = Math.min(elapsed, DONE);
 
-    // Shark position
-    let svx = 0, svy = 2, sdir = "right";
-    if (e < M1) { svx = 0; }
-    else if (e < M1E) { svx = eio((e-M1)/(M1E-M1)); }
+    // ── Shark position ───────────────────────────────────────────────
+    let svx = 0, svy = 2, sdir: "right"|"left"|"up"|"down" = "right";
+    if (e < M1)        { svx = 0; }
+    else if (e < M1E)  { svx = eio((e-M1)/(M1E-M1)); }
     else if (e < BOUNCE_S) { svx = 1; }
     else if (e < BOUNCE_E) {
-      // sin bounce: lunge then rebound
-      const t = (e-BOUNCE_S)/(BOUNCE_E-BOUNCE_S);
-      svx = 1 + Math.sin(t * Math.PI) * 0.42;
+      // single clean lunge then ease back — peaks at 0.45 cell into the barrier
+      const t = (e - BOUNCE_S) / (BOUNCE_E - BOUNCE_S);
+      svx = 1 + Math.sin(t * Math.PI) * 0.45;
     }
-    else if (e < BOUNCE2_S) { svx = 1; }
-    else if (e < BOUNCE2_E) {
-      // second shorter nudge bounce
-      const t = (e-BOUNCE2_S)/(BOUNCE2_E-BOUNCE2_S);
-      svx = 1 + Math.sin(t * Math.PI) * 0.2;
-    }
-    else if (e < M3) { svx = 1; }
-    else if (e < M3E) { svy = 2 - eio((e-M3)/(M3E-M3)); svx = 1; sdir = "up"; }
-    else if (e < M4) { svx = 1; svy = 1; sdir = "up"; }
-    else if (e < M4E) { svx = 1 + eio((e-M4)/(M4E-M4)); svy = 1; sdir = "right"; }
-    else { svx = 2; svy = 1; sdir = "right"; }
+    else if (e < M3)   { svx = 1; svy = 2; }
+    else if (e < M3E)  { svx = 1; svy = 2 - eio((e-M3)/(M3E-M3)); sdir = "up"; }
+    else if (e < M4)   { svx = 1; svy = 1; sdir = "up"; }
+    else if (e < M4E)  { svx = 1 + eio((e-M4)/(M4E-M4)); svy = 1; sdir = "right"; }
+    else               { svx = 2; svy = 1; sdir = "right"; }
 
-    // Enemy A: starts (4,0), moves on move 2 and move 4
-    // Move 2: shark at (1,2) → diffX=-3,diffY=2  → horizontal → (4,0)→(3,0)
-    // Move 4: shark at (2,1) → diffX=-1,diffY=1  → horizontal (tie) → (3,0)→(2,0)
+    // ── Enemy A: (4,0) → (3,0) on move 2, → (2,0) on move 4 ────────
     let evx = 4, evy = 0;
     if (e >= BOUNCE_E) {
-      const es = BOUNCE_E, ee = BOUNCE_E + 350;
-      if (e < ee) { const t=(e-es)/350; evx=4-eio(t); evy=0; }  // (4,0)→(3,0) horizontal
-      else { evx = 3; evy = 0; }
+      const ee = BOUNCE_E + 380;
+      evx = e < ee ? 4 - eio((e - BOUNCE_E) / 380) : 3;
     }
     if (e >= M4E) {
-      const es = M4E, ee = M4E + 350;
-      if (e < ee) { const t=(e-es)/350; evx=3-eio(t); evy=0; }  // (3,0)→(2,0) horizontal
-      else { evx = 2; evy = 0; }
+      const ee = M4E + 380;
+      evx = e < ee ? 3 - eio((e - M4E) / 380) : 2;
     }
 
-    // Spawned enemy: fades in after shell interaction, then moves on move 4
-    // Move 4: shark at (2,1) → diffX=-2,diffY=-3 → vertical → (4,4)→(4,3)
-    const spawnedAlpha = e >= TRANSFORM ? eio(Math.min(1,(e-TRANSFORM)/(SPAWN_E-TRANSFORM))) : 0;
+    // ── Spawned enemy: fades in at TRANSFORM, moves on move 4 ───────
+    const spawnedAlpha = e >= TRANSFORM
+      ? eio(Math.min(1, (e - TRANSFORM) / (SPAWN_E - TRANSFORM)))
+      : 0;
     let sevx = 4, sevy = 4;
     if (e >= M4E) {
-      const es = M4E, ee = M4E + 350;
-      if (e < ee) { const t=(e-es)/350; sevx=4; sevy=4-eio(t); }  // (4,4)→(4,3) vertical
-      else { sevx = 4; sevy = 3; }
+      const ee = M4E + 380;
+      sevy = e < ee ? 4 - eio((e - M4E) / 380) : 3;
     }
 
-    // Shell→barrier
-    const shellAlpha = e >= BOUNCE_E ? Math.max(0, 1 - eio(Math.min(1,(e-BOUNCE_E)/200))*2) : 1;
+    // ── Shell → barrier visuals ──────────────────────────────────────
+    // Shell fades out as the barrier hardens
+    const shellAlpha = e < BOUNCE_E ? 1
+      : Math.max(0, 1 - eio(Math.min(1, (e - BOUNCE_E) / 250)) * 2);
     const barrierVisible = e >= BOUNCE_E;
+    // Single flash pulse on impact
     const barrierFlashAlpha = e >= BOUNCE_E && e < TRANSFORM
-      ? Math.sin(((e-BOUNCE_E)/(TRANSFORM-BOUNCE_E)) * Math.PI * 2) * 0.5
+      ? Math.sin(((e - BOUNCE_E) / (TRANSFORM - BOUNCE_E)) * Math.PI) * 0.65
       : 0;
-    // Second bounce: brief flash on barrier tile
-    const barrierFlash2Alpha = e >= BOUNCE2_S && e < BOUNCE2_E
-      ? Math.sin(((e-BOUNCE2_S)/(BOUNCE2_E-BOUNCE2_S)) * Math.PI) * 0.5
-      : 0;
-    const plusAlpha = e >= BOUNCE_E && e < BOUNCE_E+500
-      ? Math.sin(((e-BOUNCE_E)/500) * Math.PI)
+    // "+5 PTS" label arcs in then out
+    const plusAlpha = e >= BOUNCE_E && e < BOUNCE_E + 700
+      ? Math.sin(((e - BOUNCE_E) / 700) * Math.PI)
       : 0;
 
-    // Ambient coral fade-in at scene start
-    const coralFadeAlpha = e < 600 ? eio(e / 600) : 1;
+    // Ambient coral tiles fade in with the scene
+    const coralFadeAlpha = e < 700 ? eio(e / 700) : 1;
 
     const sharkMovesDone = e < M1 ? 0 : e < BOUNCE_S ? 1 : e < M3 ? 2 : e < M4 ? 3 : 4;
     updateMovePips(sharkMovesDone);
 
+    // ── Draw ─────────────────────────────────────────────────────────
     miniBackground(ctx, 2);
 
-    // Ambient coral barriers — fade in at scene start to show ~2% spawn
     ctx.save(); ctx.globalAlpha = coralFadeAlpha;
     miniDrawCoral(ctx, 0, 4);
     miniDrawCoral(ctx, 2, 4);
@@ -4378,37 +4632,178 @@ const fullWidthBody = true;
       if (barrierFlashAlpha > 0) {
         ctx.save(); ctx.globalAlpha = barrierFlashAlpha;
         ctx.fillStyle = "#daa070";
-        ctx.fillRect(2*MINI_CS+2, 2*MINI_CS+2, MINI_CS-4, MINI_CS-4);
-        ctx.restore();
-      }
-      // Second bounce flash: barrier briefly brightens again
-      if (barrierFlash2Alpha > 0) {
-        ctx.save(); ctx.globalAlpha = barrierFlash2Alpha;
-        ctx.fillStyle = "#f0c0a0";
         ctx.fillRect(2*MINI_CS+1, 2*MINI_CS+1, MINI_CS-2, MINI_CS-2);
         ctx.restore();
       }
     }
-    if (shellAlpha > 0) miniDrawCoralShell(ctx, 2, 2, shellAlpha);
-    if (plusAlpha > 0) miniDrawLabel(ctx, 2, 2, "+5 PTS", plusAlpha);
-    if (spawnedAlpha > 0) miniDrawEnemy(ctx, sevx, sevy, spawnedAlpha);
+    if (shellAlpha > 0)    miniDrawCoralShell(ctx, 2, 2, shellAlpha);
+    if (plusAlpha > 0)     miniDrawLabel(ctx, 2, 2, "+5 PTS", plusAlpha);
+    if (spawnedAlpha > 0)  miniDrawEnemy(ctx, sevx, sevy, spawnedAlpha);
     miniDrawEnemy(ctx, evx, evy, 1);
     miniDrawShark(ctx, svx, svy, sdir);
 
-    if (e < M1) setMiniCaption("THE CORAL SHELL BLOCKS THE PATH...");
-    else if (e < BOUNCE_S) setMiniCaption("MOVE 1 — ENEMY WAITS...");
-    else if (e < BOUNCE_E) setMiniCaption("MOVE 2 — CAN'T BE COLLECTED!");
-    else if (e < BOUNCE2_S) setMiniCaption("+5 PTS — SHELL HARDENS INTO A WALL!");
-    else if (e < BOUNCE2_E) setMiniCaption("THE WALL IS PERMANENT — STILL BLOCKS!");
-    else if (e < SPAWN_E) setMiniCaption("A NEW ENEMY RELEASED...");
-    else if (e < M3E) setMiniCaption("MOVE 3 — NAVIGATE AROUND THE BARRIER...");
-    else if (e < M4E) setMiniCaption("MOVE 4 — ENEMY ADVANCES AGAIN!");
-    else setMiniCaption("BARRIERS RESHAPE THE REEF PERMANENTLY");
+    // ── Captions — each window ≥ 700ms ──────────────────────────────
+    if      (e < BOUNCE_S)  setMiniCaption("THE CORAL SHELL BLOCKS YOUR PATH");
+    else if (e < BOUNCE_E)  setMiniCaption("MOVE 2 — CAN'T BE COLLECTED!");
+    else if (e < SPAWN_E)   setMiniCaption("IT HARDENS INTO A WALL — ENEMY SPAWNS");
+    else if (e < M3)        setMiniCaption("THE BARRIER IS PERMANENT");
+    else if (e < M4)        setMiniCaption("MOVE 3 — NAVIGATE AROUND IT");
+    else if (e < M4E + 400) setMiniCaption("MOVE 4 — ENEMY CLOSES IN");
+    else                    setMiniCaption("EVERY HIT RESHAPES THE REEF FOREVER");
   }
 
-  // ── Depth 3 placeholder ──────────────────────────────────────────
-  function renderD3(ctx: CanvasRenderingContext2D, _e: number) {
-    // Dark version of the tile grid
+  // ── Depth 3 — Nursery animation ─────────────────────────────────
+  // Scene: shark at (2,2), egg at (4,1), enemy at (0,4)
+  // Move 1: shark (2,2)→(3,2) — approaches egg
+  // Move 2: shark (3,2)→(4,1) — collects egg, baby spawns at (3,2)
+  // Flash: "+10 PTS" + baby appears
+  // Move 3: shark (4,1)→(4,0) — baby follows to (4,1)
+  // Move 4: enemy (0,4)→(1,3) — moves toward baby
+  // Show blood flash: enemy eats baby → red cell, "-5 PTS"
+  // Hold: board with blood fading
+  function renderD3(ctx: CanvasRenderingContext2D, elapsed: number) {
+    const M1 = 900,   M1E = 1250;    // move 1: shark approaches egg
+    const EGG_S = 1450, EGG_E = 1750; // move 2: collect egg
+    const FLASH = 1900;               // "+10 PTS"
+    const BABY_S = 2000, BABY_E = 2300; // baby shark fades in
+    const M3 = 2700,  M3E = 3000;    // move 3: shark moves, baby trails
+    const EAT_S = 3500, EAT_E = 3900; // enemy eats baby
+    const BLOOD_S = 3900;             // blood cell appears
+    const DONE = MINI_TOTAL[3];       // 5400ms
+    const e = Math.min(elapsed, DONE);
+
+    // Shark position
+    let svx = 2, svy = 2;
+    if (e < M1)       { svx = 2; svy = 2; }
+    else if (e < M1E) { svx = 2 + eio((e-M1)/(M1E-M1)); svy = 2; }
+    else if (e < EGG_S) { svx = 3; svy = 2; }
+    else if (e < EGG_E) {
+      const t = (e-EGG_S)/(EGG_E-EGG_S);
+      svx = 3 + eio(t); svy = 2 - eio(t);
+    }
+    else { svx = 4; svy = 1; }
+    // Move 3 — up
+    if (e >= M3 && e < M3E) { svy = 1 - eio((e-M3)/(M3E-M3)); svx = 4; }
+    else if (e >= M3E)       { svy = 0; svx = 4; }
+
+    // Baby shark position (trails shark by 1 step)
+    const babyVisible = e >= BABY_S && e < EAT_E;
+    let bvx = 4, bvy = 1; // where baby appears (where shark was when egg collected)
+    if (e >= M3E) { bvx = 4; bvy = 1; } // baby moves to (4,1) after move 3
+
+    // Enemy position — starts at (0,4), advances toward baby
+    let evx = 0, evy = 4;
+    if (e >= EAT_S) {
+      const t2 = Math.min(1, (e-EAT_S)/(EAT_E-EAT_S));
+      evx = eio(t2) * 1; // moves right toward baby column
+      evy = 4 - eio(t2) * 3; // moves toward baby at (4,1)... simplified to (1,1)
+    }
+    const enemyEatsBaby = e >= EAT_E;
+
+    // Blood cell alpha
+    const bloodAlpha = e < BLOOD_S ? 0
+      : e < BLOOD_S + 400 ? eio((e-BLOOD_S)/400)
+      : Math.max(0, 1 - (e - BLOOD_S - 400) / 900);
+
+    // "+10 PTS" flash alpha
+    const plusAlpha = e >= FLASH && e < FLASH + 600
+      ? Math.sin(((e-FLASH)/600) * Math.PI)
+      : 0;
+
+    // "-5 PTS" flash alpha
+    const minusAlpha = e >= EAT_E && e < EAT_E + 700
+      ? Math.sin(((e-EAT_E)/700) * Math.PI)
+      : 0;
+
+    // Egg visibility (disappears on collection)
+    const eggVisible = e < EGG_E;
+    const eggAlpha = e > EGG_S ? Math.max(0, 1 - (e-EGG_S)/(EGG_E-EGG_S)) : 1;
+
+    // ── Draw ─────────────────────────────────────────────────────────
+    // Background — dark warm (nursery)
+    ctx.fillStyle = "#0f0812";
+    ctx.fillRect(0, 0, 200, 200);
+    for (let r = 0; r < MINI_N; r++) {
+      for (let c = 0; c < MINI_N; c++) {
+        ctx.fillStyle = MINI_TILE_COLORS_D1[r*MINI_N+c];
+        ctx.fillRect(c*MINI_CS, r*MINI_CS, MINI_CS-1, MINI_CS-1);
+      }
+    }
+
+    // Blood cell
+    if (bloodAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = bloodAlpha * 0.75;
+      ctx.fillStyle = "#cc1a1a";
+      ctx.fillRect(bvx * MINI_CS, bvy * MINI_CS, MINI_CS, MINI_CS);
+      ctx.restore();
+    }
+
+    // Shark egg
+    if (eggVisible) {
+      ctx.save();
+      ctx.globalAlpha = eggAlpha;
+      drawSharkEgg(ctx, 4 * MINI_CS + 2, 1 * MINI_CS + 2, MINI_CS - 4);
+      ctx.restore();
+    }
+
+    // Enemy
+    if (!enemyEatsBaby) {
+      ctx.fillStyle = "#0a1824";
+      ctx.fillRect(evx*MINI_CS-1, evy*MINI_CS-1, MINI_CS+2, MINI_CS+2);
+      ctx.fillStyle = "#162d40";
+      ctx.fillRect(evx*MINI_CS, evy*MINI_CS, MINI_CS, MINI_CS);
+    }
+
+    // Baby shark
+    if (babyVisible && !enemyEatsBaby) {
+      const babyAlpha = e < BABY_E ? eio((e-BABY_S)/(BABY_E-BABY_S)) : 0.80;
+      ctx.save();
+      ctx.globalAlpha = babyAlpha;
+      drawBabyShark(ctx, bvx, bvy, MINI_CS, "right");
+      ctx.restore();
+    }
+
+    // Main shark
+    miniDrawShark(ctx, svx, svy, "right");
+
+    // "+10 PTS" label
+    if (plusAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = plusAlpha;
+      ctx.font = `bold ${Math.floor(MINI_CS * 0.9)}px monospace`;
+      ctx.fillStyle = "#e06fa0";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("+10", (4+0.5)*MINI_CS, (1-0.8)*MINI_CS);
+      ctx.restore();
+    }
+
+    // "-5 PTS" label
+    if (minusAlpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = minusAlpha;
+      ctx.font = `bold ${Math.floor(MINI_CS * 0.9)}px monospace`;
+      ctx.fillStyle = "#ff4444";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("-5", (bvx+0.5)*MINI_CS, (bvy-0.8)*MINI_CS);
+      ctx.restore();
+    }
+
+    // Captions
+    const sharkMovesDone = e < M1 ? 0 : e < EGG_S ? 1 : e < M3 ? 2 : e < EAT_S ? 3 : 4;
+    updateMovePips(sharkMovesDone);
+    if      (e < M1)      setMiniCaption("A SHARK EGG DRIFTS IN THE CURRENT");
+    else if (e < EGG_S)   setMiniCaption("MOVE 1 — APPROACH THE EGG");
+    else if (e < BABY_E)  setMiniCaption("MOVE 2 — COLLECT IT FOR +10 PTS!");
+    else if (e < M3)      setMiniCaption("A BABY SHARK HATCHES — FOLLOWS YOU!");
+    else if (e < EAT_S)   setMiniCaption("MOVE 3 — BABY TRAILS BEHIND");
+    else if (e < EAT_E)   setMiniCaption("ENEMY MOVES TOWARD YOUR BABY...");
+    else if (e < BLOOD_S + 1200) setMiniCaption("BABY EATEN — LOSE 5 PTS!");
+    else                  setMiniCaption("PROTECT YOUR PUPS — PLAN YOUR ROUTE");
+  }
+
+  // ── Depth 4 — Abyss placeholder ──────────────────────────────────
+  function renderD4(ctx: CanvasRenderingContext2D, _e: number) {
     ctx.fillStyle = "#040f1a";
     ctx.fillRect(0, 0, 200, 200);
     for (let r = 0; r < MINI_N; r++) {
@@ -4425,7 +4820,7 @@ const fullWidthBody = true;
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("?", 100, 100);
     ctx.restore();
-    setMiniCaption("DEPTH 3 IS UNCHARTED TERRITORY...");
+    setMiniCaption("DEPTH 4 IS UNCHARTED TERRITORY...");
     updateMovePips(0);
   }
 
@@ -4446,6 +4841,15 @@ const fullWidthBody = true;
       { key: "DESCEND",   val: "REACH 200 PTS" },
     ],
     3: [
+      { key: "ENEMIES",    val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+      { key: "COINS",      val: "+1 PT — SPAWNS 1 ENEMY" },
+      { key: "EGG",        val: "+10 PTS — HATCHES BABY SHARK — SPAWNS 1 ENEMY — 1 EGG ON BOARD AT ALL TIMES", keyColor: "#e06fa0" },
+      { key: "BABY SHARK", val: "FOLLOWS YOU — IF AN ENEMY EATS IT, YOU LOSE 5 PTS", keyColor: "#e06fa0" },
+      { key: "BLOOD",      val: "CELL WHERE BABY WAS EATEN TURNS RED — FADES OVER 10 MOVES" },
+      { key: "ON ENTRY",   val: "10 CLOSEST ENEMIES DISSOLVE — OPEN WATER, NO CORAL" },
+      { key: "DESCEND",    val: "REACH 300 PTS" },
+    ],
+    4: [
       { key: "STATUS",    val: "THIS DEPTH IS NOT YET CHARTED." },
       { key: "LEVIATHAN", val: "A 3×3 MEGA ENEMY — MOVE RATE TBD", keyColor: "#9d6fe0" },
       { key: "SHELL",     val: "PIECE AND PARAMETERS TBD" },
@@ -4467,19 +4871,30 @@ const fullWidthBody = true;
       { key: "GRID",        val: "25 × 25 CELLS" },
       { key: "COIN RATE",   val: "0.00025 per cell per move" },
       { key: "COIN INIT",   val: "5% of cells on start" },
-      { key: "SHELL SPAWN", val: "1 new coral shell every 15 moves — max 4 on board" },
+      { key: "SHELL SPAWN", val: "1 new coral shell every 15 moves — max 6 on board" },
       { key: "SHELL INIT",  val: "4 shells placed on entry" },
       { key: "CORAL TILES", val: "~2% of grid on entry" },
       { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
       { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
     ],
-    3: [],
+    3: [
+      { key: "GRID",        val: "25 × 25 CELLS" },
+      { key: "COIN RATE",   val: "0.00025 per cell per move" },
+      { key: "COIN INIT",   val: "5% of cells on start" },
+      { key: "EGG SPAWN",   val: "1 egg always on board — respawns immediately on collection" },
+      { key: "CORAL TILES", val: "0% — open water" },
+      { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
+      { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
+      { key: "BABY MOVE",   val: "1 STEP EVERY PLAYER MOVE — TRAILS 1 CELL BEHIND" },
+    ],
+    4: [],
   };
 
   const DEPTH_SUMMARY: Record<number, string> = {
     1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. The purple ammonite appears every 25 moves and is worth 10 pts — but grabbing it spawns a 2×2 mega enemy. One ammonite on the board at a time.",
-    2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 4 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
-    3: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
+    2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 6 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
+    3: "The nursery. Shark eggs drift in the current — collect one for 10 pts, but it hatches a baby shark that follows you everywhere. If an enemy runs into your baby, it gets eaten and you lose 5 pts. Guard your pups.",
+    4: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
   };
 
   function buildRulesHTML(depth: number): string {
@@ -4541,7 +4956,8 @@ const fullWidthBody = true;
   const MINI_OPEN_CAPTIONS: Record<number, string> = {
     1: "FIND THE PURPLE AMMONITE",
     2: "THE CORAL SHELL BLOCKS THE PATH...",
-    3: "DEPTH 3 IS UNCHARTED TERRITORY...",
+    3: "A SHARK EGG DRIFTS IN THE CURRENT",
+    4: "DEPTH 4 IS UNCHARTED TERRITORY...",
   };
 
   function openDepthInfo(depth: number) {
@@ -4626,7 +5042,8 @@ const fullWidthBody = true;
     const depths = [
       { label: "DEPTH 1", depth: 1, color: "#48cae4" },
       { label: "DEPTH 2", depth: 2, color: "#daa070" },
-      { label: "DEPTH 3", depth: 3, color: "#9d6fe0" },
+      { label: "DEPTH 3", depth: 3, color: "#e06fa0" },
+      { label: "DEPTH 4", depth: 4, color: "#9d6fe0" },
     ];
     depths.forEach(({ label, depth, color }) => {
       const btn = document.createElement("button");
