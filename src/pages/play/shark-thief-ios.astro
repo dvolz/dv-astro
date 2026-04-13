@@ -620,37 +620,103 @@ const fullWidthBody = true;
 
   /* Rules content is injected via innerHTML — must use :global() anchored to
      the static .depth-info-rules parent so Astro's scope hash still gates it */
+
+  /* ── Depth summary block ── */
+  .depth-info-rules :global(.depth-summary) {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .depth-info-rules :global(.depth-summary-text) {
+    font-family: var(--font-terminal);
+    font-size: 1.55rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── Section label ── */
   .depth-info-rules :global(.depth-rules-section-label) {
     font-family: var(--font-pixel);
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--text-muted);
     letter-spacing: 0.18em;
-    margin-bottom: 1.2rem;
+    margin: 0 0 0.8rem;
     display: block;
   }
 
+  /* ── Key / value rows — fixed key column so values always align ── */
   .depth-info-rules :global(.depth-rule-row) {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1rem;
-    padding: 0.8rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    align-items: start;
+    grid-template-columns: 6rem 1fr;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    align-items: center;
   }
 
   .depth-info-rules :global(.depth-rule-key) {
     font-family: var(--font-pixel);
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    padding-top: 0.25rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
     white-space: nowrap;
+    line-height: 1.4;
   }
 
   .depth-info-rules :global(.depth-rule-val) {
     font-family: var(--font-terminal);
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     color: var(--text-primary);
-    line-height: 1.5;
+    line-height: 1.4;
+  }
+
+  /* ── Collapsible full-details section ── */
+  .depth-info-rules :global(.depth-details) {
+    margin-top: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  .depth-info-rules :global(.depth-details[open]) {
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .depth-info-rules :global(.depth-details-toggle) {
+    font-family: var(--font-pixel);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+  }
+
+  .depth-info-rules :global(.depth-details-toggle::-webkit-details-marker) {
+    display: none;
+  }
+
+  .depth-info-rules :global(.depth-details[open] .depth-details-toggle) {
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .depth-info-rules :global(.depth-details-body) {
+    padding: 0.8rem 1rem 0.4rem;
+  }
+
+  .depth-info-rules :global(.depth-details-body .depth-rule-row) {
+    grid-template-columns: 6.5rem 1fr;
+  }
+
+  .depth-info-rules :global(.depth-details-body .depth-rule-val) {
+    font-size: 1.45rem;
   }
 
   .depth-info-scene {
@@ -4352,30 +4418,65 @@ const fullWidthBody = true;
     3: [],
   };
 
+  const DEPTH_SUMMARY: Record<number, string> = {
+    1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. Find the purple ammonite shell for a big bonus, but it summons a 2×2 mega enemy in return.",
+    2: "The reef reshapes the board. Hitting a coral shell converts it into a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
+    3: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
+  };
+
   function buildRulesHTML(depth: number): string {
     const meta = DEPTH_META[depth] ?? DEPTH_META[1];
-    const rows = DEPTH_RULES[depth] ?? [];
-    const rulesHtml = rows.map(r => {
-      const kc = r.keyColor ?? meta.color;
-      return `<div class="depth-rule-row"><span class="depth-rule-key" style="color:${kc}">${r.key}</span><span class="depth-rule-val">${r.val}</span></div>`;
-    }).join("");
+    const c = meta.color;
 
-    const params = DEPTH_PARAMS[depth] ?? [];
-    const paramsHtml = params.length > 0 ? params.map(p =>
-      `<div class="depth-rule-row"><span class="depth-rule-key" style="color:${meta.color}">${p.key}</span><span class="depth-rule-val">${p.val}</span></div>`
-    ).join("") : "";
-
-    const enemyAiSection = `
-      <div class="depth-rules-section-label" style="margin-top:1.6rem">► ENEMY MOVEMENT</div>
-      <div class="depth-rule-row" style="grid-template-columns:1fr">
-        <span class="depth-rule-val">Each enemy finds the shortest Manhattan-distance path to the shark and takes one step along it. They move on every 2nd player move. Multiple enemies act independently — they don't coordinate, but they'll converge from multiple directions as the board fills.</span>
-      </div>`;
-
-    const paramsSection = paramsHtml
-      ? `<div class="depth-rules-section-label" style="margin-top:1.6rem">► LEVEL PARAMETERS</div>${paramsHtml}`
+    // Summary block
+    const summary = DEPTH_SUMMARY[depth] ?? "";
+    const summaryHtml = summary
+      ? `<div class="depth-summary"><p class="depth-summary-text">${summary}</p></div>`
       : "";
 
-    return `<div class="depth-rules-section-label">► RULES</div>${rulesHtml}${paramsSection}${enemyAiSection}`;
+    // Core rules rows
+    const rows = DEPTH_RULES[depth] ?? [];
+    const rulesHtml = rows.map(r => {
+      const kc = r.keyColor ?? c;
+      return `<div class="depth-rule-row">
+        <span class="depth-rule-key" style="color:${kc}">${r.key}</span>
+        <span class="depth-rule-val">${r.val}</span>
+      </div>`;
+    }).join("");
+
+    // Collapsible: level params + enemy AI
+    const params = DEPTH_PARAMS[depth] ?? [];
+    const paramsHtml = params.map(p =>
+      `<div class="depth-rule-row">
+        <span class="depth-rule-key" style="color:${c}">${p.key}</span>
+        <span class="depth-rule-val">${p.val}</span>
+      </div>`
+    ).join("");
+
+    const enemyAiHtml = `
+      <div class="depth-rule-row" style="grid-template-columns:1fr;margin-top:0.6rem">
+        <span class="depth-rule-val" style="font-size:1.4rem;opacity:0.85">
+          Each enemy finds the shortest Manhattan-distance path to the shark and steps along it.
+          They move every 2nd player move. Enemies act independently — they converge from multiple
+          directions as the board fills.
+        </span>
+      </div>`;
+
+    const detailsHtml = (paramsHtml || enemyAiHtml) ? `
+      <details class="depth-details">
+        <summary class="depth-details-toggle">▶ FULL DETAILS</summary>
+        <div class="depth-details-body">
+          <div class="depth-rules-section-label" style="margin-bottom:0.6rem">LEVEL PARAMETERS</div>
+          ${paramsHtml}
+          <div class="depth-rules-section-label" style="margin-top:1rem;margin-bottom:0.3rem">ENEMY AI</div>
+          ${enemyAiHtml}
+        </div>
+      </details>` : "";
+
+    return `${summaryHtml}
+      <div class="depth-rules-section-label">► RULES</div>
+      ${rulesHtml}
+      ${detailsHtml}`;
   }
 
   // ── Open / Close ─────────────────────────────────────────────────
