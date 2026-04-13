@@ -3,7 +3,7 @@ import { containsBadWord } from './bad-words.mjs'
 
 const MAX_SCORES = 500
 const MAX_SCORE_VALUE = 10000
-const VALID_MAPS = ['small', 'medium', 'large', 'xl', 'extreme']
+const VALID_MAPS = ['small', 'medium', 'large', 'xl', 'extreme', 'shark-thief-v3']
 
 function blobKey(map) {
 	return map === 'medium' ? 'scores' : `scores-${map}`
@@ -42,7 +42,7 @@ export default async (req) => {
 		return new Response('Invalid JSON', { status: 400 })
 	}
 
-	const { name, score } = body
+	const { name, score, totalTimeMs, levelTimes, sharkScore } = body
 
 	if (!name || typeof name !== 'string' || name.trim().length === 0) {
 		return new Response('Name is required', { status: 400 })
@@ -62,7 +62,12 @@ export default async (req) => {
 	const raw = await store.get(blobKey(mapKey))
 	const scores = raw ? JSON.parse(raw) : []
 
-	scores.push({ name: cleanName, score, date: new Date().toISOString() })
+	const entry = { name: cleanName, score, date: new Date().toISOString() }
+	if (typeof totalTimeMs === 'number' && totalTimeMs > 0) entry.totalTimeMs = totalTimeMs
+	if (Array.isArray(levelTimes)) entry.levelTimes = levelTimes
+	if (typeof sharkScore === 'number' && sharkScore > 0) entry.sharkScore = sharkScore
+
+	scores.push(entry)
 
 	// Sort descending and cap the leaderboard
 	scores.sort((a, b) => b.score - a.score)

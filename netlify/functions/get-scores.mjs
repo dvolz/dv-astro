@@ -1,6 +1,6 @@
 import { getStore } from '@netlify/blobs'
 
-const VALID_MAPS = ['small', 'medium', 'large', 'xl', 'extreme']
+const VALID_MAPS = ['small', 'medium', 'large', 'xl', 'extreme', 'shark-thief-v3']
 
 function blobKey(map) {
 	return map === 'medium' ? 'scores' : `scores-${map}`
