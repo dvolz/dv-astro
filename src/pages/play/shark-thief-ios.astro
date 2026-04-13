@@ -2016,10 +2016,21 @@ const fullWidthBody = true;
   const ANIM_DURATION = 80; // ms — matches iOS 80ms ease-out quad
   const MIN_ENEMY_DIST = 5; // min Manhattan distance for enemy spawn
   const PICKUP_RATE = 0.00025; // per cell per move
-  const SUPER_RATE_OF_PICKUP = 0.0175; // fraction of new pickups that become super
   const PICKUP_INIT = 0.05; // 5% of cells on init
-  const SUPER_INIT = 1 / 40; // 1 in 40 init pickups become super
-  const CORAL_PICKUP_RATE = 0.00028; // depth-2+ coral shell (5pts) growth per cell per move
+
+  // ── Shell spawn system: guaranteed counter (not random) ───────────
+  // D1 ammonite: exactly 1 on board at a time; reappears AMMONITE_INTERVAL
+  //   moves after it was collected (or after game start).
+  //   "Every 25 moves without an ammonite, one spawns."
+  const AMMONITE_INTERVAL = 25;
+  let ammoniteMovesCounter = 0; // counts moves since last ammonite was collected/spawned
+
+  // D2 coral shells: one new shell appears every CORAL_INTERVAL moves,
+  //   up to CORAL_MAX_ON_BOARD at a time (excludes shells already converted to walls).
+  const CORAL_INTERVAL = 15;
+  const CORAL_MAX_ON_BOARD = 4;
+  let coralMovesCounter = 0;
+
   const CORAL_PICKUP_INIT = 4; // # of coral shells spawned on entering depth 2
 
   // ===== GameState =====  →  GameState.swift
@@ -2171,6 +2182,8 @@ const fullWidthBody = true;
     if (currentDepth === 2) {
       // Clear depth-1 ammonite shells — they don't appear below the reef
       for (let r = 0; r < GRID; r++) superPickups[r].fill(false);
+      ammoniteMovesCounter = 0;
+      coralMovesCounter = 0;
       spawnCoral();
       // Seed a handful of coral shell pickups as an immediate reward
       let placed = 0, attempts = 0;
@@ -2192,6 +2205,56 @@ const fullWidthBody = true;
   }
 
   // ===== SpawnManager =====  →  SpawnManager.swift
+
+  // ── Shell spawn helpers ───────────────────────────────────────────
+
+  function countAmmonites(): number {
+    let n = 0;
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++)
+        if (superPickups[r][c]) n++;
+    return n;
+  }
+
+  function countCoralPickups(): number {
+    let n = 0;
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++)
+        if (coralPickups[r][c]) n++;
+    return n;
+  }
+
+  function spawnAmmoniteIfNeeded() {
+    if (countAmmonites() > 0) return; // already one on board
+    let ax: number, ay: number, attempts = 0;
+    do {
+      ax = Math.floor(Math.random() * GRID);
+      ay = Math.floor(Math.random() * GRID);
+      attempts++;
+      if (attempts > 1000) return;
+    } while (
+      Math.abs(ax - shark.x) + Math.abs(ay - shark.y) < MIN_ENEMY_DIST ||
+      pickups[ay][ax] || superPickups[ay][ax] || coral[ay][ax] || coralPickups[ay][ax]
+    );
+    superPickups[ay][ax] = true;
+    ammoniteMovesCounter = 0;
+  }
+
+  function spawnCoralPickupIfNeeded() {
+    if (countCoralPickups() >= CORAL_MAX_ON_BOARD) return;
+    let cx: number, cy: number, attempts = 0;
+    do {
+      cx = Math.floor(Math.random() * GRID);
+      cy = Math.floor(Math.random() * GRID);
+      attempts++;
+      if (attempts > 1000) return;
+    } while (
+      Math.abs(cx - shark.x) + Math.abs(cy - shark.y) < MIN_ENEMY_DIST ||
+      pickups[cy][cx] || superPickups[cy][cx] || coral[cy][cx] || coralPickups[cy][cx]
+    );
+    coralPickups[cy][cx] = true;
+    coralMovesCounter = 0;
+  }
 
   function spawnEnemy(): Enemy {
     let ex: number, ey: number;
@@ -2409,16 +2472,10 @@ const fullWidthBody = true;
       Array.from({ length: GRID }, () => Math.random() < PICKUP_INIT),
     );
 
-    // GridState — super pickups (1/40 of pickups)
-    superPickups = Array.from({ length: GRID }, (_, r) =>
-      Array.from({ length: GRID }, (_, c) => {
-        if (pickups[r][c] && Math.random() < SUPER_INIT) {
-          pickups[r][c] = false;
-          return true;
-        }
-        return false;
-      }),
-    );
+    // GridState — super pickups
+    superPickups = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    ammoniteMovesCounter = 0;
+    coralMovesCounter = 0;
 
     // GridState — coral pickups (cleared; spawned at Depth 2)
     coralPickups = Array.from({ length: GRID }, () => Array(GRID).fill(false));
@@ -2435,6 +2492,9 @@ const fullWidthBody = true;
     shark.y = Math.floor(Math.random() * GRID);
     pickups[shark.y][shark.x] = false;
     superPickups[shark.y][shark.x] = false;
+
+    // All grids ready — place the first ammonite
+    spawnAmmoniteIfNeeded();
 
     // Snap visual position
     sharkVisualX = shark.x;
@@ -2513,13 +2573,14 @@ const fullWidthBody = true;
     // Check super pickup (10 points + spawn big enemy)
     if (superPickups[ny][nx]) {
       superPickups[ny][nx] = false;
+      ammoniteMovesCounter = 0; // reset — next ammonite guaranteed in AMMONITE_INTERVAL moves
       score += 10;
       hudScore.textContent = String(score);
       bigEnemies.push(spawnBigEnemy());
       checkDepthTransition();
     }
 
-    // SpawnManager — random pickup growth
+    // SpawnManager — coin growth (unchanged random rate)
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (
@@ -2529,24 +2590,21 @@ const fullWidthBody = true;
           !coral[r][c] &&
           Math.random() < PICKUP_RATE
         ) {
-          // Ammonite shells only appear at depth 1
-          if (currentDepth === 1 && Math.random() < SUPER_RATE_OF_PICKUP) {
-            superPickups[r][c] = true;
-          } else {
-            pickups[r][c] = true;
-          }
+          pickups[r][c] = true;
         }
-        // Coral shell growth — depth 2+ only
-        if (
-          currentDepth >= 2 &&
-          !coralPickups[r][c] &&
-          !pickups[r][c] &&
-          !superPickups[r][c] &&
-          !coral[r][c] &&
-          Math.random() < CORAL_PICKUP_RATE
-        ) {
-          coralPickups[r][c] = true;
-        }
+      }
+    }
+
+    // Shell spawn — guaranteed counter system (no luck)
+    if (currentDepth === 1) {
+      ammoniteMovesCounter++;
+      if (ammoniteMovesCounter >= AMMONITE_INTERVAL) {
+        spawnAmmoniteIfNeeded();
+      }
+    } else if (currentDepth >= 2) {
+      coralMovesCounter++;
+      if (coralMovesCounter >= CORAL_INTERVAL) {
+        spawnCoralPickupIfNeeded();
       }
     }
 
@@ -4376,13 +4434,13 @@ const fullWidthBody = true;
     1: [
       { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
       { key: "COINS",     val: "+1 PT — SPAWNS 1 ENEMY" },
-      { key: "AMMONITE",  val: "+10 PTS — SPAWNS BIG 2×2 ENEMY", keyColor: "#9b59e0" },
+      { key: "AMMONITE",  val: "+10 PTS — SPAWNS BIG 2×2 ENEMY — APPEARS EVERY 25 MOVES", keyColor: "#9b59e0" },
       { key: "DESCEND",   val: "REACH 100 PTS" },
     ],
     2: [
       { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
       { key: "COINS",     val: "+1 PT — SPAWNS 1 ENEMY" },
-      { key: "CORAL",     val: "+5 PTS — CONVERTS TO BARRIER — SPAWNS 1 ENEMY", keyColor: "#daa070" },
+      { key: "CORAL",     val: "+5 PTS — CONVERTS TO BARRIER — SPAWNS 1 ENEMY — NEW SHELL EVERY 15 MOVES", keyColor: "#daa070" },
       { key: "BARRIERS",  val: "PERMANENT IMPASSABLE WALLS" },
       { key: "ON ENTRY",  val: "ENEMIES RESET TO 5 FARTHEST FROM YOU" },
       { key: "DESCEND",   val: "REACH 200 PTS" },
@@ -4399,8 +4457,8 @@ const fullWidthBody = true;
       { key: "GRID",        val: "25 × 25 CELLS" },
       { key: "COIN RATE",   val: "0.00025 per cell per move" },
       { key: "COIN INIT",   val: "5% of cells on start" },
-      { key: "SHELL RATE",  val: "1.75% of new coins become ammonite" },
-      { key: "SHELL INIT",  val: "1 in 40 starting pickups" },
+      { key: "SHELL SPAWN", val: "1 ammonite on board at a time — respawns 25 moves after collected" },
+      { key: "SHELL INIT",  val: "1 ammonite placed at game start" },
       { key: "CORAL TILES", val: "0% — no coral at Depth 1" },
       { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
       { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
@@ -4409,7 +4467,7 @@ const fullWidthBody = true;
       { key: "GRID",        val: "25 × 25 CELLS" },
       { key: "COIN RATE",   val: "0.00025 per cell per move" },
       { key: "COIN INIT",   val: "5% of cells on start" },
-      { key: "SHELL RATE",  val: "0.00028 per cell per move" },
+      { key: "SHELL SPAWN", val: "1 new coral shell every 15 moves — max 4 on board" },
       { key: "SHELL INIT",  val: "4 shells placed on entry" },
       { key: "CORAL TILES", val: "~2% of grid on entry" },
       { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
@@ -4419,8 +4477,8 @@ const fullWidthBody = true;
   };
 
   const DEPTH_SUMMARY: Record<number, string> = {
-    1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. Find the purple ammonite shell for a big bonus, but it summons a 2×2 mega enemy in return.",
-    2: "The reef reshapes the board. Hitting a coral shell converts it into a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
+    1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. The purple ammonite appears every 25 moves and is worth 10 pts — but grabbing it spawns a 2×2 mega enemy. One ammonite on the board at a time.",
+    2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 4 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
     3: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
   };
 
