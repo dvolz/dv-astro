@@ -2431,11 +2431,12 @@ const fullWidthBody = true;
   function endGame() {
     gameOver = true;
     totalTimeMs = performance.now() - gameStartTime;
-    levelTimes.push(performance.now() - levelStartTime);
+    const currentLevelElapsedMs = performance.now() - levelStartTime;
+    // Do NOT push to levelTimes here — only checkDepthTransition pushes completed depth times
     stopHudClock();
     // Freeze clock displays at final time
     hudTimeEl.textContent = formatClockSec(Math.floor(totalTimeMs / 1000));
-    hudLvTime.textContent = formatClockSec(Math.floor((levelTimes[levelTimes.length - 1]) / 1000));
+    hudLvTime.textContent = formatClockSec(Math.floor(currentLevelElapsedMs / 1000));
     clearSave(); // player died — no restore
     sharkVisualX = shark.x;
     sharkVisualY = shark.y;
