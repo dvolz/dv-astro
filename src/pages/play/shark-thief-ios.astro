@@ -3328,9 +3328,9 @@ const fullWidthBody = true;
       const res = await fetch(`/api/scores?map=shark-thief-v3&category=${category}`);
       if (!res.ok) throw new Error("failed");
       const scores: LbEntry[] = await res.json();
-      renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES, category);
+      renderLeaderboard(scores, category);
     } catch {
-      renderLeaderboard(MOCK_SCORES, category);
+      renderLeaderboard([], category);
     }
   }
 
