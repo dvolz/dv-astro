@@ -827,8 +827,17 @@ const fullWidthBody = true;
     font-family: var(--font-terminal);
     font-size: 3.2rem;
     color: var(--gold);
-    margin: 0 0 2rem;
+    margin: 0 0 0.4rem;
     line-height: 1;
+  }
+
+  .game-over-shark {
+    font-family: var(--font-terminal);
+    font-size: 1.65rem;
+    color: var(--cyan);
+    margin: 0 0 1.8rem;
+    line-height: 1;
+    min-height: 1.65rem;
   }
 
   .game-over-buttons {
@@ -1518,6 +1527,7 @@ const fullWidthBody = true;
           <div class="game-over-overlay" id="gameOverOverlay">
             <h2 class="game-over-title">YOU DIED</h2>
             <p class="game-over-score">SCORE: <span id="finalScore">0</span></p>
+            <p class="game-over-shark" id="finalSharkScore"></p>
             <div class="submit-area">
               <div id="submitPrompt">
                 <button class="pixel-btn" id="wantToSubmitBtn"
@@ -1820,8 +1830,12 @@ const fullWidthBody = true;
           </div>
           <div class="depth-rules-section-label" style="margin-top:1.4rem">► ELIGIBILITY</div>
           <div class="depth-rule-row">
-            <span class="depth-rule-key">FULL RUN</span>
-            <span class="depth-rule-val">Shark Score is only submitted for runs that start at Depth 1. Runs begun via depth-jump (dev mode) do not qualify.</span>
+            <span class="depth-rule-key">REQUIRED</span>
+            <span class="depth-rule-val">You must start the run at Depth 1 — The Shallows. A Shark Score is not generated at all for runs that begin at any other depth.</span>
+          </div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">WHY</span>
+            <span class="depth-rule-val">The formula measures score versus total time from the very beginning. Starting mid-game would produce an artificially inflated score that can't fairly compare to full runs.</span>
           </div>
           <div class="depth-rules-section-label" style="margin-top:1.4rem">► NOTE</div>
           <div class="depth-rule-row">
@@ -2433,13 +2447,24 @@ const fullWidthBody = true;
       saveHighScore(highScore);
     }
 
-    // UserDefaultsService — persist best Shark Score
-    const sharkScore = calcSharkScore(score, totalTimeMs);
-    if (sharkScore > getSharkBest()) {
+    // UserDefaultsService — persist best Shark Score (only for full runs from depth 1)
+    const sharkScore = startedFromDepth1 ? calcSharkScore(score, totalTimeMs) : null;
+    if (sharkScore !== null && sharkScore > getSharkBest()) {
       saveSharkBest(sharkScore);
     }
 
     finalScoreEl.textContent = String(score);
+    // Show shark score line on game over — value if eligible, note if not
+    const sharkLineEl = document.getElementById("finalSharkScore");
+    if (sharkLineEl) {
+      if (sharkScore !== null) {
+        sharkLineEl.textContent = `SHARK SCORE: ${sharkScore}`;
+        sharkLineEl.style.opacity = "1";
+      } else {
+        sharkLineEl.textContent = "SHARK SCORE: N/A (start from depth 1)";
+        sharkLineEl.style.opacity = "0.45";
+      }
+    }
     submitPrompt.style.display = score > 0 ? "block" : "none";
     nameInputRow.classList.remove("visible");
     submitScoreBtn.disabled = false;
