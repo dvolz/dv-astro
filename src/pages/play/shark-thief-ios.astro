@@ -597,15 +597,15 @@ const fullWidthBody = true;
 
   .depth-info-badge {
     font-family: var(--font-pixel);
-    font-size: 0.58rem;
+    font-size: 0.68rem;
     letter-spacing: 0.12em;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.5rem;
     color: var(--cyan); /* set by JS per depth */
   }
 
   .depth-info-name {
     font-family: var(--font-pixel);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: var(--text-primary);
     line-height: 1.7;
   }
@@ -622,34 +622,35 @@ const fullWidthBody = true;
      the static .depth-info-rules parent so Astro's scope hash still gates it */
   .depth-info-rules :global(.depth-rules-section-label) {
     font-family: var(--font-pixel);
-    font-size: 0.52rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     letter-spacing: 0.18em;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     display: block;
   }
 
   .depth-info-rules :global(.depth-rule-row) {
     display: grid;
-    grid-template-columns: 5.5rem 1fr;
-    gap: 0.8rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     align-items: start;
   }
 
   .depth-info-rules :global(.depth-rule-key) {
     font-family: var(--font-pixel);
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     letter-spacing: 0.05em;
-    padding-top: 0.2rem;
+    padding-top: 0.25rem;
+    white-space: nowrap;
   }
 
   .depth-info-rules :global(.depth-rule-val) {
     font-family: var(--font-terminal);
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     color: var(--text-primary);
-    line-height: 1.35;
+    line-height: 1.5;
   }
 
   .depth-info-scene {
@@ -658,7 +659,7 @@ const fullWidthBody = true;
 
   .depth-scene-section-label {
     font-family: var(--font-pixel);
-    font-size: 0.52rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     letter-spacing: 0.18em;
     margin-bottom: 1rem;
@@ -679,12 +680,12 @@ const fullWidthBody = true;
 
   .depth-scene-caption {
     font-family: var(--font-terminal);
-    font-size: 1.35rem;
+    font-size: 1.75rem;
     color: var(--text-muted);
     text-align: center;
-    min-height: 2.2em;
+    min-height: 2em;
     margin: 0 0 1.2rem;
-    line-height: 1.4;
+    line-height: 1.45;
   }
 
   .depth-scene-controls {
@@ -729,7 +730,7 @@ const fullWidthBody = true;
 
   .depth-scene-move-label {
     font-family: var(--font-pixel);
-    font-size: 0.46rem;
+    font-size: 0.55rem;
     color: var(--text-muted);
     letter-spacing: 0.1em;
   }
@@ -971,7 +972,18 @@ const fullWidthBody = true;
   /* ── Leaderboard Screen ── */
   .leaderboard-screen {
     align-items: flex-start;
-    padding: 2rem 1.2rem;
+    padding: 2rem 1rem;
+    justify-content: flex-start;
+  }
+
+  /* Centered content column — fits iPhone and wider */
+  .lb-content-wrap {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .lb-header {
@@ -979,7 +991,7 @@ const fullWidthBody = true;
     align-items: center;
     gap: 1.5rem;
     width: 100%;
-    margin-bottom: 2rem;
+    margin-bottom: 1.6rem;
   }
 
   .lb-title {
@@ -1000,58 +1012,101 @@ const fullWidthBody = true;
 
   .lb-table-wrap {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: hidden;
+    border-radius: 6px;
+    border: 1px solid rgba(29, 126, 146, 0.4);
+    background: rgba(13, 53, 69, 0.55);
   }
 
   .lb-table {
     width: 100%;
-    min-width: 32rem;
     border-collapse: collapse;
     font-family: var(--font-terminal);
-    font-size: 1.8rem;
+    font-size: 1.75rem;
+    table-layout: fixed;
+
+    /* Percentage-based columns — stable on all screen sizes */
+    col.col-rank  { width: 9%; }
+    col.col-name  { width: 27%; }
+    col.col-score { width: 20%; }
+    col.col-date  { width: 44%; }
+
+    /* ── Header ── */
+    thead tr {
+      background: rgba(29, 126, 146, 0.3);
+      border-bottom: 2px solid rgba(29, 126, 146, 0.6);
+    }
 
     thead th {
       font-family: var(--font-pixel);
-      font-size: 0.7rem;
+      font-size: 0.58rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      padding: 0.6rem 0.8rem;
-      border-bottom: 2px solid var(--ocean-surface);
-      text-align: left;
+      letter-spacing: 0.08em;
+      padding: 0.85rem 0.8rem;
+      font-weight: normal;
+      line-height: 1.5;
+      vertical-align: bottom;
+      /* Column dividers in header */
+      border-right: 1px solid rgba(29, 126, 146, 0.3);
+
+      &:first-child { text-align: center; }
+      &:nth-child(2) { text-align: left; }
+      &:nth-child(3) { text-align: right; }
+      &:last-child   { text-align: right; border-right: none; }
+    }
+
+    /* ── Body rows ── */
+    tbody tr {
+      border-bottom: 1px solid rgba(29, 126, 146, 0.2);
+      transition: background 0.08s;
+
+      &:last-child { border-bottom: none; }
+      &:nth-child(even) td { background: rgba(0, 0, 0, 0.1); }
+      &:hover td { background: rgba(72, 202, 228, 0.06); }
+      &.highlight td { background: rgba(72, 202, 228, 0.12); }
     }
 
     tbody td {
-      padding: 0.5rem 0.8rem;
-      border-bottom: 1px solid rgba(26, 94, 122, 0.4);
+      padding: 0.75rem 0.8rem;
       color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+      /* Column dividers in body */
+      border-right: 1px solid rgba(29, 126, 146, 0.15);
+
+      &:last-child { border-right: none; }
     }
 
-    tbody tr:hover td {
-      background: rgba(72, 202, 228, 0.04);
+    /* ── Column-specific alignment & style ── */
+    td.lb-rank {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--text-muted);
     }
 
-    tbody tr.highlight td {
-      background: rgba(72, 202, 228, 0.1);
+    /* name: left, body font */
+    tbody td:nth-child(2) {
+      text-align: left;
+      font-size: 1.75rem;
     }
 
     td.lb-score {
       color: var(--gold);
-      font-size: 2.2rem;
-      text-align: center;
+      font-size: 2rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     td.lb-date {
       color: var(--text-muted);
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       text-align: right;
-      white-space: nowrap;
-    }
-
-    td.lb-rank {
-      width: 4rem;
-      text-align: center;
-      font-size: 1.6rem;
+      white-space: normal;   /* allow stacked time / date lines */
+      line-height: 1.55;
+      vertical-align: middle;
     }
   }
 
@@ -1059,22 +1114,22 @@ const fullWidthBody = true;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 2.2rem;
+    height: 2.2rem;
     border-radius: 50%;
     font-family: var(--font-pixel);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
   }
 
   /* ── Leaderboard Tab Bar ── */
   .lb-tab-bar {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
     overflow-x: auto;
     width: 100%;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.2rem;
+    margin-bottom: 1.4rem;
+    padding-bottom: 0.15rem;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     &::-webkit-scrollbar { display: none; }
@@ -1082,24 +1137,26 @@ const fullWidthBody = true;
 
   .lb-tab {
     font-family: var(--font-pixel);
-    font-size: 0.52rem;
-    letter-spacing: 0.06em;
-    padding: 0.5rem 0.85rem;
+    font-size: 0.65rem;      /* up from 0.52rem — readable */
+    letter-spacing: 0.05em;
+    padding: 0.8rem 0.9rem;  /* taller for 44px touch target */
     border: 2px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2px;
+    border-radius: 3px;
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
     text-transform: uppercase;
     white-space: nowrap;
-    flex-shrink: 0;
+    flex: 1 1 0;             /* distribute evenly across bar */
+    min-width: 0;
     touch-action: manipulation;
-    min-height: 36px;
-    transition: background 0.08s, color 0.08s, border-color 0.08s;
+    min-height: 44px;        /* Apple HIG touch target */
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    text-align: center;
 
     &:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(255, 255, 255, 0.4);
+      border-color: rgba(255, 255, 255, 0.35);
       color: var(--text-primary);
     }
 
@@ -1153,35 +1210,36 @@ const fullWidthBody = true;
 
   .shark-score-rules :global(.depth-rules-section-label) {
     font-family: var(--font-pixel);
-    font-size: 0.52rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
     letter-spacing: 0.18em;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
     display: block;
   }
 
   .shark-score-rules :global(.depth-rule-row) {
     display: grid;
-    grid-template-columns: 5.5rem 1fr;
-    gap: 0.8rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     align-items: start;
   }
 
   .shark-score-rules :global(.depth-rule-key) {
     font-family: var(--font-pixel);
-    font-size: 0.52rem;
+    font-size: 0.65rem;
     letter-spacing: 0.05em;
-    padding-top: 0.2rem;
+    padding-top: 0.25rem;
     color: var(--gold);
+    white-space: nowrap;
   }
 
   .shark-score-rules :global(.depth-rule-val) {
     font-family: var(--font-terminal);
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     color: var(--text-primary);
-    line-height: 1.35;
+    line-height: 1.5;
   }
 
   .medal-gold {
@@ -1520,35 +1578,43 @@ const fullWidthBody = true;
 
     <!-- ── Screen 5: Leaderboard ── LeaderboardView.swift -->
     <div id="screen-leaderboard" class="screen leaderboard-screen">
-      <div class="lb-header">
-        <button class="pixel-btn pixel-btn-muted" id="lbBackBtn">BACK</button>
-        <div>
-          <h2 class="lb-title">LEADERBOARD</h2>
-          <span class="lb-map-label" id="lbMapLabel">SHARK THIEF</span>
+      <div class="lb-content-wrap">
+        <div class="lb-header">
+          <button class="pixel-btn pixel-btn-muted" id="lbBackBtn">BACK</button>
+          <div>
+            <h2 class="lb-title">LEADERBOARD</h2>
+            <span class="lb-map-label" id="lbMapLabel">SHARK THIEF</span>
+          </div>
         </div>
-      </div>
-      <!-- Tab bar -->
-      <div class="lb-tab-bar" role="tablist" aria-label="Leaderboard categories">
-        <button class="lb-tab active" role="tab" aria-selected="true"  data-category="high_score">HIGH SCORE</button>
-        <button class="lb-tab"        role="tab" aria-selected="false" data-category="d1_time">D1 TIME</button>
-        <button class="lb-tab"        role="tab" aria-selected="false" data-category="d2_time">D2 TIME</button>
-        <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d3_time" disabled>D3 TIME</button>
-        <button class="lb-tab"        role="tab" aria-selected="false" data-category="shark_score">SHARK SCORE</button>
-      </div>
-      <div class="lb-table-wrap">
-        <table class="lb-table">
-          <thead id="lbTableHead">
-            <tr>
-              <th>#</th>
-              <th>NAME</th>
-              <th>SCORE</th>
-              <th>DATE</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboardBody">
-            <tr><td colspan="4" class="lb-empty">LOADING...</td></tr>
-          </tbody>
-        </table>
+        <!-- Tab bar -->
+        <div class="lb-tab-bar" role="tablist" aria-label="Leaderboard categories">
+          <button class="lb-tab active" role="tab" aria-selected="true"  data-category="high_score">HIGH SCORE</button>
+          <button class="lb-tab"        role="tab" aria-selected="false" data-category="d1_time">D1 TIME</button>
+          <button class="lb-tab"        role="tab" aria-selected="false" data-category="d2_time">D2 TIME</button>
+          <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d3_time" disabled>D3 TIME</button>
+          <button class="lb-tab"        role="tab" aria-selected="false" data-category="shark_score">SHARK SCORE</button>
+        </div>
+        <div class="lb-table-wrap">
+          <table class="lb-table">
+            <colgroup>
+              <col class="col-rank">
+              <col class="col-name">
+              <col class="col-score">
+              <col class="col-date">
+            </colgroup>
+            <thead id="lbTableHead">
+              <tr>
+                <th>#</th>
+                <th>NAME</th>
+                <th>HIGH SCORE</th>
+                <th>TIME (DATE)</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+              <tr><td colspan="4" class="lb-empty">LOADING...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1611,7 +1677,7 @@ const fullWidthBody = true;
         <div class="depth-info-header">
           <div>
             <div class="depth-info-badge" id="depthInfoBadge">DEPTH 1</div>
-            <div class="depth-info-name" id="depthInfoName">SURFACE REEF</div>
+            <div class="depth-info-name" id="depthInfoName">THE SHALLOWS</div>
           </div>
           <button class="hud-btn" id="depthInfoClose">✕ BACK</button>
         </div>
@@ -1624,11 +1690,12 @@ const fullWidthBody = true;
             <canvas id="depthSceneCanvas" width="200" height="200"></canvas>
           </div>
           <div class="depth-scene-move-row" id="depthMoveRow">
-            <span class="depth-scene-move-label">YOU</span>
+            <span class="depth-scene-move-label" id="movePipLabel">YOU MOVE 1</span>
             <div class="depth-scene-move-pip shark-pip" id="movePip1"></div>
             <div class="depth-scene-move-pip shark-pip" id="movePip2"></div>
-            <span class="depth-scene-move-label">ENEMY</span>
+            <span class="depth-scene-move-label">→</span>
             <div class="depth-scene-move-pip enemy-pip" id="enemyPip1"></div>
+            <span class="depth-scene-move-label" id="enemyPipLabel">ENEMY WAITS</span>
           </div>
           <p class="depth-scene-caption" id="depthSceneCaption">—</p>
           <div class="depth-scene-controls">
@@ -1751,6 +1818,11 @@ const fullWidthBody = true;
             <span class="depth-rule-key">BALANCE</span>
             <span class="depth-rule-val">A high score at average speed still ranks well. Neither extreme dominates.</span>
           </div>
+          <div class="depth-rules-section-label" style="margin-top:1.4rem">► ELIGIBILITY</div>
+          <div class="depth-rule-row">
+            <span class="depth-rule-key">FULL RUN</span>
+            <span class="depth-rule-val">Shark Score is only submitted for runs that start at Depth 1. Runs begun via depth-jump (dev mode) do not qualify.</span>
+          </div>
           <div class="depth-rules-section-label" style="margin-top:1.4rem">► NOTE</div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">TUNABLE</span>
@@ -1839,6 +1911,7 @@ const fullWidthBody = true;
   let totalTimeMs = 0;          // accumulated ms when game ends
   let levelStartTime = 0;       // performance.now() when current depth started
   let levelTimes: number[] = []; // ms spent in each depth [depth1ms, depth2ms, ...]
+  let startedFromDepth1 = true; // false if run began via dev depth-jump (shark score ineligible)
 
   interface DyingEnemy {
     x: number;
@@ -2138,6 +2211,7 @@ const fullWidthBody = true;
     moveCount = 0;
     gameOver = false;
     currentDepth = 1;
+    startedFromDepth1 = true;
     gameStartTime = performance.now();
     levelStartTime = performance.now();
     levelTimes = [];
@@ -2976,7 +3050,7 @@ const fullWidthBody = true;
   }
 
   const DEPTH_META: Record<number, { color: string; glow: string; name: string }> = {
-    1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)", name: "SURFACE REEF" },
+    1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)", name: "THE SHALLOWS" },
     2: { color: "#daa070", glow: "rgba(218,160,112,0.5)", name: "REEF" },
     3: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)", name: "ABYSS" },
   };
@@ -3124,6 +3198,7 @@ const fullWidthBody = true;
     CELL = canvas.width / GRID;
     showScreen("game");
     init(); // resets everything to depth 1
+    if (targetDepth > 1) startedFromDepth1 = false; // dev jump — shark score ineligible
 
     if (targetDepth >= 2) {
       currentDepth = 2;
@@ -3225,7 +3300,7 @@ const fullWidthBody = true;
     activeLeaderboardTab = category;
     updateTabUI(category);
     try {
-      const res = await fetch(`/api/scores?map=shark-thief-v2&category=${category}`);
+      const res = await fetch(`/api/scores?map=shark-thief-v3&category=${category}`);
       if (!res.ok) throw new Error("failed");
       const scores: LbEntry[] = await res.json();
       renderLeaderboard(scores.length > 0 ? scores : MOCK_SCORES, category);
@@ -3284,7 +3359,7 @@ const fullWidthBody = true;
         document.getElementById("sharkScorePopup")!.classList.add("visible");
       });
     } else {
-      thead.innerHTML = `<tr><th>#</th><th>NAME</th><th>SCORE</th><th>DATE</th></tr>`;
+      thead.innerHTML = `<tr><th>#</th><th>NAME</th><th>HIGH SCORE</th><th>TIME (DATE)</th></tr>`;
     }
 
     if (!scores.length) {
@@ -3317,14 +3392,23 @@ const fullWidthBody = true;
       const rank = i < 3 ? `<span class="medal ${medalCls[i]}">${i + 1}</span>` : `${i + 1}`;
       const dateStr = s.date ? formatDate(s.date) : "";
       let valueCell: string;
+      let metaCell: string;
+      const dateOnlyLine = dateStr ? `<span style="display:block;white-space:nowrap">${dateStr}</span>` : "";
       if (isTime) {
         valueCell = `<td class="lb-score">${formatMs(s.levelTimes?.[depthIdx] ?? 0)}</td>`;
+        metaCell  = `<td class="lb-date">${dateOnlyLine}</td>`;
       } else if (isShark) {
         valueCell = `<td class="lb-score">${s.sharkScore ?? "—"}</td>`;
+        metaCell  = `<td class="lb-date">${dateOnlyLine}</td>`;
       } else {
+        // HIGH SCORE: score value + stacked run-time / submission date
+        const timeStr = s.totalTimeMs ? formatMs(s.totalTimeMs) : "";
+        const timeLine = timeStr ? `<span style="display:block;white-space:nowrap">${timeStr}</span>` : "";
+        const dateLine = dateStr ? `<span style="display:block;white-space:nowrap;font-size:1.2rem;opacity:0.65">${dateStr}</span>` : "";
         valueCell = `<td class="lb-score">${s.score}</td>`;
+        metaCell  = `<td class="lb-date">${timeLine}${dateLine}</td>`;
       }
-      return `<tr${hi}><td class="lb-rank">${rank}</td><td>${esc(s.name)}</td>${valueCell}<td class="lb-date">${dateStr}</td></tr>`;
+      return `<tr${hi}><td class="lb-rank">${rank}</td><td>${esc(s.name)}</td>${valueCell}${metaCell}</tr>`;
     }).join("");
   }
 
@@ -3424,11 +3508,13 @@ const fullWidthBody = true;
     localStorage.setItem("sharkPlayerName", name);
 
     try {
-      const sharkScore = calcSharkScore(score, totalTimeMs);
-      const res = await fetch(`/api/scores?map=shark-thief-v2`, {
+      const sharkScore = startedFromDepth1 ? calcSharkScore(score, totalTimeMs) : null;
+      const payload: Record<string, unknown> = { name, score, totalTimeMs, levelTimes };
+      if (sharkScore !== null) payload.sharkScore = sharkScore;
+      const res = await fetch(`/api/scores?map=shark-thief-v3`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, score, totalTimeMs, levelTimes, sharkScore }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         submitStatus.textContent = "FAILED — TRY AGAIN";
@@ -3726,6 +3812,40 @@ const fullWidthBody = true;
     drawSharkOnCtx(ctx, vx, vy, MINI_CS, dir);
   }
 
+  // Draw a directional arrow on the target cell — anticipates enemy movement
+  function miniDrawMoveArrow(ctx: CanvasRenderingContext2D, col: number, row: number, dir: string, alpha: number) {
+    const cx = col * MINI_CS + MINI_CS / 2;
+    const cy = row * MINI_CS + MINI_CS / 2;
+    const s = MINI_CS * 0.28;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#ef476f";
+    ctx.strokeStyle = "#162d40";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (dir === "left") {
+      ctx.moveTo(cx - s, cy);
+      ctx.lineTo(cx + s * 0.6, cy - s * 0.65);
+      ctx.lineTo(cx + s * 0.6, cy + s * 0.65);
+    } else if (dir === "right") {
+      ctx.moveTo(cx + s, cy);
+      ctx.lineTo(cx - s * 0.6, cy - s * 0.65);
+      ctx.lineTo(cx - s * 0.6, cy + s * 0.65);
+    } else if (dir === "up") {
+      ctx.moveTo(cx, cy - s);
+      ctx.lineTo(cx - s * 0.65, cy + s * 0.6);
+      ctx.lineTo(cx + s * 0.65, cy + s * 0.6);
+    } else {
+      ctx.moveTo(cx, cy + s);
+      ctx.lineTo(cx - s * 0.65, cy - s * 0.6);
+      ctx.lineTo(cx + s * 0.65, cy - s * 0.6);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function miniDrawLabel(ctx: CanvasRenderingContext2D, col: number, row: number, text: string, alpha: number) {
     ctx.save(); ctx.globalAlpha = alpha;
     ctx.font = "bold 10px monospace";
@@ -3736,21 +3856,31 @@ const fullWidthBody = true;
   }
 
   // ── Move pip updater ─────────────────────────────────────────────
-  // Shows: [YOU ●●] [ENEMY ●] to explain the 2:1 move ratio
+  // Shows: [YOU MOVE N ●●] [→ ● ENEMY MOVES 1] to explain the 2:1 move ratio
   function updateMovePips(sharkMovesDone: number) {
-    // sharkMovesDone: 0=none, 1=first, 2=second(+enemy moved)
     const pip1 = document.getElementById("movePip1");
     const pip2 = document.getElementById("movePip2");
     const epip1 = document.getElementById("enemyPip1");
+    const youLabel = document.getElementById("movePipLabel");
+    const enemyLabel = document.getElementById("enemyPipLabel");
     if (!pip1 || !pip2 || !epip1) return;
 
     const turn = sharkMovesDone % 2; // 0 or 1 within the 2-move cycle
     const cycle = Math.floor(sharkMovesDone / 2); // completed cycles
+    const enemyMoved = cycle >= 1 || (sharkMovesDone > 0 && turn === 0);
 
     pip1.classList.toggle("filled", sharkMovesDone >= 1);
     pip2.classList.toggle("filled", sharkMovesDone >= 2);
-    // Enemy pip lights when enemy has just moved (every 2nd shark move)
-    epip1.classList.toggle("filled", cycle >= 1 || (sharkMovesDone > 0 && turn === 0));
+    epip1.classList.toggle("filled", enemyMoved);
+
+    // Dynamic labels: show current move count and enemy status
+    if (youLabel) {
+      const moveInCycle = sharkMovesDone === 0 ? 0 : ((sharkMovesDone - 1) % 2) + 1;
+      youLabel.textContent = sharkMovesDone === 0 ? "YOU MOVE 2" : `YOU MOVE ${moveInCycle}`;
+    }
+    if (enemyLabel) {
+      enemyLabel.textContent = enemyMoved ? "ENEMY MOVES 1" : "ENEMY WAITS";
+    }
   }
 
   // ── Animation state ──────────────────────────────────────────────
@@ -3790,13 +3920,13 @@ const fullWidthBody = true;
   }
 
   // ── Depth 1 scene ────────────────────────────────────────────────
-  // Board: shark (0,2)→right, ammonite (3,2), enemy (4,0)
+  // Board: shark (0,2)→right, ammonite (3,2), enemy (4,4)
   // Move 1 (500ms): shark→(1,2), enemy waits
-  // Move 2 (900ms): shark→(2,2), ENEMY STEPS (4,0)→(3,1)
+  // Move 2 (900ms): shark→(2,2), ENEMY (4,4)→(3,4) horizontal [arrow anticipates]
   // Move 3 (1300ms): shark→(3,2), collects ammonite, +10 flash
-  // Big enemy spawns (1700ms)
-  // Move 4 (2400ms): shark→(3,1) up, ENEMY STEPS (3,1)→(2,2)
-  // Hold (3000ms+)
+  // Big enemy spawns (2100ms)
+  // Move 4 (2600ms): shark→(3,1) up, ENEMY (3,4)→(3,3) vertical [arrow anticipates]
+  // Hold — coin at (4,3) collected → "+1 PT" → new small enemy spawns
   function renderD1(ctx: CanvasRenderingContext2D, elapsed: number) {
     const M1 = 500, M1E = 850;    // move 1: shark slides
     const M2 = 900, M2E = 1250;   // move 2: shark slides + enemy steps
@@ -3804,6 +3934,9 @@ const fullWidthBody = true;
     const FLASH = 1900;           // +10 pts visible
     const BSPAWN = 2100, BSPAWN_E = 2500; // big enemy fades in
     const M4 = 2600, M4E = 2950;  // move 4: shark up + enemy steps
+    // Coin-spawn-enemy demo in hold period
+    const COIN2_S = 3500, COIN2_E = 3800; // coin at (4,3) fades out
+    const ENEMY2_S = 3850, ENEMY2_E = 4150; // second small enemy fades in
     const DONE = MINI_TOTAL[1];
     const e = Math.min(elapsed, DONE);
 
@@ -3837,19 +3970,48 @@ const fullWidthBody = true;
       } else { evx = 3; evy = 3; }
     }
 
+    // Arrow anticipation: fades in 100ms before enemy arrives, fades during move
+    // Move 2: destination (3,4), direction left
+    const arrowAlpha2 = e >= M2E - 100 && e < M2E
+      ? eio((e - (M2E - 100)) / 100) * 0.75
+      : e >= M2E && e < M2E + 350 ? 0.75 * (1 - (e - M2E) / 350) : 0;
+    // Move 4: destination (3,3), direction up
+    const arrowAlpha4 = e >= M4E - 100 && e < M4E
+      ? eio((e - (M4E - 100)) / 100) * 0.75
+      : e >= M4E && e < M4E + 350 ? 0.75 * (1 - (e - M4E) / 350) : 0;
+
     const ammoniteAlpha = e >= M3 ? Math.max(0, 1 - eio(Math.min(1,(e-M3)/(M3E-M3)))*1.8) : 1;
     const plusAlpha = e >= M3E && e < FLASH ? Math.sin(((e-M3E)/(FLASH-M3E))*Math.PI) : 0;
     const bigEAlpha = e >= BSPAWN ? eio(Math.min(1,(e-BSPAWN)/(BSPAWN_E-BSPAWN))) : 0;
+
+    // Coin demo: coin at (4,3) fades out, then a second small enemy appears
+    const coin43Alpha = e < COIN2_S ? 1 : e < COIN2_E ? Math.max(0, 1 - eio((e-COIN2_S)/(COIN2_E-COIN2_S))) : 0;
+    const coin2PlusAlpha = e >= COIN2_E && e < COIN2_E + 450 ? Math.sin(((e-COIN2_E)/450)*Math.PI) : 0;
+    const enemy2Alpha = e >= ENEMY2_S ? eio(Math.min(1,(e-ENEMY2_S)/(ENEMY2_E-ENEMY2_S))) : 0;
 
     // pip state: how many moves the shark has done so far
     const sharkMovesDone = e < M1 ? 0 : e < M2 ? 1 : e < M3 ? 2 : e < M4 ? 3 : 4;
     updateMovePips(sharkMovesDone);
 
     miniBackground(ctx, 1);
-    [[0,1],[2,3],[4,3],[3,4]].forEach(([c,r]) => miniDrawCoin(ctx, c, r));
+    // Static coins — (4,3) handled separately with fading alpha
+    [[0,1],[2,3],[3,4]].forEach(([c,r]) => miniDrawCoin(ctx, c, r));
+    if (coin43Alpha > 0) {
+      ctx.save(); ctx.globalAlpha = coin43Alpha;
+      miniDrawCoin(ctx, 4, 3);
+      ctx.restore();
+    }
+
     if (bigEAlpha > 0) miniDrawBigEnemy(ctx, 0, 0, bigEAlpha);
     if (ammoniteAlpha > 0) miniDrawAmmonite(ctx, 3, 2, ammoniteAlpha);
     if (plusAlpha > 0) miniDrawLabel(ctx, 3, 2, "+10 PTS", plusAlpha);
+    if (coin2PlusAlpha > 0) miniDrawLabel(ctx, 4, 3, "+1 PT", coin2PlusAlpha);
+    if (enemy2Alpha > 0) miniDrawEnemy(ctx, 4, 1, enemy2Alpha);
+
+    // Movement arrows (draw before enemy so they appear under it)
+    if (arrowAlpha2 > 0) miniDrawMoveArrow(ctx, 3, 4, "left", arrowAlpha2);
+    if (arrowAlpha4 > 0) miniDrawMoveArrow(ctx, 3, 3, "up", arrowAlpha4);
+
     miniDrawEnemy(ctx, evx, evy, 1);
     miniDrawShark(ctx, svx, svy, sdir);
 
@@ -3860,14 +4022,19 @@ const fullWidthBody = true;
     else if (e < FLASH) setMiniCaption("+10 PTS — AMMONITE COLLECTED!");
     else if (e < BSPAWN_E) setMiniCaption("A BIG 2×2 ENEMY SPAWNS!");
     else if (e < M4E) setMiniCaption("MOVE 4 — ENEMY HUNTS AGAIN!");
-    else setMiniCaption("REACH 100 PTS TO DESCEND");
+    else if (e < COIN2_S) setMiniCaption("REACH 100 PTS TO DESCEND");
+    else if (e < COIN2_E) setMiniCaption("COLLECTING A COIN...");
+    else if (e < ENEMY2_E) setMiniCaption("+1 PT — EVERY COIN SPAWNS AN ENEMY!");
+    else setMiniCaption("BOARD FILLS FAST — PLAN YOUR ROUTE");
   }
 
   // ── Depth 2 scene ────────────────────────────────────────────────
   // Board: shark (0,2), coral shell (2,2), enemy (4,0), spawned enemy (4,4)
+  // Ambient coral (0,4) and (2,4) fade in at scene start
   // Move 1 (500ms): shark→(1,2), enemy waits
   // Move 2: shark tries (2,2), BOUNCES BACK + ENEMY STEPS (4,0)→(3,0) horizontal
   //   Shell → barrier, +5 flash, new enemy spawns at (4,4)
+  // Bounce 2 (1950ms): shark nudges right again — STILL BLOCKED
   // Move 3: shark→(1,1) up
   // Move 4: shark→(2,1) right + ENEMY (3,0)→(2,0) horizontal, SPAWNED (4,4)→(4,3) vertical
   // Hold
@@ -3875,9 +4042,10 @@ const fullWidthBody = true;
     const M1 = 500, M1E = 850;        // move 1
     const BOUNCE_S = 950, BOUNCE_E = 1600; // move 2: shark bounces
     const TRANSFORM = 1800;           // shell→barrier flash end
-    const SPAWN_E = 2200;             // spawned enemy fades in
-    const M3 = 2300, M3E = 2650;      // move 3 shark up
-    const M4 = 2750, M4E = 3100;      // move 4 shark right + enemy moves
+    const BOUNCE2_S = 1950, BOUNCE2_E = 2120; // second shorter bounce
+    const SPAWN_E = 2350;             // spawned enemy fades in
+    const M3 = 2450, M3E = 2800;      // move 3 shark up
+    const M4 = 2900, M4E = 3250;      // move 4 shark right + enemy moves
     const DONE = MINI_TOTAL[2];
     const e = Math.min(elapsed, DONE);
 
@@ -3890,6 +4058,12 @@ const fullWidthBody = true;
       // sin bounce: lunge then rebound
       const t = (e-BOUNCE_S)/(BOUNCE_E-BOUNCE_S);
       svx = 1 + Math.sin(t * Math.PI) * 0.42;
+    }
+    else if (e < BOUNCE2_S) { svx = 1; }
+    else if (e < BOUNCE2_E) {
+      // second shorter nudge bounce
+      const t = (e-BOUNCE2_S)/(BOUNCE2_E-BOUNCE2_S);
+      svx = 1 + Math.sin(t * Math.PI) * 0.2;
     }
     else if (e < M3) { svx = 1; }
     else if (e < M3E) { svy = 2 - eio((e-M3)/(M3E-M3)); svx = 1; sdir = "up"; }
@@ -3928,17 +4102,28 @@ const fullWidthBody = true;
     const barrierFlashAlpha = e >= BOUNCE_E && e < TRANSFORM
       ? Math.sin(((e-BOUNCE_E)/(TRANSFORM-BOUNCE_E)) * Math.PI * 2) * 0.5
       : 0;
+    // Second bounce: brief flash on barrier tile
+    const barrierFlash2Alpha = e >= BOUNCE2_S && e < BOUNCE2_E
+      ? Math.sin(((e-BOUNCE2_S)/(BOUNCE2_E-BOUNCE2_S)) * Math.PI) * 0.5
+      : 0;
     const plusAlpha = e >= BOUNCE_E && e < BOUNCE_E+500
       ? Math.sin(((e-BOUNCE_E)/500) * Math.PI)
       : 0;
+
+    // Ambient coral fade-in at scene start
+    const coralFadeAlpha = e < 600 ? eio(e / 600) : 1;
 
     const sharkMovesDone = e < M1 ? 0 : e < BOUNCE_S ? 1 : e < M3 ? 2 : e < M4 ? 3 : 4;
     updateMovePips(sharkMovesDone);
 
     miniBackground(ctx, 2);
-    // Ambient coral barriers to establish depth-2 feel
+
+    // Ambient coral barriers — fade in at scene start to show ~2% spawn
+    ctx.save(); ctx.globalAlpha = coralFadeAlpha;
     miniDrawCoral(ctx, 0, 4);
     miniDrawCoral(ctx, 2, 4);
+    ctx.restore();
+
     [[1,0],[4,1],[0,3],[3,4]].forEach(([c,r]) => miniDrawCoin(ctx, c, r));
 
     if (barrierVisible) {
@@ -3947,6 +4132,13 @@ const fullWidthBody = true;
         ctx.save(); ctx.globalAlpha = barrierFlashAlpha;
         ctx.fillStyle = "#daa070";
         ctx.fillRect(2*MINI_CS+2, 2*MINI_CS+2, MINI_CS-4, MINI_CS-4);
+        ctx.restore();
+      }
+      // Second bounce flash: barrier briefly brightens again
+      if (barrierFlash2Alpha > 0) {
+        ctx.save(); ctx.globalAlpha = barrierFlash2Alpha;
+        ctx.fillStyle = "#f0c0a0";
+        ctx.fillRect(2*MINI_CS+1, 2*MINI_CS+1, MINI_CS-2, MINI_CS-2);
         ctx.restore();
       }
     }
@@ -3959,7 +4151,8 @@ const fullWidthBody = true;
     if (e < M1) setMiniCaption("THE CORAL SHELL BLOCKS THE PATH...");
     else if (e < BOUNCE_S) setMiniCaption("MOVE 1 — ENEMY WAITS...");
     else if (e < BOUNCE_E) setMiniCaption("MOVE 2 — CAN'T BE COLLECTED!");
-    else if (e < TRANSFORM) setMiniCaption("+5 PTS — SHELL HARDENS INTO A WALL!");
+    else if (e < BOUNCE2_S) setMiniCaption("+5 PTS — SHELL HARDENS INTO A WALL!");
+    else if (e < BOUNCE2_E) setMiniCaption("THE WALL IS PERMANENT — STILL BLOCKS!");
     else if (e < SPAWN_E) setMiniCaption("A NEW ENEMY RELEASED...");
     else if (e < M3E) setMiniCaption("MOVE 3 — NAVIGATE AROUND THE BARRIER...");
     else if (e < M4E) setMiniCaption("MOVE 4 — ENEMY ADVANCES AGAIN!");
@@ -4012,14 +4205,54 @@ const fullWidthBody = true;
     ],
   };
 
+  const DEPTH_PARAMS: Record<number, Array<{key: string; val: string}>> = {
+    1: [
+      { key: "GRID",        val: "25 × 25 CELLS" },
+      { key: "COIN RATE",   val: "0.00025 per cell per move" },
+      { key: "COIN INIT",   val: "5% of cells on start" },
+      { key: "SHELL RATE",  val: "1.75% of new coins become ammonite" },
+      { key: "SHELL INIT",  val: "1 in 40 starting pickups" },
+      { key: "CORAL TILES", val: "0% — no coral at Depth 1" },
+      { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
+      { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
+    ],
+    2: [
+      { key: "GRID",        val: "25 × 25 CELLS" },
+      { key: "COIN RATE",   val: "0.00025 per cell per move" },
+      { key: "COIN INIT",   val: "5% of cells on start" },
+      { key: "SHELL RATE",  val: "0.00028 per cell per move" },
+      { key: "SHELL INIT",  val: "4 shells placed on entry" },
+      { key: "CORAL TILES", val: "~2% of grid on entry" },
+      { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
+      { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
+    ],
+    3: [],
+  };
+
   function buildRulesHTML(depth: number): string {
     const meta = DEPTH_META[depth] ?? DEPTH_META[1];
     const rows = DEPTH_RULES[depth] ?? [];
-    const html = rows.map(r => {
+    const rulesHtml = rows.map(r => {
       const kc = r.keyColor ?? meta.color;
       return `<div class="depth-rule-row"><span class="depth-rule-key" style="color:${kc}">${r.key}</span><span class="depth-rule-val">${r.val}</span></div>`;
     }).join("");
-    return `<div class="depth-rules-section-label">► RULES</div>${html}`;
+
+    const params = DEPTH_PARAMS[depth] ?? [];
+    const paramsHtml = params.length > 0 ? params.map(p =>
+      `<div class="depth-rule-row"><span class="depth-rule-key" style="color:${meta.color}">${p.key}</span><span class="depth-rule-val">${p.val}</span></div>`
+    ).join("") : "";
+
+    const enemyAiSection = `
+      <div class="depth-rules-section-label" style="margin-top:1.6rem">► ENEMY MOVEMENT</div>
+      <div class="depth-rule-row" style="grid-template-columns:1fr">
+        <span class="depth-rule-val">Each enemy finds the shortest Manhattan-distance path to the shark and takes one step along it. They move on every 2nd player move. Multiple enemies act independently — they don't coordinate, but they'll converge from multiple directions as the board fills.</span>
+      </div>`;
+
+    const paramsSection = paramsHtml
+      ? `<div class="depth-rules-section-label" style="margin-top:1.6rem">► LEVEL PARAMETERS</div>${paramsHtml}`
+      : "";
+
+    return `<div class="depth-rules-section-label">► RULES</div>${rulesHtml}${paramsSection}${enemyAiSection}`;
   }
 
   // ── Open / Close ─────────────────────────────────────────────────

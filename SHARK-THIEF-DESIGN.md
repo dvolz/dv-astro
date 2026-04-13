@@ -34,7 +34,7 @@ When your score crosses a threshold, you descend to the next depth. The board ch
 
 | Depth | Score Required |
 |-------|---------------|
-| 1 — Surface Reef | 0 |
+| 1 — The Shallows | 0 |
 | 2 — Reef | 100 |
 | 3 — Abyss | 200 |
 
@@ -88,7 +88,7 @@ When the player transitions into a new depth, each element either **persists** (
 
 ## Section 4 — Defined Levels
 
-### Depth 1 — Surface Reef
+### Depth 1 — The Shallows
 
 **Shell: Purple Ammonite** — round nautilus-spiral shape, unmistakably circular, distinct from all other pickups.
 
