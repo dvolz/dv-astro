@@ -496,10 +496,10 @@ const fullWidthBody = true;
   /* HUD buttons share the pixel-btn language at compact HUD scale */
   .hud-btn {
     font-family: var(--font-pixel);
-    font-size: 0.58rem;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
-    padding: 0.55rem 0.9rem;
-    border: 2px solid var(--text-muted);
+    padding: 0.7rem 1rem;
+    border: 3px solid var(--text-muted);
     border-radius: 2px;
     background: transparent;
     color: var(--text-muted);
@@ -507,7 +507,7 @@ const fullWidthBody = true;
     text-transform: uppercase;
     touch-action: manipulation;
     transition: background 0.08s, color 0.08s, border-color 0.08s, box-shadow 0.08s;
-    min-height: 36px;
+    min-height: 44px;
     white-space: nowrap;
     flex-shrink: 0;
 
@@ -1023,7 +1023,7 @@ const fullWidthBody = true;
     width: 100%;
     overflow-x: hidden;
     border-radius: 6px;
-    border: 1px solid rgba(29, 126, 146, 0.4);
+    border: 1px solid rgba(72, 202, 228, 0.4);
     background: rgba(13, 53, 69, 0.55);
   }
 
@@ -1034,16 +1034,16 @@ const fullWidthBody = true;
     font-size: 1.75rem;
     table-layout: fixed;
 
-    /* Percentage-based columns — stable on all screen sizes */
-    col.col-rank  { width: 9%; }
-    col.col-name  { width: 27%; }
-    col.col-score { width: 20%; }
-    col.col-date  { width: 44%; }
+    /* Percentage-based columns */
+    col.col-rank  { width: 8%; }
+    col.col-name  { width: 36%; }
+    col.col-score { width: 18%; }
+    col.col-date  { width: 38%; }
 
     /* ── Header ── */
     thead tr {
-      background: rgba(29, 126, 146, 0.3);
-      border-bottom: 2px solid rgba(29, 126, 146, 0.6);
+      background: rgba(29, 126, 146, 0.35);
+      border-bottom: 2px solid rgba(72, 202, 228, 0.6);
     }
 
     thead th {
@@ -1052,14 +1052,14 @@ const fullWidthBody = true;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 0.85rem 0.8rem;
+      padding: 0.7rem 0.75rem;
       font-weight: normal;
-      line-height: 1.5;
-      vertical-align: bottom;
-      /* Column dividers in header */
-      border-right: 1px solid rgba(29, 126, 146, 0.3);
+      line-height: 1.3;
+      white-space: nowrap;
+      vertical-align: middle;
+      border-right: 1px solid rgba(72, 202, 228, 0.45);
 
-      &:first-child { text-align: center; }
+      &:first-child  { text-align: center; }
       &:nth-child(2) { text-align: left; }
       &:nth-child(3) { text-align: right; }
       &:last-child   { text-align: right; border-right: none; }
@@ -1067,24 +1067,23 @@ const fullWidthBody = true;
 
     /* ── Body rows ── */
     tbody tr {
-      border-bottom: 1px solid rgba(29, 126, 146, 0.2);
+      border-bottom: 1px solid rgba(72, 202, 228, 0.25);
       transition: background 0.08s;
 
       &:last-child { border-bottom: none; }
-      &:nth-child(even) td { background: rgba(0, 0, 0, 0.1); }
-      &:hover td { background: rgba(72, 202, 228, 0.06); }
-      &.highlight td { background: rgba(72, 202, 228, 0.12); }
+      &:nth-child(even) td { background: rgba(0, 0, 0, 0.14); }
+      &:hover td { background: rgba(72, 202, 228, 0.07); }
+      &.highlight td { background: rgba(72, 202, 228, 0.13); }
     }
 
     tbody td {
-      padding: 0.75rem 0.8rem;
+      padding: 0.55rem 0.75rem;
       color: var(--text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       vertical-align: middle;
-      /* Column dividers in body */
-      border-right: 1px solid rgba(29, 126, 146, 0.15);
+      border-right: 1px solid rgba(72, 202, 228, 0.3);
 
       &:last-child { border-right: none; }
     }
@@ -1096,15 +1095,16 @@ const fullWidthBody = true;
       color: var(--text-muted);
     }
 
-    /* name: left, body font */
     tbody td:nth-child(2) {
       text-align: left;
       font-size: 1.75rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     td.lb-score {
       color: var(--gold);
-      font-size: 2rem;
+      font-size: 1.9rem;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
@@ -1113,10 +1113,96 @@ const fullWidthBody = true;
       color: var(--text-muted);
       font-size: 1.45rem;
       text-align: right;
-      white-space: normal;   /* allow stacked time / date lines */
-      line-height: 1.55;
+      white-space: normal;
+      line-height: 1.25;
       vertical-align: middle;
+      overflow: visible;
     }
+  }
+
+  /* ── Global overrides for dynamically-injected table cells ──
+     Astro scoped styles don't reach innerHTML-created td/th/tr.
+     :global() bypasses scoping so these rules always apply.        */
+
+  :global(.lb-table thead tr) {
+    border-bottom: 2px solid rgba(72, 202, 228, 0.6);
+  }
+
+  :global(.lb-table thead th) {
+    border-right: 1px solid rgba(72, 202, 228, 0.45);
+    padding: 0.7rem 0.75rem;
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.58rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: normal;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  :global(.lb-table thead th:last-child) {
+    border-right: none;
+  }
+
+  :global(.lb-table thead th:first-child)  { text-align: center; }
+  :global(.lb-table thead th:nth-child(2)) { text-align: left; }
+  :global(.lb-table thead th:nth-child(3)) { text-align: right; }
+  :global(.lb-table thead th:last-child)   { text-align: right; }
+
+  :global(.lb-table tbody tr) {
+    border-bottom: 1px solid rgba(72, 202, 228, 0.25);
+  }
+
+  :global(.lb-table tbody tr:last-child) {
+    border-bottom: none;
+  }
+
+  :global(.lb-table tbody td) {
+    border-right: 1px solid rgba(72, 202, 228, 0.3);
+    padding: 0.55rem 0.75rem;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.lb-table tbody td:last-child) {
+    border-right: none;
+  }
+
+  :global(.lb-table td.lb-rank) {
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--text-primary);
+  }
+
+  :global(.lb-table tbody td:nth-child(2)) {
+    text-align: left;
+    font-size: 1.75rem;
+  }
+
+  :global(.lb-table td.lb-score) {
+    color: #ffd166;
+    font-size: 1.9rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.lb-table td.lb-date) {
+    color: var(--text-primary);
+    font-size: 1.45rem;
+    text-align: right;
+    white-space: normal;
+    line-height: 1.25;
+    vertical-align: middle;
+  }
+
+  :global(.lb-table td.lb-empty) {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    padding: 2rem 1rem;
   }
 
   .medal {
@@ -1134,7 +1220,7 @@ const fullWidthBody = true;
   /* ── Leaderboard Tab Bar ── */
   .lb-tab-bar {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.35rem;
     overflow-x: auto;
     width: 100%;
     margin-bottom: 1.4rem;
@@ -1146,27 +1232,31 @@ const fullWidthBody = true;
 
   .lb-tab {
     font-family: var(--font-pixel);
-    font-size: 0.65rem;      /* up from 0.52rem — readable */
-    letter-spacing: 0.05em;
-    padding: 0.8rem 0.9rem;  /* taller for 44px touch target */
-    border: 2px solid rgba(255, 255, 255, 0.18);
-    border-radius: 3px;
+    font-size: 0.85rem;      /* close to main menu 1.05rem, slightly smaller to fit 5 tabs */
+    letter-spacing: 0.06em;
+    padding: 0.9rem 0.5rem;
+    border: 3px solid var(--cyan);
+    border-radius: 2px;
     background: transparent;
-    color: var(--text-muted);
+    color: var(--cyan);
     cursor: pointer;
     text-transform: uppercase;
     white-space: nowrap;
-    flex: 1 1 0;             /* distribute evenly across bar */
+    flex: 1 1 0;
     min-width: 0;
     touch-action: manipulation;
-    min-height: 44px;        /* Apple HIG touch target */
-    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    min-height: 44px;
+    transition: background 0.08s, box-shadow 0.08s, color 0.08s;
     text-align: center;
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(255, 255, 255, 0.35);
-      color: var(--text-primary);
+      background: var(--cyan);
+      color: var(--ocean-abyss);
+      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
     }
 
     &:focus-visible {
@@ -1179,6 +1269,7 @@ const fullWidthBody = true;
       background: var(--cyan);
       border-color: var(--cyan);
       color: var(--ocean-abyss);
+      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
     }
 
     &.lb-tab-disabled,
@@ -3322,9 +3413,15 @@ const fullWidthBody = true;
 
   let activeLeaderboardTab = "high_score";
 
+  const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
   async function fetchLeaderboard(category: string = activeLeaderboardTab) {
     activeLeaderboardTab = category;
     updateTabUI(category);
+    if (IS_LOCAL) {
+      renderLeaderboard(MOCK_SCORES, category);
+      return;
+    }
     try {
       const res = await fetch(`/api/scores?map=shark-thief-v3&category=${category}`);
       if (!res.ok) throw new Error("failed");
@@ -3419,7 +3516,7 @@ const fullWidthBody = true;
       const dateStr = s.date ? formatDate(s.date) : "";
       let valueCell: string;
       let metaCell: string;
-      const dateOnlyLine = dateStr ? `<span style="display:block;white-space:nowrap">${dateStr}</span>` : "";
+      const dateOnlyLine = dateStr ? `<span style="display:block;white-space:nowrap;font-size:1.6rem">${dateStr}</span>` : "";
       if (isTime) {
         valueCell = `<td class="lb-score">${formatMs(s.levelTimes?.[depthIdx] ?? 0)}</td>`;
         metaCell  = `<td class="lb-date">${dateOnlyLine}</td>`;
@@ -3427,10 +3524,10 @@ const fullWidthBody = true;
         valueCell = `<td class="lb-score">${s.sharkScore ?? "—"}</td>`;
         metaCell  = `<td class="lb-date">${dateOnlyLine}</td>`;
       } else {
-        // HIGH SCORE: score value + stacked run-time / submission date
+        // HIGH SCORE: stacked run-time / submission date
         const timeStr = s.totalTimeMs ? formatMs(s.totalTimeMs) : "";
-        const timeLine = timeStr ? `<span style="display:block;white-space:nowrap">${timeStr}</span>` : "";
-        const dateLine = dateStr ? `<span style="display:block;white-space:nowrap;font-size:1.2rem;opacity:0.65">${dateStr}</span>` : "";
+        const timeLine = timeStr ? `<span style="display:block;white-space:nowrap;font-size:1.7rem">${timeStr}</span>` : "";
+        const dateLine = dateStr ? `<span style="display:block;white-space:nowrap;font-size:1.35rem;opacity:0.9">${dateStr}</span>` : "";
         valueCell = `<td class="lb-score">${s.score}</td>`;
         metaCell  = `<td class="lb-date">${timeLine}${dateLine}</td>`;
       }
