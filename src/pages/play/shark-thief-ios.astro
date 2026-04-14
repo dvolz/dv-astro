@@ -1920,7 +1920,7 @@ const fullWidthBody = true;
           </div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">DEPTH</span>
-            <span class="depth-rule-val">Reach score thresholds (100, 200…) to descend. Board changes each depth.</span>
+            <span class="depth-rule-val">Earn 100 pts within a depth to descend to the next one. The counter resets each depth.</span>
           </div>
           <div class="depth-rule-row">
             <span class="depth-rule-key">SHELL</span>
@@ -2119,6 +2119,7 @@ const fullWidthBody = true;
   // ===== DepthSystem =====  →  DepthSystem.swift
 
   let currentDepth = 1;
+  let depthEntryScore = 0; // score when current depth was entered — advance when score >= depthEntryScore + 100
 
   // ===== TimingService =====  →  TimingService.swift
 
@@ -2187,19 +2188,13 @@ const fullWidthBody = true;
     startDyingLoop();
   }
 
-  function getDepthForScore(s: number): number {
-    if (s >= 300) return 4;
-    if (s >= 200) return 3;
-    if (s >= 100) return 2;
-    return 1;
-  }
-
   function checkDepthTransition() {
-    const newDepth = getDepthForScore(score);
-    if (newDepth <= currentDepth) return;
+    if (currentDepth >= 4) return; // no depth beyond 4 yet
+    if (score < depthEntryScore + 100) return; // haven't earned 100 pts in this depth
     levelTimes.push(performance.now() - levelStartTime);
     levelStartTime = performance.now();
-    currentDepth = newDepth;
+    currentDepth++;
+    depthEntryScore = score; // next transition needs 100 pts from here
     updateHudDepth(currentDepth);
 
     const flash = document.getElementById("depthFlash")!;
@@ -2513,6 +2508,7 @@ const fullWidthBody = true;
     moveCount = 0;
     gameOver = false;
     currentDepth = 1;
+    depthEntryScore = 0;
     startedFromDepth1 = true;
     gameStartTime = performance.now();
     levelStartTime = performance.now();
@@ -2932,21 +2928,9 @@ const fullWidthBody = true;
       }
     }
 
-    // Blood cells — fades over 20 moves: first 10 barely changes, last 10 fades out
+    // Blood cells — 5-layer visceral pool, fades over 20 moves
     for (const bc of bloodCells) {
-      // movesRemaining 20→10: hold near-full (0.70→0.60), barely visible change
-      // movesRemaining 10→0: linear fade 0.60→0
-      const alpha = bc.movesRemaining > 10
-        ? 0.60 + (bc.movesRemaining - 10) / 10 * 0.10
-        : (bc.movesRemaining / 10) * 0.60;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = "#cc1a1a";
-      ctx.fillRect(bc.x * CELL, bc.y * CELL, CELL, CELL);
-      ctx.globalAlpha = alpha * 0.5;
-      ctx.fillStyle = "#ff4444";
-      ctx.fillRect(bc.x * CELL + 2, bc.y * CELL + 2, CELL - 4, CELL - 4);
-      ctx.restore();
+      drawBloodCell(ctx, bc.x * CELL, bc.y * CELL, CELL, bc.movesRemaining);
     }
 
     // Pickups — gold squares
@@ -3261,6 +3245,70 @@ const fullWidthBody = true;
     ctx.beginPath(); ctx.arc(ox + cw - r * 0.8, oy - tw, ps * 0.17, -Math.PI * 0.65, Math.PI * 0.1); ctx.stroke();
     ctx.beginPath(); ctx.arc(ox + r * 0.8, oy + ch + tw, ps * 0.17, Math.PI * 0.35, Math.PI * 1.1); ctx.stroke();
     ctx.beginPath(); ctx.arc(ox + cw - r * 0.8, oy + ch + tw, ps * 0.17, -Math.PI * 0.1, Math.PI * 0.65); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // ===== BloodCellRenderer =====  →  5-layer visceral pool when a baby shark is eaten
+  function drawBloodCell(ctx: CanvasRenderingContext2D, px: number, py: number, cs: number, movesRemaining: number) {
+    ctx.save();
+    const age = 20 - movesRemaining;
+    // movesRemaining 20→10: near-full alpha (0.88→0.80), barely changes
+    // movesRemaining 10→0: linear fade 0.80→0
+    const masterAlpha = movesRemaining > 10
+      ? 0.80 + (movesRemaining - 10) / 10 * 0.08
+      : (movesRemaining / 10) * 0.80;
+    const cx = px + cs / 2;
+    const cy = py + cs / 2;
+
+    // Layer 1: dark outer stain — fills the cell, very dark to ground the effect
+    ctx.globalAlpha = masterAlpha * 0.75;
+    ctx.fillStyle = "#3d0000";
+    ctx.fillRect(px + 1, py + 1, cs - 2, cs - 2);
+
+    // Layer 2: circular pool — mid-dark red, slightly smaller than cell
+    const poolR = cs * 0.40;
+    ctx.globalAlpha = masterAlpha;
+    ctx.fillStyle = "#991111";
+    ctx.beginPath();
+    ctx.arc(cx, cy, poolR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Layer 3: vivid center — brighter red core, fades faster as blood "dries"
+    if (movesRemaining > 4) {
+      const centerAlpha = movesRemaining > 10 ? masterAlpha : (movesRemaining / 10) * masterAlpha * 1.1;
+      ctx.globalAlpha = centerAlpha;
+      ctx.fillStyle = "#cc2222";
+      ctx.beginPath();
+      ctx.arc(cx, cy, poolR * 0.60, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Layer 4: fresh pulse — bright highlight, only visible first 4 moves (age 0–4)
+    if (age < 5) {
+      const pulseAlpha = (1 - age / 5) * masterAlpha * 1.1;
+      ctx.globalAlpha = Math.min(1, pulseAlpha);
+      ctx.fillStyle = "#ff4444";
+      ctx.beginPath();
+      ctx.arc(cx, cy, poolR * 0.30, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Layer 5: splatter dots — corner pixels, only first 3 moves (age 0–3)
+    // Deterministic offset from cell position so it doesn't flicker
+    if (age < 4) {
+      const splatterAlpha = (1 - age / 4) * masterAlpha * 0.85;
+      ctx.globalAlpha = splatterAlpha;
+      ctx.fillStyle = "#bb1111";
+      const dot = Math.max(1, Math.round(cs * 0.14));
+      const margin = 2;
+      const ox = ((px * 7 + py * 3) % 3) - 1;
+      const oy = ((px * 5 + py * 11) % 3) - 1;
+      ctx.fillRect(px + margin + ox, py + margin + oy, dot, dot);
+      ctx.fillRect(px + cs - margin - dot, py + margin, dot, dot);
+      ctx.fillRect(px + margin, py + cs - margin - dot, dot, dot);
+      ctx.fillRect(px + cs - margin - dot + ox, py + cs - margin - dot + oy, dot, dot);
+    }
 
     ctx.restore();
   }
@@ -3591,6 +3639,7 @@ const fullWidthBody = true;
       sharkDir,
       score,
       currentDepth,
+      depthEntryScore,
       moveCount,
       pickups: pickups.flat(),
       superPickups: superPickups.flat(),
@@ -3643,6 +3692,7 @@ const fullWidthBody = true;
     sharkVisualY = shark.y;
     score = save.score || 0;
     currentDepth = save.currentDepth || 1;
+    depthEntryScore = save.depthEntryScore ?? (currentDepth - 1) * 100; // fallback for old saves
     moveCount = save.moveCount || 0;
     enemies = save.enemies || [];
     bigEnemies = save.bigEnemies || [];
@@ -3684,7 +3734,10 @@ const fullWidthBody = true;
     CELL = canvas.width / GRID;
     showScreen("game");
     init(); // resets everything to depth 1
-    if (targetDepth > 1) startedFromDepth1 = false; // dev jump — shark score ineligible
+    if (targetDepth > 1) {
+      startedFromDepth1 = false; // dev jump — shark score ineligible
+      depthEntryScore = 0; // score starts at 0 regardless of target depth
+    }
 
     const devWrapper = document.getElementById("gameDepthWrapper")!;
     if (targetDepth >= 2) {
@@ -4830,7 +4883,7 @@ const fullWidthBody = true;
       { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
       { key: "COINS",     val: "+1 PT — SPAWNS 1 ENEMY" },
       { key: "AMMONITE",  val: "+10 PTS — SPAWNS BIG 2×2 ENEMY — APPEARS EVERY 25 MOVES", keyColor: "#9b59e0" },
-      { key: "DESCEND",   val: "REACH 100 PTS" },
+      { key: "DESCEND",   val: "EARN 100 PTS IN THIS DEPTH" },
     ],
     2: [
       { key: "ENEMIES",   val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
@@ -4838,7 +4891,7 @@ const fullWidthBody = true;
       { key: "CORAL",     val: "+5 PTS — CONVERTS TO BARRIER — SPAWNS 1 ENEMY — NEW SHELL EVERY 15 MOVES", keyColor: "#daa070" },
       { key: "BARRIERS",  val: "PERMANENT IMPASSABLE WALLS" },
       { key: "ON ENTRY",  val: "ENEMIES RESET TO 5 FARTHEST FROM YOU" },
-      { key: "DESCEND",   val: "REACH 200 PTS" },
+      { key: "DESCEND",   val: "EARN 100 PTS IN THIS DEPTH" },
     ],
     3: [
       { key: "ENEMIES",    val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
@@ -4847,7 +4900,7 @@ const fullWidthBody = true;
       { key: "BABY SHARK", val: "FOLLOWS YOU — IF AN ENEMY EATS IT, YOU LOSE 5 PTS", keyColor: "#e06fa0" },
       { key: "BLOOD",      val: "CELL WHERE BABY WAS EATEN TURNS RED — FADES OVER 10 MOVES" },
       { key: "ON ENTRY",   val: "10 CLOSEST ENEMIES DISSOLVE — OPEN WATER, NO CORAL" },
-      { key: "DESCEND",    val: "REACH 300 PTS" },
+      { key: "DESCEND",    val: "EARN 100 PTS IN THIS DEPTH" },
     ],
     4: [
       { key: "STATUS",    val: "THIS DEPTH IS NOT YET CHARTED." },
@@ -4891,9 +4944,9 @@ const fullWidthBody = true;
   };
 
   const DEPTH_SUMMARY: Record<number, string> = {
-    1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. The purple ammonite appears every 25 moves and is worth 10 pts — but grabbing it spawns a 2×2 mega enemy. One ammonite on the board at a time.",
-    2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 6 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Manage your routes — a cluttered board is the real danger here.",
-    3: "The nursery. Shark eggs drift in the current — collect one for 10 pts, but it hatches a baby shark that follows you everywhere. If an enemy runs into your baby, it gets eaten and you lose 5 pts. Guard your pups.",
+    1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. The purple ammonite appears every 25 moves and is worth 10 pts — but grabbing it spawns a 2×2 mega enemy. Earn 100 pts here to descend.",
+    2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 6 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Earn 100 pts here to descend.",
+    3: "The nursery. Shark eggs drift in the current — collect one for 10 pts, but it hatches a baby shark that follows you everywhere. If an enemy runs into your baby, it gets eaten and you lose 5 pts. Earn 100 pts here to descend.",
     4: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
   };
 
