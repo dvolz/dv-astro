@@ -94,6 +94,7 @@ export function checkDepthTransition(): void {
 
   if (gs.currentDepth === 2) {
     clearCloseEnemies(5);
+    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     gs.ammoniteMovesCounter = 0;
     gs.coralMovesCounter = 0;
@@ -111,6 +112,7 @@ export function checkDepthTransition(): void {
     }
   } else if (gs.currentDepth === 3) {
     clearCloseEnemies(10);
+    while (gs.enemies.length + gs.bigEnemies.length < 10) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) {
       gs.coral[r].fill(false);
       gs.coralPickups[r].fill(false);
@@ -226,6 +228,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.coralPickups[ny][nx] = false;
     gs.coral[ny][nx] = true;
     gs.score += 5;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
@@ -263,6 +266,7 @@ export function moveShark(dx: number, dy: number): void {
   if (gs.pickups[ny][nx]) {
     gs.pickups[ny][nx] = false;
     gs.score++;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
@@ -273,6 +277,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.superPickups[ny][nx] = false;
     gs.ammoniteMovesCounter = 0;
     gs.score += 10;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
     getHudScore().textContent = String(gs.score);
     gs.bigEnemies.push(spawnBigEnemy());
     checkDepthTransition();
@@ -282,6 +287,7 @@ export function moveShark(dx: number, dy: number): void {
   if (gs.sharkEgg && gs.shark.x === gs.sharkEgg.x && gs.shark.y === gs.sharkEgg.y) {
     gs.sharkEgg = null;
     gs.score += 10;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
@@ -362,13 +368,16 @@ export function endGame(): void {
   document.getElementById("finalScore")!.textContent = String(gs.score);
 
   const sharkLineEl = document.getElementById("finalSharkScore");
+  const sharkFormulaEl = document.getElementById("finalSharkScoreFormula");
   if (sharkLineEl) {
     if (sharkScore !== null) {
       sharkLineEl.textContent = `SHARK SCORE: ${sharkScore}`;
       sharkLineEl.style.opacity = "1";
+      if (sharkFormulaEl) sharkFormulaEl.style.opacity = "1";
     } else {
       sharkLineEl.textContent = "SHARK SCORE: N/A (start from depth 1)";
       sharkLineEl.style.opacity = "0.45";
+      if (sharkFormulaEl) sharkFormulaEl.style.opacity = "0";
     }
   }
 
@@ -466,6 +475,7 @@ export function initAtDepth(targetDepth: number): void {
         gs.coralPickups[cpy][cpx] = true; placed++;
       }
     }
+    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 3) {
     gs.currentDepth = 3;
@@ -480,6 +490,7 @@ export function initAtDepth(targetDepth: number): void {
     gs.bloodCells = [];
     gs.sharkPositionHistory = [];
     spawnSharkEgg();
+    while (gs.enemies.length + gs.bigEnemies.length < 10) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 4) {
     gs.currentDepth = 4;

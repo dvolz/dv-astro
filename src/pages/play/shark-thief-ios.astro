@@ -915,9 +915,18 @@ const fullWidthBody = true;
     font-family: var(--font-terminal);
     font-size: 1.65rem;
     color: var(--cyan);
-    margin: 0 0 1.8rem;
+    margin: 0 0 0.3rem;
     line-height: 1;
     min-height: 1.65rem;
+  }
+
+  .game-over-shark-formula {
+    font-family: var(--font-terminal);
+    font-size: 1rem;
+    color: var(--cyan);
+    opacity: 0.5;
+    margin: 0 0 1.5rem;
+    line-height: 1;
   }
 
   .game-over-buttons {
@@ -1697,8 +1706,9 @@ const fullWidthBody = true;
           <!-- GameOverView.swift — overlay on frozen canvas -->
           <div class="game-over-overlay" id="gameOverOverlay">
             <h2 class="game-over-title">YOU DIED</h2>
-            <p class="game-over-score">SCORE: <span id="finalScore">0</span></p>
+            <p class="game-over-score">TOTAL POINTS: <span id="finalScore">0</span></p>
             <p class="game-over-shark" id="finalSharkScore"></p>
+            <p class="game-over-shark-formula" id="finalSharkScoreFormula">(POINTS² ÷ TIME)</p>
             <div class="submit-area">
               <div id="submitPrompt">
                 <button class="pixel-btn" id="wantToSubmitBtn"
