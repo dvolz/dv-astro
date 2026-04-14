@@ -2230,9 +2230,8 @@ const fullWidthBody = true;
         }
       }
     } else if (currentDepth === 3) {
-      // D2→D3 (Nursery): "all but 10 enemies survive" — remove the 10 closest
-      const totalBefore = enemies.length + bigEnemies.length;
-      clearCloseEnemies(Math.max(0, totalBefore - 10));
+      // D2→D3 (Nursery): keep the 10 farthest enemies, dissolve the rest
+      clearCloseEnemies(10);
       // Clear all coral barriers and pickups — Nursery has open water
       for (let r = 0; r < GRID; r++) {
         coral[r].fill(false);
@@ -2467,12 +2466,15 @@ const fullWidthBody = true;
       const blocked = bigEnemies.some(
         (o) => o !== be && bigEnemyOverlaps(tx, ty, o.x, o.y),
       );
+      const hitsEnemy = enemies.some(
+        (e) => e.x >= tx && e.x <= tx + 1 && e.y >= ty && e.y <= ty + 1,
+      );
       const hitsCoral =
         coral[ty]?.[tx] ||
         coral[ty]?.[tx + 1] ||
         coral[ty + 1]?.[tx] ||
         coral[ty + 1]?.[tx + 1];
-      if (!blocked && !hitsCoral) {
+      if (!blocked && !hitsEnemy && !hitsCoral) {
         be.x = tx;
         be.y = ty;
       }
