@@ -75,6 +75,61 @@ export function spawnSharkEgg(): void {
   gs.sharkEgg = { x: ex, y: ey };
 }
 
+// ── Frozen fish (Depth 4 — Arctic) ──────────────────────────────────────
+
+export function spawnFrozenFish(): void {
+  let fx: number, fy: number, attempts = 0;
+  do {
+    fx = Math.floor(Math.random() * GRID);
+    fy = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < MIN_ENEMY_DIST ||
+    gs.pickups[fy][fx]      ||
+    gs.superPickups[fy][fx] ||
+    gs.iceCells[fy][fx]     ||
+    gs.enemies.some(e => e.x === fx && e.y === fy) ||
+    (gs.shark.x === fx && gs.shark.y === fy)
+  );
+  gs.frozenFish = { x: fx, y: fy };
+}
+
+// ── Ice patches (Depth 4 — Arctic) ──────────────────────────────────────
+
+export function seedIcePatches(count: number): void {
+  const SHAPES: Array<Array<[number, number]>> = [
+    [[0,0],[1,0]],                         // 1×2 horizontal
+    [[0,0],[0,1]],                         // 1×2 vertical
+    [[0,0],[1,0],[2,0]],                   // 1×3 horizontal
+    [[0,0],[0,1],[0,2]],                   // 1×3 vertical
+    [[0,0],[1,0],[2,0],[3,0]],             // 1×4 horizontal
+    [[0,0],[0,1],[0,2],[0,3]],             // 1×4 vertical
+    [[0,0],[1,0],[0,1],[1,1]],             // 2×2 square
+  ];
+
+  let placed = 0, attempts = 0;
+  while (placed < count && attempts < 2000) {
+    attempts++;
+    const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    const maxDx = Math.max(...shape.map(([dx]) => dx));
+    const maxDy = Math.max(...shape.map(([, dy]) => dy));
+    const ax = Math.floor(Math.random() * (GRID - maxDx));
+    const ay = Math.floor(Math.random() * (GRID - maxDy));
+
+    const hits = shape.some(([dx, dy]) => {
+      const cx = ax + dx, cy = ay + dy;
+      return cx === gs.shark.x && cy === gs.shark.y;
+    });
+    if (hits) continue;
+
+    for (const [dx, dy] of shape) {
+      gs.iceCells[ay + dy][ax + dx] = true;
+    }
+    placed++;
+  }
+}
+
 // ── Enemies ──────────────────────────────────────────────────────────────
 
 export function spawnEnemy(): Enemy {
@@ -87,7 +142,8 @@ export function spawnEnemy(): Enemy {
   } while (
     Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < MIN_ENEMY_DIST ||
     gs.enemies.some(e => e.x === ex && e.y === ey) ||
-    gs.coral[ey]?.[ex]
+    gs.coral[ey]?.[ex] ||
+    gs.iceCells[ey]?.[ex]
   );
   return { x: ex, y: ey };
 }

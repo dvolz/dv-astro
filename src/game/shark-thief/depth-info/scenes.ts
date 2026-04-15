@@ -1,9 +1,9 @@
 // ===== Depth Info — mini scene animations =====  →  DepthInfoView.swift
 
-import { TILE_COLORS, DEPTH_META } from "../config";
+import { TILE_COLORS, ARCTIC_TILE_COLORS, DEPTH_META } from "../config";
 import {
   drawShellPickup, drawCoralShell, drawSharkEgg,
-  drawBabyShark, drawSharkOnCtx,
+  drawBabyShark, drawSharkOnCtx, drawFrozenFish,
 } from "../renderers";
 import { buildRulesHTML } from "./data";
 
@@ -11,13 +11,14 @@ import { buildRulesHTML } from "./data";
 
 export const MINI_CS = 40; // cell size — 5×5 grid = 200×200 canvas
 export const MINI_N  = 5;
-const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 5400, 4: 999 };
+const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 5400, 4: 5000, 5: 999 };
 
 const MINI_OPEN_CAPTIONS: Record<number, string> = {
   1: "FIND THE PURPLE AMMONITE",
   2: "THE CORAL SHELL BLOCKS THE PATH...",
   3: "A SHARK EGG DRIFTS IN THE CURRENT",
-  4: "DEPTH 4 IS UNCHARTED TERRITORY...",
+  4: "ICE MAKES YOU SLIDE...",
+  5: "DEPTH 5 IS UNCHARTED TERRITORY...",
 };
 
 // Pre-seeded tile grids (deterministic — no flicker)
@@ -395,7 +396,91 @@ function renderD3(ctx: CanvasRenderingContext2D, elapsed: number): void {
   else                          setMiniCaption("PROTECT YOUR PUPS — PLAN YOUR ROUTE");
 }
 
-function renderD4(ctx: CanvasRenderingContext2D, _e: number): void {
+// Pre-seeded Arctic tile grid (cold palette)
+const MINI_TILE_COLORS_D4 = (() => {
+  const seed = [0,2,4,1,3, 3,1,0,4,2, 2,4,3,0,1, 4,0,2,3,1, 1,3,1,2,0];
+  return seed.map(i => ARCTIC_TILE_COLORS[i % ARCTIC_TILE_COLORS.length]);
+})();
+
+function renderD4(ctx: CanvasRenderingContext2D, elapsed: number): void {
+  const SLIDE_S = 800, SLIDE_E = 1600;
+  const FISH_S  = 2000, FISH_E  = 2300;
+  const SPAWN_S = 2400, SPAWN_E = 2700;
+  const SLIDE2_S = 2800, SLIDE2_E = 3600;
+  const DONE = MINI_TOTAL[4];
+  const e = Math.min(elapsed, DONE);
+
+  // Background — arctic cold palette
+  ctx.fillStyle = "#0a1a2e"; ctx.fillRect(0, 0, 200, 200);
+  for (let r = 0; r < MINI_N; r++)
+    for (let c = 0; c < MINI_N; c++) {
+      ctx.fillStyle = MINI_TILE_COLORS_D4[r * MINI_N + c];
+      ctx.fillRect(c * MINI_CS, r * MINI_CS, MINI_CS, MINI_CS);
+    }
+
+  // Ice patch at cols 2-3, row 2
+  const iceAlpha = 1;
+  ctx.save(); ctx.globalAlpha = iceAlpha;
+  for (const [ic, ir] of [[2,2],[3,2]] as [number,number][]) {
+    const ix = ic * MINI_CS, iy = ir * MINI_CS;
+    ctx.fillStyle = "#b8d4e8"; ctx.fillRect(ix, iy, MINI_CS, MINI_CS);
+    ctx.strokeStyle = "rgba(255,255,255,0.7)"; ctx.lineWidth = 2;
+    ctx.strokeRect(ix + 1, iy + 1, MINI_CS - 2, MINI_CS - 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(ix + MINI_CS * 0.25, iy + MINI_CS * 0.12);
+    ctx.lineTo(ix + MINI_CS * 0.72, iy + MINI_CS * 0.62);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Shark slides right along ice
+  let svx = 0, svy = 2;
+  if      (e < SLIDE_S) { svx = 0; }
+  else if (e < SLIDE_E) { svx = eio((e - SLIDE_S) / (SLIDE_E - SLIDE_S)) * 3; }
+  else if (e < FISH_S)  { svx = 3; }
+  else if (e < FISH_E)  { svx = 3 + eio((e - FISH_S) / (FISH_E - FISH_S)); }
+  else if (e < SLIDE2_S){ svx = 4; }
+  else if (e < SLIDE2_E){ svx = 4; svy = 2 - eio((e - SLIDE2_S) / (SLIDE2_E - SLIDE2_S)); }
+  else                  { svx = 4; svy = 0; }
+
+  // Frozen fish at col 4, row 2
+  const fishAlpha = e < FISH_S ? 1 : e < FISH_E ? Math.max(0, 1 - (e - FISH_S) / (FISH_E - FISH_S)) : 0;
+  if (fishAlpha > 0) {
+    ctx.save(); ctx.globalAlpha = fishAlpha;
+    const pad = MINI_CS * 0.06;
+    drawFrozenFish(ctx, 4 * MINI_CS + pad, 2 * MINI_CS + pad, MINI_CS - pad * 2);
+    ctx.restore();
+  }
+
+  // Plus label
+  const plusAlpha = e >= FISH_E && e < FISH_E + 600 ? Math.sin(((e - FISH_E) / 600) * Math.PI) : 0;
+  if (plusAlpha > 0) {
+    ctx.save(); ctx.globalAlpha = plusAlpha;
+    ctx.font = `bold ${Math.floor(MINI_CS * 0.85)}px monospace`;
+    ctx.fillStyle = "#7fd8f0"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("+5", (4 + 0.5) * MINI_CS, (2 - 0.8) * MINI_CS);
+    ctx.restore();
+  }
+
+  // Spawned enemy
+  const enemyAlpha = e >= SPAWN_S ? eio(Math.min(1, (e - SPAWN_S) / (SPAWN_E - SPAWN_S))) : 0;
+  if (enemyAlpha > 0) miniDrawEnemy(ctx, 1, 4, enemyAlpha);
+
+  miniDrawEnemy(ctx, 0, 4, 1);
+  miniDrawShark(ctx, svx, svy, "right");
+
+  updateMovePips(e < SLIDE_S ? 0 : e < FISH_S ? 1 : e < SLIDE2_S ? 2 : 3);
+  if      (e < SLIDE_S)   setMiniCaption("ICE MAKES YOU SLIDE...");
+  else if (e < SLIDE_E)   setMiniCaption("MOVE 1 — SLIDING ACROSS ICE!");
+  else if (e < FISH_E)    setMiniCaption("COLLECT THE FROZEN FISH!");
+  else if (e < SPAWN_E)   setMiniCaption("+5 PTS — AN ENEMY SPAWNS!");
+  else if (e < SLIDE2_S)  setMiniCaption("TILE CONVERTS TO ICE...");
+  else if (e < SLIDE2_E)  setMiniCaption("FISH LAUNCHES YOU — SLIDE AGAIN!");
+  else                    setMiniCaption("DON'T SLIDE INTO AN ENEMY — THAT'S DEATH");
+}
+
+function renderD5(ctx: CanvasRenderingContext2D, _e: number): void {
   ctx.fillStyle = "#040f1a"; ctx.fillRect(0, 0, 200, 200);
   for (let r = 0; r < MINI_N; r++)
     for (let c = 0; c < MINI_N; c++) {
@@ -409,7 +494,7 @@ function renderD4(ctx: CanvasRenderingContext2D, _e: number): void {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText("?", 100, 100);
   ctx.restore();
-  setMiniCaption("DEPTH 4 IS UNCHARTED TERRITORY...");
+  setMiniCaption("DEPTH 5 IS UNCHARTED TERRITORY...");
   updateMovePips(0);
 }
 
@@ -421,7 +506,8 @@ function renderMiniScene(depth: number, elapsed: number): void {
   if      (depth === 1) renderD1(ctx, elapsed);
   else if (depth === 2) renderD2(ctx, elapsed);
   else if (depth === 3) renderD3(ctx, elapsed);
-  else                  renderD4(ctx, elapsed);
+  else if (depth === 4) renderD4(ctx, elapsed);
+  else                  renderD5(ctx, elapsed);
 }
 
 function syncMiniControls(): void {

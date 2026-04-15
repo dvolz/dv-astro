@@ -30,6 +30,14 @@ export const DEPTH_RULES: Record<number, Array<{ key: string; val: string; keyCo
     { key: "DESCEND",    val: "EARN 100 PTS IN THIS DEPTH" },
   ],
   4: [
+    { key: "ENEMIES",      val: "5 ON ENTRY — MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+    { key: "COINS",        val: "+1 PT — SPAWNS 1 ENEMY" },
+    { key: "FROZEN FISH",  val: "+5 PTS — SPAWNS 1 ENEMY — CONVERTS TILE TO ICE — 1 FISH ON BOARD AT ALL TIMES", keyColor: "#7fd8f0" },
+    { key: "ICE PATCHES",  val: "STEPPING ONTO ICE CAUSES YOU TO SLIDE UNTIL YOU HIT A WALL OR FLOOR" },
+    { key: "SLIDE DEATH",  val: "SLIDING INTO AN ENEMY AT ANY POINT — INCLUDING THE FRESHLY SPAWNED ONE — IS DEATH" },
+    { key: "DESCEND",      val: "EARN 100 PTS IN THIS DEPTH" },
+  ],
+  5: [
     { key: "STATUS",    val: "THIS DEPTH IS NOT YET CHARTED." },
     { key: "LEVIATHAN", val: "A 3×3 MEGA ENEMY — MOVE RATE TBD", keyColor: "#9d6fe0" },
     { key: "SHELL",     val: "PIECE AND PARAMETERS TBD" },
@@ -69,7 +77,16 @@ export const DEPTH_PARAMS: Record<number, Array<{ key: string; val: string }>> =
     { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
     { key: "BABY MOVE",   val: "1 STEP EVERY PLAYER MOVE — TRAILS 1 CELL BEHIND" },
   ],
-  4: [],
+  4: [
+    { key: "GRID",        val: "25 × 25 CELLS" },
+    { key: "COIN RATE",   val: "0.00025 per cell per move" },
+    { key: "COIN INIT",   val: "5% of cells on start" },
+    { key: "FISH SPAWN",  val: "1 frozen fish on board at all times — respawns immediately on collection" },
+    { key: "ICE PATCHES", val: "5 patches seeded at level start — more added as fish are collected" },
+    { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK — NOT ON ICE" },
+    { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES — ENEMIES ALSO SLIDE ON ICE" },
+  ],
+  5: [],
 };
 
 // ── Plain-text summaries ──────────────────────────────────────────────────
@@ -78,7 +95,8 @@ export const DEPTH_SUMMARY: Record<number, string> = {
   1: "Open ocean — no obstacles. Collect coins to score, but every coin spawns a new enemy. The purple ammonite appears every 25 moves and is worth 10 pts — but grabbing it spawns a 2×2 mega enemy. Earn 100 pts here to descend.",
   2: "The reef reshapes the board. A new coral shell appears every 15 moves (max 6 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Earn 100 pts here to descend.",
   3: "The nursery. Shark eggs drift in the current — collect one for 10 pts, but it hatches a baby shark that follows you everywhere. If an enemy runs into your baby, it gets eaten and you lose 5 pts. Earn 100 pts here to descend.",
-  4: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
+  4: "The Arctic. Ice patches scattered across the board — step onto one and you slide until you hit a wall or normal floor. Collect the frozen fish for 5 pts, but it turns the tile to ice and spawns an enemy. The board gets icier as you play. Don't slide into anything that wants to kill you.",
+  5: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
 };
 
 // ── HTML builder ──────────────────────────────────────────────────────────

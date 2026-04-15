@@ -67,6 +67,8 @@ export function saveGame(): void {
     enemies:       gs.enemies,
     bigEnemies:    gs.bigEnemies,
     leviathan:     gs.leviathan,
+    iceCells:      gs.iceCells.flat(),
+    frozenFish:    gs.frozenFish,
     runElapsedMs:  performance.now() - gs.gameStartTime,
     levelElapsedMs: performance.now() - gs.levelStartTime,
     levelTimes:    gs.levelTimes,
@@ -107,6 +109,14 @@ export function loadGame(save: any): void {
   gs.bigEnemies   = save.bigEnemies || [];
   gs.leviathan    = save.leviathan  || null;
   gs.gameOver     = false;
+
+  gs.iceCells = [];
+  for (let r = 0; r < GRID; r++) {
+    gs.iceCells.push(Array.from(
+      (save.iceCells || []).slice(r * GRID, (r + 1) * GRID).concat(emptyRow()).slice(0, GRID),
+    ));
+  }
+  gs.frozenFish = save.frozenFish || null;
 
   gs.gameStartTime  = performance.now() - (save.runElapsedMs   || 0);
   gs.levelStartTime = performance.now() - (save.levelElapsedMs || 0);

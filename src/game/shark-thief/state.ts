@@ -61,6 +61,10 @@ export const gs = {
   bloodCells:  [] as BloodCell[],
   sharkEgg:    null as { x: number; y: number } | null,
 
+  // ── Depth 4 — Arctic ────────────────────────────────────────────────────
+  iceCells:    [] as boolean[][], // 25×25 — true = ice tile
+  frozenFish:  null as { x: number; y: number } | null,
+
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,
   depthEntryScore: 0, // score when current depth was entered

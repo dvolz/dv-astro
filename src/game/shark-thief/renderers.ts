@@ -123,6 +123,51 @@ export function drawSharkEgg(
   ctx.restore();
 }
 
+// ── Frozen fish — icy pickup (Depth 4 — Arctic) ───────────────────────────
+
+export function drawFrozenFish(
+  ctx: CanvasRenderingContext2D,
+  px: number, py: number, ps: number,
+): void {
+  ctx.save();
+  const cx = px + ps / 2, cy = py + ps / 2;
+
+  // Body — icy blue oval
+  ctx.fillStyle = "#5ab4d8";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, ps * 0.38, ps * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail — triangle pointing left
+  ctx.fillStyle = "#4aa8cc";
+  ctx.beginPath();
+  ctx.moveTo(px + ps * 0.12, cy - ps * 0.18);
+  ctx.lineTo(px + ps * 0.12, cy + ps * 0.18);
+  ctx.lineTo(px + ps * 0.04, cy);
+  ctx.closePath();
+  ctx.fill();
+
+  // Frosted overlay — white center highlight
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.beginPath();
+  ctx.ellipse(cx - ps * 0.06, cy - ps * 0.06, ps * 0.16, ps * 0.09, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Sparkle dot (top-right)
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx + ps * 0.22, cy - ps * 0.16, Math.max(1, ps * 0.05), 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye
+  ctx.fillStyle = "#08181f";
+  ctx.beginPath();
+  ctx.arc(cx + ps * 0.24, cy - ps * 0.04, Math.max(1, ps * 0.04), 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 // ── Blood cell — 5-layer visceral pool when baby shark is eaten (Depth 3) ─
 
 export function drawBloodCell(
@@ -286,7 +331,7 @@ export function draw(): void {
     }
     ctx.stroke();
   } else {
-    ctx.fillStyle = "#0f5262";
+    ctx.fillStyle = gs.currentDepth === 4 ? "#0a1a2e" : "#0f5262";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < GRID; r++)
       for (let c = 0; c < GRID; c++) {
@@ -319,6 +364,31 @@ export function draw(): void {
       }
     }
 
+  // Ice patches (Depth 4 — Arctic)
+  if (gs.currentDepth === 4) {
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (!gs.iceCells[r][c]) continue;
+        const ix = c * CELL, iy = r * CELL;
+        ctx.fillStyle = "#b8d4e8";
+        ctx.fillRect(ix, iy, CELL, CELL);
+        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(ix + 1, iy + 1, CELL - 2, CELL - 2);
+        if (CELL >= 8) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.45)";
+          ctx.lineWidth = Math.max(1, CELL * 0.08);
+          ctx.beginPath();
+          ctx.moveTo(ix + CELL * 0.25, iy + CELL * 0.12);
+          ctx.lineTo(ix + CELL * 0.72, iy + CELL * 0.62);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+  }
+
   // Blood cells
   for (const bc of gs.bloodCells)
     drawBloodCell(ctx, bc.x * CELL, bc.y * CELL, CELL, bc.movesRemaining);
@@ -345,6 +415,12 @@ export function draw(): void {
   if (gs.sharkEgg) {
     const ep = CELL * 0.06;
     drawSharkEgg(ctx, gs.sharkEgg.x * CELL + ep, gs.sharkEgg.y * CELL + ep, CELL - ep * 2);
+  }
+
+  // Frozen fish (Depth 4 — Arctic)
+  if (gs.frozenFish) {
+    const fp = CELL * 0.06;
+    drawFrozenFish(ctx, gs.frozenFish.x * CELL + fp, gs.frozenFish.y * CELL + fp, CELL - fp * 2);
   }
 
   // Coral shell pickups (Depth 2)

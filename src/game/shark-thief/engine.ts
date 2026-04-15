@@ -4,10 +4,12 @@
 import {
   GRID, PICKUP_INIT, PICKUP_RATE,
   AMMONITE_INTERVAL, CORAL_INTERVAL, CORAL_PICKUP_INIT, DYING_DURATION,
+  ARCTIC_FISH_POINTS, ARCTIC_PATCH_COUNT,
 } from "./config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFish, seedIcePatches } from "./spawn";
+import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
   getHighScore, saveHighScore, getSharkBest, saveSharkBest,
@@ -16,7 +18,7 @@ import {
 import { draw, initRenderer } from "./renderers";
 import { startSharkAnim, startBounceAnim, tickShimmer } from "./animation";
 import { getHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
-import { randomTileColor } from "./config";
+import { randomTileColor, randomArcticTileColor } from "./config";
 
 // ── Dying-enemy dissolve loop ─────────────────────────────────────────────
 
@@ -72,7 +74,7 @@ export function clearCloseEnemies(keepN: number): void {
 // ── Depth transition ──────────────────────────────────────────────────────
 
 export function checkDepthTransition(): void {
-  if (gs.currentDepth >= 4) return;
+  if (gs.currentDepth >= 5) return;
   if (gs.score < gs.depthEntryScore + 100) return;
 
   gs.levelTimes.push(performance.now() - gs.levelStartTime);
@@ -125,7 +127,17 @@ export function checkDepthTransition(): void {
     spawnSharkEgg();
   } else if (gs.currentDepth === 4) {
     clearCloseEnemies(5);
-    spawnLeviathan();
+    // Clear all Depth 3 state (Nursery)
+    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    seedIcePatches(ARCTIC_PATCH_COUNT);
+    gs.colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomArcticTileColor()),
+    );
+    // Ensure 5 enemies on entry
+    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+    // Spawn the first frozen fish
+    gs.frozenFish = null;
+    spawnFrozenFish();
   } else {
     clearCloseEnemies(5);
   }
@@ -177,6 +189,8 @@ export function init(): void {
   gs.babySharks = [];
   gs.bloodCells = [];
   gs.sharkEgg   = null;
+  gs.iceCells   = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+  gs.frozenFish = null;
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -251,6 +265,26 @@ export function moveShark(dx: number, dy: number): void {
   else if (dy === 1) gs.sharkDir = "down";
   else if (dy === -1) gs.sharkDir = "up";
 
+  // Ice slide (Depth 4): if the shark lands on an ice cell, slide to terminal
+  if (gs.iceCells[gs.shark.y]?.[gs.shark.x]) {
+    const slide = resolveSlide(gs.shark.x, gs.shark.y, dx, dy, (cx, cy) => {
+      const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
+        gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
+      if (hitEnemy) return "stop";
+      return "continue";
+    });
+    gs.shark.x = slide.x;
+    gs.shark.y = slide.y;
+    // If the terminal cell contains an enemy, trigger death
+    const termEnemyHit =
+      gs.enemies.some(e => e.x === gs.shark.x && e.y === gs.shark.y) ||
+      gs.bigEnemies.some(be =>
+        gs.shark.x >= be.x && gs.shark.x <= be.x + 1 &&
+        gs.shark.y >= be.y && gs.shark.y <= be.y + 1,
+      );
+    if (termEnemyHit) { endGame(); return; }
+  }
+
   // Baby sharks follow position history chain
   for (let i = 0; i < gs.babySharks.length; i++) {
     const target = gs.sharkPositionHistory[i];
@@ -293,6 +327,45 @@ export function moveShark(dx: number, dy: number): void {
     checkDepthTransition();
     gs.babySharks.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
     spawnSharkEgg();
+  }
+
+  // Frozen fish (Depth 4 — Arctic)
+  if (gs.frozenFish && gs.shark.x === gs.frozenFish.x && gs.shark.y === gs.frozenFish.y) {
+    // Step 1: Award points
+    gs.score += ARCTIC_FISH_POINTS;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    getHudScore().textContent = String(gs.score);
+
+    // Step 2: Spawn 1 new enemy
+    gs.enemies.push(spawnEnemy());
+    checkDepthTransition();
+
+    // Step 3: Clear the fish, convert tile to 1×1 ice
+    gs.frozenFish = null;
+    gs.iceCells[gs.shark.y][gs.shark.x] = true;
+
+    // Step 4: Slide the shark in the direction of the move that landed here
+    const slide = resolveSlide(gs.shark.x, gs.shark.y, dx, dy, (cx, cy) => {
+      const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
+        gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
+      if (hitEnemy) return "stop";
+      return "continue";
+    });
+
+    gs.shark.x = slide.x;
+    gs.shark.y = slide.y;
+
+    // Step 5: If terminal cell contains an enemy, it's death
+    const termEnemyHit =
+      gs.enemies.some(e => e.x === gs.shark.x && e.y === gs.shark.y) ||
+      gs.bigEnemies.some(be =>
+        gs.shark.x >= be.x && gs.shark.x <= be.x + 1 &&
+        gs.shark.y >= be.y && gs.shark.y <= be.y + 1,
+      );
+    if (termEnemyHit) { endGame(); return; }
+
+    // Step 6: Respawn fish at new valid location
+    spawnFrozenFish();
   }
 
   // Coin growth (random per-cell rate)
@@ -422,6 +495,15 @@ export function loadGame(save: any): void {
   gs.bigEnemies    = save.bigEnemies || [];
   gs.leviathan     = save.leviathan || null;
   gs.gameOver      = false;
+
+  gs.iceCells = [];
+  for (let r = 0; r < GRID; r++) {
+    gs.iceCells.push(Array.from(
+      (save.iceCells || []).slice(r * GRID, (r + 1) * GRID).concat(emptyRow()).slice(0, GRID),
+    ));
+  }
+  gs.frozenFish = save.frozenFish || null;
+
   gs.gameStartTime = performance.now() - (save.runElapsedMs || 0);
   gs.levelStartTime = performance.now() - (save.levelElapsedMs || 0);
   gs.levelTimes    = save.levelTimes || [];
@@ -496,7 +578,22 @@ export function initAtDepth(targetDepth: number): void {
     gs.currentDepth = 4;
     updateHudDepth(4);
     wrapper.className = "game-depth-wrapper depth-4";
-    gs.sharkEgg = null;
+    gs.sharkEgg  = null;
+    gs.iceCells  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    seedIcePatches(ARCTIC_PATCH_COUNT);
+    gs.colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomArcticTileColor()),
+    );
+    gs.frozenFish = null;
+    spawnFrozenFish();
+    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+  }
+  if (targetDepth >= 5) {
+    gs.currentDepth = 5;
+    updateHudDepth(5);
+    wrapper.className = "game-depth-wrapper depth-5";
+    gs.iceCells   = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    gs.frozenFish = null;
     spawnLeviathan();
   }
   draw();
