@@ -461,13 +461,14 @@ export function draw(): void {
 
   // Regular enemies
   for (const e of gs.enemies) {
-    ctx.fillStyle = "#0a1824"; ctx.fillRect(e.x * CELL - 1, e.y * CELL - 1, CELL + 2, CELL + 2);
-    ctx.fillStyle = "#162d40"; ctx.fillRect(e.x * CELL, e.y * CELL, CELL, CELL);
+    const ex = e.visualX * CELL, ey = e.visualY * CELL;
+    ctx.fillStyle = "#0a1824"; ctx.fillRect(ex - 1, ey - 1, CELL + 2, CELL + 2);
+    ctx.fillStyle = "#162d40"; ctx.fillRect(ex, ey, CELL, CELL);
   }
 
   // Big enemies (2×2)
   for (const be of gs.bigEnemies) {
-    const bx = be.x * CELL, by = be.y * CELL, bw = CELL * 2;
+    const bx = be.visualX * CELL, by = be.visualY * CELL, bw = CELL * 2;
     ctx.fillStyle = "#120a1e"; ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
     ctx.fillStyle = "#2d1a4a"; ctx.fillRect(bx, by, bw, bw);
   }

@@ -56,6 +56,48 @@ function tickBounceAnim(now: number): void {
   }
 }
 
+// ── Enemy slide animation ─────────────────────────────────────────────────
+
+export function startEnemyAnimLoop(): void {
+  const now = performance.now();
+  for (const e of gs.enemies) {
+    e.animFromX = e.visualX; e.animFromY = e.visualY; e.animStartTime = now;
+  }
+  for (const be of gs.bigEnemies) {
+    be.animFromX = be.visualX; be.animFromY = be.visualY; be.animStartTime = now;
+  }
+  if (gs.enemyAnimRafId) cancelAnimationFrame(gs.enemyAnimRafId);
+  gs.enemyAnimRafId = requestAnimationFrame(tickEnemyAnims);
+}
+
+function tickEnemyAnims(now: number): void {
+  let anyRunning = false;
+  for (const e of gs.enemies) {
+    if (e.animStartTime === 0) continue;
+    const t = Math.min(1, (now - e.animStartTime) / ANIM_DURATION);
+    const ease = 1 - (1 - t) * (1 - t);
+    e.visualX = e.animFromX + (e.x - e.animFromX) * ease;
+    e.visualY = e.animFromY + (e.y - e.animFromY) * ease;
+    if (t < 1) anyRunning = true;
+    else e.animStartTime = 0;
+  }
+  for (const be of gs.bigEnemies) {
+    if (be.animStartTime === 0) continue;
+    const t = Math.min(1, (now - be.animStartTime) / ANIM_DURATION);
+    const ease = 1 - (1 - t) * (1 - t);
+    be.visualX = be.animFromX + (be.x - be.animFromX) * ease;
+    be.visualY = be.animFromY + (be.y - be.animFromY) * ease;
+    if (t < 1) anyRunning = true;
+    else be.animStartTime = 0;
+  }
+  draw();
+  if (anyRunning) {
+    gs.enemyAnimRafId = requestAnimationFrame(tickEnemyAnims);
+  } else {
+    gs.enemyAnimRafId = null;
+  }
+}
+
 // ── Water shimmer — caustic light flickers on ocean tiles ────────────────
 
 export function tickShimmer(): void {

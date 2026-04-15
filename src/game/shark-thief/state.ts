@@ -2,8 +2,18 @@
 
 import { GRID } from "./config";
 
-export interface Enemy    { x: number; y: number; }
-export interface BigEnemy { x: number; y: number; }
+export interface Enemy {
+  x: number; y: number;
+  visualX: number; visualY: number;
+  animFromX: number; animFromY: number;
+  animStartTime: number;
+}
+export interface BigEnemy {
+  x: number; y: number;
+  visualX: number; visualY: number;
+  animFromX: number; animFromY: number;
+  animStartTime: number;
+}
 export interface Leviathan { x: number; y: number; }
 export interface BabyShark { x: number; y: number; }
 export interface BloodCell { x: number; y: number; movesRemaining: number; }
@@ -33,6 +43,7 @@ export const gs = {
   sharkFromY:   0,
   animStartTime: 0,
   animRafId: null as number | null,
+  enemyAnimRafId: null as number | null,
 
   // Bounce animation (coral shell impact)
   bounceTargetX: 0,

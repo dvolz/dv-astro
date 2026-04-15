@@ -69,8 +69,10 @@ export function spawnSharkEgg(): void {
     if (attempts > 1000) return;
   } while (
     Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < MIN_ENEMY_DIST ||
-    gs.pickups[ey][ex] || gs.superPickups[ey][ex] ||
-    gs.coral[ey]?.[ex] || gs.coralPickups[ey][ex]
+    gs.pickups[ey][ex]        ||
+    gs.superPickups[ey][ex]   ||
+    gs.coral[ey]?.[ex]        ||
+    gs.coralPickups[ey]?.[ex]
   );
   gs.sharkEgg = { x: ex, y: ey };
 }
@@ -86,9 +88,10 @@ export function spawnFrozenFish(): void {
     if (attempts > 1000) return;
   } while (
     Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < MIN_ENEMY_DIST ||
-    gs.pickups[fy][fx]      ||
-    gs.superPickups[fy][fx] ||
-    gs.iceCells[fy][fx]     ||
+    gs.pickups[fy][fx]         ||
+    gs.superPickups[fy][fx]    ||
+    gs.coralPickups[fy]?.[fx]  ||
+    gs.iceCells[fy][fx]        ||
     gs.enemies.some(e => e.x === fx && e.y === fy) ||
     (gs.shark.x === fx && gs.shark.y === fy)
   );
@@ -97,36 +100,45 @@ export function spawnFrozenFish(): void {
 
 // ── Ice patches (Depth 4 — Arctic) ──────────────────────────────────────
 
-export function seedIcePatches(count: number): void {
-  const SHAPES: Array<Array<[number, number]>> = [
-    [[0,0],[1,0]],                         // 1×2 horizontal
-    [[0,0],[0,1]],                         // 1×2 vertical
-    [[0,0],[1,0],[2,0]],                   // 1×3 horizontal
-    [[0,0],[0,1],[0,2]],                   // 1×3 vertical
-    [[0,0],[1,0],[2,0],[3,0]],             // 1×4 horizontal
-    [[0,0],[0,1],[0,2],[0,3]],             // 1×4 vertical
-    [[0,0],[1,0],[0,1],[1,1]],             // 2×2 square
+export function seedIcePatches(_count: number): void {
+  // Fixed composition: 2× 4×1, 2× 2×2, 1× 1×1, 1× 1×2
+  // Orientation (H/V) is randomized independently per placement.
+  const PATCH_DEFS: Array<Array<[number, number]>> = [
+    // 4×1 — placed twice
+    Math.random() < 0.5
+      ? [[0,0],[1,0],[2,0],[3,0]]   // horizontal
+      : [[0,0],[0,1],[0,2],[0,3]],  // vertical
+    Math.random() < 0.5
+      ? [[0,0],[1,0],[2,0],[3,0]]
+      : [[0,0],[0,1],[0,2],[0,3]],
+    // 2×2 — placed twice (square, no orientation needed)
+    [[0,0],[1,0],[0,1],[1,1]],
+    [[0,0],[1,0],[0,1],[1,1]],
+    // 1×1 — single cell
+    [[0,0]],
+    // 1×2 — placed once
+    Math.random() < 0.5
+      ? [[0,0],[1,0]]   // horizontal
+      : [[0,0],[0,1]],  // vertical
   ];
 
-  let placed = 0, attempts = 0;
-  while (placed < count && attempts < 2000) {
-    attempts++;
-    const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  for (const shape of PATCH_DEFS) {
     const maxDx = Math.max(...shape.map(([dx]) => dx));
     const maxDy = Math.max(...shape.map(([, dy]) => dy));
-    const ax = Math.floor(Math.random() * (GRID - maxDx));
-    const ay = Math.floor(Math.random() * (GRID - maxDy));
-
-    const hits = shape.some(([dx, dy]) => {
-      const cx = ax + dx, cy = ay + dy;
-      return cx === gs.shark.x && cy === gs.shark.y;
-    });
-    if (hits) continue;
-
-    for (const [dx, dy] of shape) {
-      gs.iceCells[ay + dy][ax + dx] = true;
+    let placed = false, attempts = 0;
+    while (!placed && attempts < 500) {
+      attempts++;
+      const ax = Math.floor(Math.random() * (GRID - maxDx));
+      const ay = Math.floor(Math.random() * (GRID - maxDy));
+      const hitsShark = shape.some(([dx, dy]) =>
+        ax + dx === gs.shark.x && ay + dy === gs.shark.y
+      );
+      if (hitsShark) continue;
+      for (const [dx, dy] of shape) {
+        gs.iceCells[ay + dy][ax + dx] = true;
+      }
+      placed = true;
     }
-    placed++;
   }
 }
 
@@ -142,10 +154,14 @@ export function spawnEnemy(): Enemy {
   } while (
     Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < MIN_ENEMY_DIST ||
     gs.enemies.some(e => e.x === ex && e.y === ey) ||
-    gs.coral[ey]?.[ex] ||
-    gs.iceCells[ey]?.[ex]
+    gs.coral[ey]?.[ex]           ||
+    gs.iceCells[ey]?.[ex]        ||
+    gs.pickups[ey]?.[ex]         ||
+    gs.superPickups[ey]?.[ex]    ||
+    gs.coralPickups[ey]?.[ex]    ||
+    (gs.frozenFish?.x === ex && gs.frozenFish?.y === ey)
   );
-  return { x: ex, y: ey };
+  return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };
 }
 
 export function spawnBigEnemy(): BigEnemy {
@@ -166,7 +182,7 @@ export function spawnBigEnemy(): BigEnemy {
     gs.coral[ey]?.[ex]     || gs.coral[ey]?.[ex + 1] ||
     gs.coral[ey + 1]?.[ex] || gs.coral[ey + 1]?.[ex + 1]
   );
-  return { x: ex, y: ey };
+  return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };
 }
 
 // ── Coral barriers (Depth 2) ─────────────────────────────────────────────

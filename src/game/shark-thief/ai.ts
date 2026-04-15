@@ -4,6 +4,7 @@ import { GRID } from "./config";
 import { gs } from "./state";
 import { bigEnemyOverlaps } from "./collision";
 import { resolveSlide } from "./slide";
+import { startEnemyAnimLoop } from "./animation";
 
 export function moveEnemiesAI(): void {
   // Regular enemies — Manhattan-first, avoid coral and each other
@@ -55,6 +56,7 @@ export function moveEnemiesAI(): void {
       }
     }
   }
+  startEnemyAnimLoop();
 }
 
 export function moveLeviathanAI(): void {

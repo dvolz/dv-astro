@@ -211,6 +211,7 @@ export function init(): void {
   // Reset dying-enemy animation
   gs.dyingEnemies = [];
   if (gs.dyingRafId) { cancelAnimationFrame(gs.dyingRafId); gs.dyingRafId = null; }
+  if (gs.enemyAnimRafId) { cancelAnimationFrame(gs.enemyAnimRafId); gs.enemyAnimRafId = null; }
 
   // Reset shimmer
   gs.shimmerIntensity.fill(0);
@@ -271,6 +272,15 @@ export function moveShark(dx: number, dy: number): void {
       const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
+      // Collect coins mid-slide
+      if (gs.pickups[cy][cx]) {
+        gs.pickups[cy][cx] = false;
+        gs.score++;
+        gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+        getHudScore().textContent = String(gs.score);
+        gs.enemies.push(spawnEnemy());
+        checkDepthTransition();
+      }
       return "continue";
     });
     gs.shark.x = slide.x;
@@ -349,6 +359,15 @@ export function moveShark(dx: number, dy: number): void {
       const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
+      // Collect coins mid-slide
+      if (gs.pickups[cy][cx]) {
+        gs.pickups[cy][cx] = false;
+        gs.score++;
+        gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+        getHudScore().textContent = String(gs.score);
+        gs.enemies.push(spawnEnemy());
+        checkDepthTransition();
+      }
       return "continue";
     });
 
@@ -491,8 +510,12 @@ export function loadGame(save: any): void {
   gs.currentDepth  = save.currentDepth || 1;
   gs.depthEntryScore = save.depthEntryScore ?? (gs.currentDepth - 1) * 100;
   gs.moveCount     = save.moveCount || 0;
-  gs.enemies       = save.enemies || [];
-  gs.bigEnemies    = save.bigEnemies || [];
+  gs.enemies = (save.enemies || []).map((e: any) => ({
+    ...e, visualX: e.x, visualY: e.y, animFromX: e.x, animFromY: e.y, animStartTime: 0,
+  }));
+  gs.bigEnemies = (save.bigEnemies || []).map((e: any) => ({
+    ...e, visualX: e.x, visualY: e.y, animFromX: e.x, animFromY: e.y, animStartTime: 0,
+  }));
   gs.leviathan     = save.leviathan || null;
   gs.gameOver      = false;
 
@@ -521,6 +544,7 @@ export function loadGame(save: any): void {
 
   gs.dyingEnemies = [];
   if (gs.dyingRafId) { cancelAnimationFrame(gs.dyingRafId); gs.dyingRafId = null; }
+  if (gs.enemyAnimRafId) { cancelAnimationFrame(gs.enemyAnimRafId); gs.enemyAnimRafId = null; }
 
   gs.shimmerIntensity.fill(0);
   gs.shimmerSpeed.fill(0);
