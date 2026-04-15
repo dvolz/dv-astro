@@ -6,6 +6,7 @@ import { getHighScore, getSave, getMaxDepth, clearSave, saveGame } from "./persi
 import { initRenderer } from "./renderers";
 import { fetchLeaderboard } from "./leaderboard";
 import { init, loadGame, initAtDepth, setShowGameScreen } from "./engine";
+import { openDepthInfo } from "./depth-info/scenes";
 
 // ── Screen switching ──────────────────────────────────────────────────────
 
@@ -47,7 +48,9 @@ export function refreshMenuState(): void {
     if (maxDepth >= 3)
       html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d3" data-depth="3">DEPTH 3 — NURSERY</button>`;
     if (maxDepth >= 4)
-      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d4" data-depth="4">DEPTH 4 — ABYSS</button>`;
+      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d4" data-depth="4">DEPTH 4 — ARCTIC</button>`;
+    if (maxDepth >= 5)
+      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d5" data-depth="5">DEPTH 5 — ABYSS</button>`;
     depthSubBtns.innerHTML = html;
     depthSubBtns.querySelectorAll("[data-depth]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -133,6 +136,11 @@ export function initNavigation(): void {
   document.getElementById("sharkScorePopup")!.addEventListener("click", e => {
     if (e.target === e.currentTarget)
       (e.currentTarget as HTMLElement).classList.remove("visible");
+  });
+
+  // HUD depth button → open depth info modal
+  document.getElementById("hudDepthBtn")!.addEventListener("click", () => {
+    openDepthInfo(gs.currentDepth);
   });
 
   // HUD menu button (mid-game → main menu)

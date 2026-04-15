@@ -361,8 +361,19 @@ const fullWidthBody = true;
     color: #e06fa0;
     &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
   }
-  /* Depth 4: deep abyss violet */
+  /* Depth 4: arctic ice blue */
   .depth-sub-btns :global(.pixel-btn-d4) {
+    border-color: #7fd8f0;
+    color: #7fd8f0;
+
+    &:hover {
+      background: #7fd8f0;
+      color: var(--ocean-abyss);
+      box-shadow: 0 0 14px rgba(127, 216, 240, 0.5);
+    }
+  }
+  /* Depth 5: abyss violet */
+  .depth-sub-btns :global(.pixel-btn-d5) {
     border-color: #9d6fe0;
     color: #9d6fe0;
 
@@ -2143,7 +2154,8 @@ const fullWidthBody = true;
       { label: "DEPTH 1", depth: 1, color: "#48cae4" },
       { label: "DEPTH 2", depth: 2, color: "#daa070" },
       { label: "DEPTH 3", depth: 3, color: "#e06fa0" },
-      { label: "DEPTH 4", depth: 4, color: "#9d6fe0" },
+      { label: "DEPTH 4", depth: 4, color: "#7fd8f0" },
+      { label: "DEPTH 5", depth: 5, color: "#9d6fe0" },
     ];
     depths.forEach(({ label, depth, color }) => {
       const btn = document.createElement("button");
