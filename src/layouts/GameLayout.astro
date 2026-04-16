@@ -1,0 +1,35 @@
+---
+import { Font } from 'astro:assets'
+import 'modern-normalize/modern-normalize.css'
+import Variables from '../components/Variables.astro'
+import '../styles/global/_variables.scss'
+import '../styles/global.scss'
+import '../styles/global/_typography.scss'
+import '../styles/global/_animation.scss'
+
+const {
+	pageTitle,
+	description = '',
+} = Astro.props
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon-dv.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<Font cssVariable="--font-source-serif" preload />
+		<Font cssVariable="--font-poppins" preload />
+
+		<slot name="head" />
+		<Variables />
+	</head>
+	<body>
+		<main id="main-content">
+			<slot />
+		</main>
+	</body>
+</html>
