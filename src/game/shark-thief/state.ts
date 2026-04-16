@@ -94,6 +94,7 @@ export const gs = {
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,
   coralMovesCounter:    0,
+  eggMovesCounter:      0, // counts up after egg collected; triggers respawn when >= egg.interval
 
   // ── Shimmer ───────────────────────────────────────────────────────────
   shimmerIntensity: new Float32Array(GRID * GRID),

@@ -1,8 +1,20 @@
 // ===== SpawnManager =====  →  SpawnManager.swift
 
-import { GRID, MIN_ENEMY_DIST, CORAL_MAX_ON_BOARD } from "./config";
+import { GRID } from "./config";
+import { LEVEL_CONFIG } from "./level-config";
 import { gs, type Enemy, type BigEnemy } from "./state";
 import { bigEnemyOverlaps } from "./collision";
+
+// ── Center safe zone ─────────────────────────────────────────────────────
+// Returns true if (x, y) falls inside the center square of `size` cells.
+// Used by spawn functions when a pickup config has centerSafeZone set.
+
+function isInCenterSafeZone(x: number, y: number, size: number): boolean {
+  const half   = Math.floor(size / 2);
+  const startX = Math.floor(GRID / 2) - half;
+  const startY = Math.floor(GRID / 2) - half;
+  return x >= startX && x < startX + size && y >= startY && y < startY + size;
+}
 
 // ── Ammonite (Depth 1 super pickup) ─────────────────────────────────────
 
@@ -15,7 +27,8 @@ function countAmmonites(): number {
 }
 
 export function spawnAmmoniteIfNeeded(): void {
-  if (countAmmonites() > 0) return;
+  const ammonite = LEVEL_CONFIG[gs.currentDepth].ammonite;
+  if (!ammonite || countAmmonites() >= ammonite.max) return;
   let ax: number, ay: number, attempts = 0;
   do {
     ax = Math.floor(Math.random() * GRID);
@@ -23,9 +36,10 @@ export function spawnAmmoniteIfNeeded(): void {
     attempts++;
     if (attempts > 1000) return;
   } while (
-    Math.abs(ax - gs.shark.x) + Math.abs(ay - gs.shark.y) < MIN_ENEMY_DIST ||
+    Math.abs(ax - gs.shark.x) + Math.abs(ay - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.pickups[ay][ax] || gs.superPickups[ay][ax] ||
-    gs.coral[ay]?.[ax]  || gs.coralPickups[ay][ax]
+    gs.coral[ay]?.[ax]  || gs.coralPickups[ay][ax] ||
+    (ammonite.centerSafeZone ? isInCenterSafeZone(ax, ay, ammonite.centerSafeZone) : false)
   );
   gs.superPickups[ay][ax] = true;
   gs.ammoniteMovesCounter = 0;
@@ -42,7 +56,8 @@ function countCoralPickups(): number {
 }
 
 export function spawnCoralPickupIfNeeded(): void {
-  if (countCoralPickups() >= CORAL_MAX_ON_BOARD) return;
+  const coral = LEVEL_CONFIG[gs.currentDepth].coral;
+  if (!coral || countCoralPickups() >= coral.max) return;
   let cx: number, cy: number, attempts = 0;
   do {
     cx = Math.floor(Math.random() * GRID);
@@ -50,9 +65,10 @@ export function spawnCoralPickupIfNeeded(): void {
     attempts++;
     if (attempts > 1000) return;
   } while (
-    Math.abs(cx - gs.shark.x) + Math.abs(cy - gs.shark.y) < MIN_ENEMY_DIST ||
+    Math.abs(cx - gs.shark.x) + Math.abs(cy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.pickups[cy][cx] || gs.superPickups[cy][cx] ||
-    gs.coral[cy][cx]   || gs.coralPickups[cy][cx]
+    gs.coral[cy][cx]   || gs.coralPickups[cy][cx] ||
+    (coral.centerSafeZone ? isInCenterSafeZone(cx, cy, coral.centerSafeZone) : false)
   );
   gs.coralPickups[cy][cx] = true;
   gs.coralMovesCounter = 0;
@@ -61,6 +77,7 @@ export function spawnCoralPickupIfNeeded(): void {
 // ── Shark egg (Depth 3 pickup) ───────────────────────────────────────────
 
 export function spawnSharkEgg(): void {
+  const egg = LEVEL_CONFIG[gs.currentDepth].egg;
   let ex: number, ey: number, attempts = 0;
   do {
     ex = Math.floor(Math.random() * GRID);
@@ -68,11 +85,12 @@ export function spawnSharkEgg(): void {
     attempts++;
     if (attempts > 1000) return;
   } while (
-    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < MIN_ENEMY_DIST ||
+    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.pickups[ey][ex]        ||
     gs.superPickups[ey][ex]   ||
     gs.coral[ey]?.[ex]        ||
-    gs.coralPickups[ey]?.[ex]
+    gs.coralPickups[ey]?.[ex] ||
+    (egg?.centerSafeZone ? isInCenterSafeZone(ex, ey, egg.centerSafeZone) : false)
   );
   gs.sharkEgg = { x: ex, y: ey };
 }
@@ -80,6 +98,7 @@ export function spawnSharkEgg(): void {
 // ── Frozen fish (Depth 4 — Arctic) ──────────────────────────────────────
 
 export function spawnFrozenFish(): void {
+  const fish = LEVEL_CONFIG[gs.currentDepth].frozenFish;
   let fx: number, fy: number, attempts = 0;
   do {
     fx = Math.floor(Math.random() * GRID);
@@ -87,42 +106,34 @@ export function spawnFrozenFish(): void {
     attempts++;
     if (attempts > 1000) return;
   } while (
-    Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < MIN_ENEMY_DIST ||
+    Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.pickups[fy][fx]         ||
     gs.superPickups[fy][fx]    ||
     gs.coralPickups[fy]?.[fx]  ||
     gs.iceCells[fy][fx]        ||
     gs.enemies.some(e => e.x === fx && e.y === fy) ||
-    (gs.shark.x === fx && gs.shark.y === fy)
+    (gs.shark.x === fx && gs.shark.y === fy) ||
+    (fish?.centerSafeZone ? isInCenterSafeZone(fx, fy, fish.centerSafeZone) : false)
   );
   gs.frozenFish = { x: fx, y: fy };
 }
 
 // ── Ice patches (Depth 4 — Arctic) ──────────────────────────────────────
 
-export function seedIcePatches(_count: number): void {
-  // Fixed composition: 2× 4×1, 2× 2×2, 1× 1×1, 1× 1×2
-  // Orientation (H/V) is randomized independently per placement.
-  const PATCH_DEFS: Array<Array<[number, number]>> = [
-    // 4×1 — placed twice
-    Math.random() < 0.5
-      ? [[0,0],[1,0],[2,0],[3,0]]   // horizontal
-      : [[0,0],[0,1],[0,2],[0,3]],  // vertical
-    Math.random() < 0.5
-      ? [[0,0],[1,0],[2,0],[3,0]]
-      : [[0,0],[0,1],[0,2],[0,3]],
-    // 2×2 — placed twice (square, no orientation needed)
-    [[0,0],[1,0],[0,1],[1,1]],
-    [[0,0],[1,0],[0,1],[1,1]],
-    // 1×1 — single cell
-    [[0,0]],
-    // 1×2 — placed once
-    Math.random() < 0.5
-      ? [[0,0],[1,0]]   // horizontal
-      : [[0,0],[0,1]],  // vertical
-  ];
+// Shape library — pick one randomly per placement, orientation randomized each time.
+function randomIceShape(): Array<[number, number]> {
+  const horiz = Math.random() < 0.5;
+  switch (Math.floor(Math.random() * 4)) {
+    case 0: return horiz ? [[0,0],[1,0],[2,0],[3,0]] : [[0,0],[0,1],[0,2],[0,3]]; // 4×1
+    case 1: return [[0,0],[1,0],[0,1],[1,1]];                                      // 2×2
+    case 2: return horiz ? [[0,0],[1,0]] : [[0,0],[0,1]];                          // 1×2
+    default: return [[0,0]];                                                        // 1×1
+  }
+}
 
-  for (const shape of PATCH_DEFS) {
+export function seedIcePatches(count: number): void {
+  for (let i = 0; i < count; i++) {
+    const shape = randomIceShape();
     const maxDx = Math.max(...shape.map(([dx]) => dx));
     const maxDy = Math.max(...shape.map(([, dy]) => dy));
     let placed = false, attempts = 0;
@@ -152,7 +163,7 @@ export function spawnEnemy(): Enemy {
     attempts++;
     if (attempts > 1000) break;
   } while (
-    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < MIN_ENEMY_DIST ||
+    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.enemies.some(e => e.x === ex && e.y === ey) ||
     gs.coral[ey]?.[ex]           ||
     gs.iceCells[ey]?.[ex]        ||
@@ -177,7 +188,7 @@ export function spawnBigEnemy(): BigEnemy {
       Math.abs(ex + 1 - gs.shark.x) + Math.abs(ey     - gs.shark.y),
       Math.abs(ex     - gs.shark.x) + Math.abs(ey + 1 - gs.shark.y),
       Math.abs(ex + 1 - gs.shark.x) + Math.abs(ey + 1 - gs.shark.y),
-    ) < MIN_ENEMY_DIST ||
+    ) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
     gs.bigEnemies.some(b => bigEnemyOverlaps(ex, ey, b.x, b.y)) ||
     gs.coral[ey]?.[ex]     || gs.coral[ey]?.[ex + 1] ||
     gs.coral[ey + 1]?.[ex] || gs.coral[ey + 1]?.[ex + 1]

@@ -1,11 +1,8 @@
 // ===== GameEngine =====  →  GameEngine.swift
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
-import {
-  GRID, PICKUP_INIT, PICKUP_RATE,
-  AMMONITE_INTERVAL, CORAL_INTERVAL, CORAL_PICKUP_INIT, DYING_DURATION,
-  ARCTIC_FISH_POINTS, ARCTIC_PATCH_COUNT,
-} from "./config";
+import { GRID, DYING_DURATION } from "./config";
+import { LEVEL_CONFIG } from "./level-config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
 import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFish, seedIcePatches } from "./spawn";
@@ -75,7 +72,7 @@ export function clearCloseEnemies(keepN: number): void {
 
 export function checkDepthTransition(): void {
   if (gs.currentDepth >= 5) return;
-  if (gs.score < gs.depthEntryScore + 100) return;
+  if (gs.score < gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore) return;
 
   gs.levelTimes.push(performance.now() - gs.levelStartTime);
   gs.levelStartTime = performance.now();
@@ -96,13 +93,20 @@ export function checkDepthTransition(): void {
 
   if (gs.currentDepth === 2) {
     clearCloseEnemies(5);
-    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+    // Big enemies are a Depth 1 signature piece — dissolve any that survived
+    for (const be of gs.bigEnemies) {
+      gs.dyingEnemies.push({ x: be.x, y: be.y, isBig: true, startTime: performance.now() });
+    }
+    gs.bigEnemies = [];
+    startDyingLoop();
+    // Bring normal enemies back up to 5
+    while (gs.enemies.length < 5) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     gs.ammoniteMovesCounter = 0;
     gs.coralMovesCounter = 0;
     spawnCoral();
     let placed = 0, attempts = 0;
-    while (placed < CORAL_PICKUP_INIT && attempts < 800) {
+    while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
       attempts++;
       const cpx = Math.floor(Math.random() * GRID);
       const cpy = Math.floor(Math.random() * GRID);
@@ -121,15 +125,22 @@ export function checkDepthTransition(): void {
       gs.superPickups[r].fill(false);
     }
     gs.coralMovesCounter = 0;
+    gs.sharkEgg = null;
+    gs.eggMovesCounter = 0;
     gs.babySharks = [];
     gs.bloodCells = [];
     gs.sharkPositionHistory = [];
-    spawnSharkEgg();
+    if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
   } else if (gs.currentDepth === 4) {
     clearCloseEnemies(5);
-    // Clear all Depth 3 state (Nursery)
+    // Clear Depth 3 signature pieces
+    gs.sharkEgg = null;
+    gs.babySharks = [];
+    gs.bloodCells = [];
+    gs.sharkPositionHistory = [];
+    gs.eggMovesCounter = 0;
     gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    seedIcePatches(ARCTIC_PATCH_COUNT);
+    seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
     gs.colors = Array.from({ length: GRID }, () =>
       Array.from({ length: GRID }, () => randomArcticTileColor()),
     );
@@ -137,9 +148,12 @@ export function checkDepthTransition(): void {
     while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
     // Spawn the first frozen fish
     gs.frozenFish = null;
-    spawnFrozenFish();
+    if ((LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0) > 0) spawnFrozenFish();
   } else {
     clearCloseEnemies(5);
+    // Clear Depth 4 signature pieces
+    gs.frozenFish = null;
+    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
   }
 }
 
@@ -175,7 +189,7 @@ export function init(): void {
     Array.from({ length: GRID }, () => randomTileColor()),
   );
   gs.pickups = Array.from({ length: GRID }, () =>
-    Array.from({ length: GRID }, () => Math.random() < PICKUP_INIT),
+    Array.from({ length: GRID }, () => Math.random() < LEVEL_CONFIG[gs.currentDepth].coinInit),
   );
   gs.superPickups  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
   gs.coralPickups  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
@@ -201,7 +215,8 @@ export function init(): void {
   gs.sharkPrevY = gs.shark.y;
   gs.sharkPositionHistory = [];
 
-  spawnAmmoniteIfNeeded();
+  const initAmmonites = LEVEL_CONFIG[gs.currentDepth].ammonite?.initCount ?? 0;
+  for (let i = 0; i < initAmmonites; i++) spawnAmmoniteIfNeeded();
 
   gs.sharkVisualX = gs.shark.x;
   gs.sharkVisualY = gs.shark.y;
@@ -242,8 +257,8 @@ export function moveShark(dx: number, dy: number): void {
     else if (dy === -1) gs.sharkDir = "up";
     gs.coralPickups[ny][nx] = false;
     gs.coral[ny][nx] = true;
-    gs.score += 5;
-    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    gs.score += LEVEL_CONFIG[gs.currentDepth].coral?.points ?? 5;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
@@ -276,7 +291,7 @@ export function moveShark(dx: number, dy: number): void {
       if (gs.pickups[cy][cx]) {
         gs.pickups[cy][cx] = false;
         gs.score++;
-        gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+        gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
         getHudScore().textContent = String(gs.score);
         gs.enemies.push(spawnEnemy());
         checkDepthTransition();
@@ -310,40 +325,45 @@ export function moveShark(dx: number, dy: number): void {
   if (gs.pickups[ny][nx]) {
     gs.pickups[ny][nx] = false;
     gs.score++;
-    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
   }
 
-  // Super pickup (ammonite, 10 pts → big enemy)
+  // Super pickup (ammonite → big enemy)
   if (gs.superPickups[ny][nx]) {
     gs.superPickups[ny][nx] = false;
     gs.ammoniteMovesCounter = 0;
-    gs.score += 10;
-    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    gs.score += LEVEL_CONFIG[gs.currentDepth].ammonite?.points ?? 10;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
     gs.bigEnemies.push(spawnBigEnemy());
     checkDepthTransition();
   }
 
-  // Shark egg (Depth 3 — 10 pts, hatches baby)
+  // Shark egg (hatches baby)
   if (gs.sharkEgg && gs.shark.x === gs.sharkEgg.x && gs.shark.y === gs.sharkEgg.y) {
     gs.sharkEgg = null;
-    gs.score += 10;
-    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    gs.score += LEVEL_CONFIG[gs.currentDepth].egg?.points ?? 10;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
     gs.babySharks.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
-    spawnSharkEgg();
+    const eggInterval = LEVEL_CONFIG[gs.currentDepth].egg?.interval ?? 0;
+    if (eggInterval === 0) {
+      spawnSharkEgg();
+    } else {
+      gs.eggMovesCounter = 0;
+    }
   }
 
   // Frozen fish (Depth 4 — Arctic)
   if (gs.frozenFish && gs.shark.x === gs.frozenFish.x && gs.shark.y === gs.frozenFish.y) {
     // Step 1: Award points
-    gs.score += ARCTIC_FISH_POINTS;
-    gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+    gs.score += LEVEL_CONFIG[gs.currentDepth].frozenFish?.points ?? 5;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
 
     // Step 2: Spawn 1 new enemy
@@ -363,7 +383,7 @@ export function moveShark(dx: number, dy: number): void {
       if (gs.pickups[cy][cx]) {
         gs.pickups[cy][cx] = false;
         gs.score++;
-        gs.score = Math.min(gs.score, gs.depthEntryScore + 100);
+        gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
         getHudScore().textContent = String(gs.score);
         gs.enemies.push(spawnEnemy());
         checkDepthTransition();
@@ -390,16 +410,22 @@ export function moveShark(dx: number, dy: number): void {
   // Coin growth (random per-cell rate)
   for (let r = 0; r < GRID; r++)
     for (let c = 0; c < GRID; c++)
-      if (!gs.pickups[r][c] && !gs.superPickups[r][c] && !gs.coralPickups[r][c] && !gs.coral[r][c] && Math.random() < PICKUP_RATE)
+      if (!gs.pickups[r][c] && !gs.superPickups[r][c] && !gs.coralPickups[r][c] && !gs.coral[r][c] && Math.random() < LEVEL_CONFIG[gs.currentDepth].coinRate)
         gs.pickups[r][c] = true;
 
-  // Shell spawn counters
-  if (gs.currentDepth === 1) {
+  // Shell spawn counters (driven by level config — active only if the section is defined)
+  const depthCfg = LEVEL_CONFIG[gs.currentDepth];
+  if (depthCfg.ammonite) {
     gs.ammoniteMovesCounter++;
-    if (gs.ammoniteMovesCounter >= AMMONITE_INTERVAL) spawnAmmoniteIfNeeded();
-  } else if (gs.currentDepth === 2) {
+    if (gs.ammoniteMovesCounter >= depthCfg.ammonite.interval) spawnAmmoniteIfNeeded();
+  }
+  if (depthCfg.coral) {
     gs.coralMovesCounter++;
-    if (gs.coralMovesCounter >= CORAL_INTERVAL) spawnCoralPickupIfNeeded();
+    if (gs.coralMovesCounter >= depthCfg.coral.interval) spawnCoralPickupIfNeeded();
+  }
+  if (depthCfg.egg?.interval && gs.sharkEgg === null) {
+    gs.eggMovesCounter++;
+    if (gs.eggMovesCounter >= depthCfg.egg.interval) spawnSharkEgg();
   }
 
   // Enemy AI — regular + big every 2 player moves
@@ -417,7 +443,7 @@ export function moveShark(dx: number, dy: number): void {
     if (eaten) {
       gs.bloodCells.push({ x: b.x, y: b.y, movesRemaining: 20 });
       gs.babySharks.splice(i, 1);
-      gs.score = Math.max(0, gs.score - 5);
+      gs.score = Math.max(0, gs.score - (LEVEL_CONFIG[gs.currentDepth].egg?.babyPenalty ?? 5));
       getHudScore().textContent = String(gs.score);
     }
   }
@@ -519,11 +545,11 @@ export function loadGame(save: any): void {
   gs.leviathan     = save.leviathan || null;
   gs.gameOver      = false;
 
-  gs.iceCells = [];
-  for (let r = 0; r < GRID; r++) {
-    gs.iceCells.push(Array.from(
-      (save.iceCells || []).slice(r * GRID, (r + 1) * GRID).concat(emptyRow()).slice(0, GRID),
-    ));
+  // Always re-seed ice from config rather than restoring from save — ensures
+  // changes to icePatches.initialCount take effect without needing a fresh game.
+  gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+  if (gs.currentDepth >= 4) {
+    seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
   }
   gs.frozenFish = save.frozenFish || null;
 
@@ -573,7 +599,7 @@ export function initAtDepth(targetDepth: number): void {
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     spawnCoral();
     let placed = 0, attempts = 0;
-    while (placed < CORAL_PICKUP_INIT && attempts < 800) {
+    while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
       attempts++;
       const cpx = Math.floor(Math.random() * GRID);
       const cpy = Math.floor(Math.random() * GRID);
@@ -595,7 +621,7 @@ export function initAtDepth(targetDepth: number): void {
     gs.babySharks = [];
     gs.bloodCells = [];
     gs.sharkPositionHistory = [];
-    spawnSharkEgg();
+    if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
     while (gs.enemies.length + gs.bigEnemies.length < 10) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 4) {
@@ -604,12 +630,12 @@ export function initAtDepth(targetDepth: number): void {
     wrapper.className = "game-depth-wrapper depth-4";
     gs.sharkEgg  = null;
     gs.iceCells  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    seedIcePatches(ARCTIC_PATCH_COUNT);
+    seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
     gs.colors = Array.from({ length: GRID }, () =>
       Array.from({ length: GRID }, () => randomArcticTileColor()),
     );
     gs.frozenFish = null;
-    spawnFrozenFish();
+    if ((LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0) > 0) spawnFrozenFish();
     while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 5) {
