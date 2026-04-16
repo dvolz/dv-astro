@@ -37,7 +37,8 @@ export const blogData = {
   :global(html):has(.shark-ios-app),
   :global(body):has(.shark-ios-app) {
     background: #0a1f2e;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     margin: 0;
     padding: 0;
     touch-action: manipulation;
@@ -46,7 +47,8 @@ export const blogData = {
   :global(main):has(.shark-ios-app) {
     padding: 0;
     margin: 0;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     background: #0a1f2e;
     display: flex;
     align-items: center;
@@ -55,11 +57,12 @@ export const blogData = {
 
   .shark-ios-app {
     width: 100%;
+    height: 100dvh;
+    overflow: hidden;
     touch-action: manipulation;
     background: var(--ocean-abyss);
     color: var(--text-primary);
     position: relative;
-    min-height: 100dvh;
   }
 
   /* ── Screens ── */
@@ -68,7 +71,8 @@ export const blogData = {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow-y: auto;
     width: 100%;
     padding: 2rem 1.6rem;
     box-sizing: border-box;
@@ -425,7 +429,8 @@ export const blogData = {
   .game-screen {
     padding: 0;
     justify-content: flex-start;
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     gap: 0;
   }
 
