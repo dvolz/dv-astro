@@ -132,37 +132,62 @@ export function drawFrozenFish(
   ctx.save();
   const cx = px + ps / 2, cy = py + ps / 2;
 
-  // Body — icy blue oval
-  ctx.fillStyle = "#5ab4d8";
+  // Dark outline — silhouette first, pops against the arctic blue-gray water
+  ctx.fillStyle = "#0d2233";
   ctx.beginPath();
-  ctx.ellipse(cx, cy, ps * 0.38, ps * 0.22, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy, ps * 0.42, ps * 0.26, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Tail — triangle pointing left
-  ctx.fillStyle = "#4aa8cc";
+  // Tail outline — triangle pointing left
   ctx.beginPath();
-  ctx.moveTo(px + ps * 0.12, cy - ps * 0.18);
-  ctx.lineTo(px + ps * 0.12, cy + ps * 0.18);
+  ctx.moveTo(px + ps * 0.11, cy - ps * 0.22);
+  ctx.lineTo(px + ps * 0.11, cy + ps * 0.22);
+  ctx.lineTo(px + ps * 0.01, cy);
+  ctx.closePath();
+  ctx.fill();
+
+  // Body — pale ice white, high contrast against blue-gray water
+  ctx.fillStyle = "#dff2f8";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, ps * 0.36, ps * 0.20, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail fill — slightly cooler than body
+  ctx.fillStyle = "#b8e0ee";
+  ctx.beginPath();
+  ctx.moveTo(px + ps * 0.13, cy - ps * 0.17);
+  ctx.lineTo(px + ps * 0.13, cy + ps * 0.17);
   ctx.lineTo(px + ps * 0.04, cy);
   ctx.closePath();
   ctx.fill();
 
-  // Frosted overlay — white center highlight
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  // Ice shading — mid-tone cool blue on lower body
+  ctx.fillStyle = "#a0cfe0";
   ctx.beginPath();
-  ctx.ellipse(cx - ps * 0.06, cy - ps * 0.06, ps * 0.16, ps * 0.09, -0.4, 0, Math.PI * 2);
+  ctx.ellipse(cx + ps * 0.04, cy + ps * 0.06, ps * 0.22, ps * 0.10, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Sparkle dot (top-right)
+  // Bright specular highlight — top left of body
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(cx + ps * 0.22, cy - ps * 0.16, Math.max(1, ps * 0.05), 0, Math.PI * 2);
+  ctx.ellipse(cx - ps * 0.10, cy - ps * 0.07, ps * 0.10, ps * 0.06, -0.5, 0, Math.PI * 2);
   ctx.fill();
 
-  // Eye
-  ctx.fillStyle = "#08181f";
+  // Sparkle — small white dot top-right
   ctx.beginPath();
-  ctx.arc(cx + ps * 0.24, cy - ps * 0.04, Math.max(1, ps * 0.04), 0, Math.PI * 2);
+  ctx.arc(cx + ps * 0.24, cy - ps * 0.14, Math.max(1, ps * 0.045), 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye — gold, warm contrast against cool palette
+  ctx.fillStyle = "#ffd166";
+  ctx.beginPath();
+  ctx.arc(cx + ps * 0.22, cy - ps * 0.04, Math.max(1, ps * 0.065), 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye pupil
+  ctx.fillStyle = "#0d2233";
+  ctx.beginPath();
+  ctx.arc(cx + ps * 0.23, cy - ps * 0.04, Math.max(1, ps * 0.035), 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
