@@ -74,7 +74,8 @@ export const gs = {
 
   // ── Depth 4 — Arctic ────────────────────────────────────────────────────
   iceCells:    [] as boolean[][], // 25×25 — true = ice tile
-  frozenFish:  null as { x: number; y: number } | null,
+  frozenFish:  [] as Array<{ x: number; y: number }>,
+  frozenFishMovesCounter: 0,
 
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,

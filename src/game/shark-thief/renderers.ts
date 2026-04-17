@@ -443,9 +443,11 @@ export function draw(): void {
   }
 
   // Frozen fish (Depth 4 — Arctic)
-  if (gs.frozenFish) {
+  if (gs.frozenFish.length > 0) {
     const fp = CELL * 0.06;
-    drawFrozenFish(ctx, gs.frozenFish.x * CELL + fp, gs.frozenFish.y * CELL + fp, CELL - fp * 2);
+    for (const fish of gs.frozenFish) {
+      drawFrozenFish(ctx, fish.x * CELL + fp, fish.y * CELL + fp, CELL - fp * 2);
+    }
   }
 
   // Coral shell pickups (Depth 2)

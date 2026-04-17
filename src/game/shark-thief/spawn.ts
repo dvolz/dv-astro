@@ -97,8 +97,9 @@ export function spawnSharkEgg(): void {
 
 // ── Frozen fish (Depth 4 — Arctic) ──────────────────────────────────────
 
-export function spawnFrozenFish(): void {
+export function spawnFrozenFishIfNeeded(): void {
   const fish = LEVEL_CONFIG[gs.currentDepth].frozenFish;
+  if (!fish || gs.frozenFish.length >= fish.max) return;
   let fx: number, fy: number, attempts = 0;
   do {
     fx = Math.floor(Math.random() * GRID);
@@ -112,10 +113,11 @@ export function spawnFrozenFish(): void {
     gs.coralPickups[fy]?.[fx]  ||
     gs.iceCells[fy][fx]        ||
     gs.enemies.some(e => e.x === fx && e.y === fy) ||
+    gs.frozenFish.some(f => f.x === fx && f.y === fy) ||
     (gs.shark.x === fx && gs.shark.y === fy) ||
-    (fish?.centerSafeZone ? isInCenterSafeZone(fx, fy, fish.centerSafeZone) : false)
+    (fish.centerSafeZone ? isInCenterSafeZone(fx, fy, fish.centerSafeZone) : false)
   );
-  gs.frozenFish = { x: fx, y: fy };
+  gs.frozenFish.push({ x: fx, y: fy });
 }
 
 // ── Ice patches (Depth 4 — Arctic) ──────────────────────────────────────
@@ -170,7 +172,7 @@ export function spawnEnemy(): Enemy {
     gs.pickups[ey]?.[ex]         ||
     gs.superPickups[ey]?.[ex]    ||
     gs.coralPickups[ey]?.[ex]    ||
-    (gs.frozenFish?.x === ex && gs.frozenFish?.y === ey)
+    gs.frozenFish.some(f => f.x === ex && f.y === ey)
   );
   return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };
 }

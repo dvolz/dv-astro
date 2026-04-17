@@ -31,6 +31,8 @@ export interface EggConfig {
 
 export interface FrozenFishConfig {
   initCount:      number;  // fish placed when entering this depth
+  max:            number;  // max frozen fish on the board at once
+  interval:       number;  // player moves between collecting a fish and the next one spawning
   points:         number;  // points awarded per frozen fish collected
   centerSafeZone?: number; // side length of a square in the center where this pickup won't spawn
 }
@@ -102,6 +104,8 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   4: {
     frozenFish: {
       initCount: 1, // fish placed on entering this depth
+      max:       3, // max frozen fish on the board at once
+      interval:  20, // moves after collecting a fish before the next one spawns
       points:    5, // points per frozen fish collected
     },
     icePatches: {
