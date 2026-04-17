@@ -92,15 +92,16 @@ export function checkDepthTransition(): void {
   updateMaxDepth(gs.currentDepth);
 
   if (gs.currentDepth === 2) {
-    clearCloseEnemies(5);
+    const keep2 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
+    clearCloseEnemies(keep2);
     // Big enemies are a Depth 1 signature piece — dissolve any that survived
     for (const be of gs.bigEnemies) {
       gs.dyingEnemies.push({ x: be.x, y: be.y, isBig: true, startTime: performance.now() });
     }
     gs.bigEnemies = [];
     startDyingLoop();
-    // Bring normal enemies back up to 5
-    while (gs.enemies.length < 5) gs.enemies.push(spawnEnemy());
+    // Bring normal enemies back up to keep2
+    while (gs.enemies.length < keep2) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     gs.ammoniteMovesCounter = 0;
     gs.coralMovesCounter = 0;
@@ -120,8 +121,9 @@ export function checkDepthTransition(): void {
       ) { gs.coralPickups[cpy][cpx] = true; placed++; }
     }
   } else if (gs.currentDepth === 3) {
-    clearCloseEnemies(10);
-    while (gs.enemies.length + gs.bigEnemies.length < 10) gs.enemies.push(spawnEnemy());
+    const keep3 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
+    clearCloseEnemies(keep3);
+    while (gs.enemies.length + gs.bigEnemies.length < keep3) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) {
       gs.coral[r].fill(false);
       gs.coralPickups[r].fill(false);
@@ -135,7 +137,8 @@ export function checkDepthTransition(): void {
     gs.sharkPositionHistory = [];
     if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
   } else if (gs.currentDepth === 4) {
-    clearCloseEnemies(5);
+    const keep4 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
+    clearCloseEnemies(keep4);
     // Clear Depth 3 signature pieces
     gs.sharkEgg = null;
     gs.babySharks = [];
@@ -147,15 +150,15 @@ export function checkDepthTransition(): void {
     gs.colors = Array.from({ length: GRID }, () =>
       Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
     );
-    // Ensure 5 enemies on entry
-    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+    // Ensure enemyKeep enemies on entry
+    while (gs.enemies.length + gs.bigEnemies.length < keep4) gs.enemies.push(spawnEnemy());
     // Spawn initial frozen fish
     gs.frozenFish = [];
     gs.frozenFishMovesCounter = 0;
     const fishInitCount = LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0;
     for (let i = 0; i < fishInitCount; i++) spawnFrozenFishIfNeeded();
   } else {
-    clearCloseEnemies(5);
+    clearCloseEnemies(LEVEL_CONFIG[gs.currentDepth].enemyKeep);
     // Clear Depth 4 signature pieces
     gs.frozenFish = [];
     gs.frozenFishMovesCounter = 0;
@@ -356,13 +359,17 @@ export function moveShark(dx: number, dy: number): void {
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     getHudScore().textContent = String(gs.score);
     gs.enemies.push(spawnEnemy());
+    // Capture egg interval before transition may change currentDepth
+    const eggInterval = LEVEL_CONFIG[gs.currentDepth].egg?.interval ?? 0;
     checkDepthTransition();
     gs.babySharks.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
-    const eggInterval = LEVEL_CONFIG[gs.currentDepth].egg?.interval ?? 0;
-    if (eggInterval === 0) {
-      spawnSharkEgg();
-    } else {
-      gs.eggMovesCounter = 0;
+    // Only respawn egg if this depth still has egg config (guards against depth transition mid-block)
+    if (LEVEL_CONFIG[gs.currentDepth].egg) {
+      if (eggInterval === 0) {
+        spawnSharkEgg();
+      } else {
+        gs.eggMovesCounter = 0;
+      }
     }
   }
 

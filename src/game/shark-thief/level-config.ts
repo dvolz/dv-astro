@@ -57,6 +57,7 @@ export interface DepthConfig {
   icePatches?: IcePatchConfig;
 
   tilePalette:  TilePalette; // background tile palette — "ocean" | "tropical" | "arctic"
+  enemyKeep:    number; // normal enemies carried over from the previous depth on transition
   coinRate:     number; // probability per cell per player move of a coin spawning
   coinInit:     number; // fraction of cells pre-filled with coins at start
   descendScore: number; // points to earn in this depth before descending
@@ -74,6 +75,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       points:    10,
     },
     tilePalette:  "ocean",
+    enemyKeep:    5,  // enemies carried in from depth 1 start (depth 1 always spawns fresh)
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -88,6 +90,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       points:    5,
     },
     tilePalette:  "tropical",
+    enemyKeep:    1,  // normal enemies carried over from depth 1 (big enemies are always cleared)
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -103,6 +106,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
     },
     tilePalette:  "ocean",
+    enemyKeep:    10, // enemies carried over from depth 2
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -120,6 +124,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       initialCount: 8, // number of ice patch shapes seeded at the start of this depth
     },
     tilePalette:  "arctic",
+    enemyKeep:    5,  // enemies carried over from depth 3
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -128,6 +133,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
 
   5: {
     tilePalette:  "ocean",
+    enemyKeep:    5,  // enemies carried over from depth 4
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
