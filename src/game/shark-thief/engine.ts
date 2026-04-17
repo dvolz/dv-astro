@@ -638,7 +638,7 @@ export function initAtDepth(targetDepth: number): void {
         gs.coralPickups[cpy][cpx] = true; placed++;
       }
     }
-    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 3) {
     gs.currentDepth = 3;
@@ -653,7 +653,7 @@ export function initAtDepth(targetDepth: number): void {
     gs.bloodCells = [];
     gs.sharkPositionHistory = [];
     if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
-    while (gs.enemies.length + gs.bigEnemies.length < 10) gs.enemies.push(spawnEnemy());
+    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 4) {
     gs.currentDepth = 4;
@@ -669,7 +669,7 @@ export function initAtDepth(targetDepth: number): void {
     gs.frozenFishMovesCounter = 0;
     const fishInit = LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0;
     for (let i = 0; i < fishInit; i++) spawnFrozenFishIfNeeded();
-    while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
+    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
   }
   if (targetDepth >= 5) {
     gs.currentDepth = 5;
@@ -680,6 +680,13 @@ export function initAtDepth(targetDepth: number): void {
     gs.frozenFishMovesCounter = 0;
     spawnLeviathan();
   }
+
+  // Final trim+fill: intermediate depth blocks may have over- or under-shot the
+  // target depth's enemyKeep (e.g. depth 3 fills to 10 but depth 4 wants 5).
+  const finalKeep = LEVEL_CONFIG[targetDepth].enemyKeep;
+  clearCloseEnemies(finalKeep);
+  while (gs.enemies.length + gs.bigEnemies.length < finalKeep) gs.enemies.push(spawnEnemy());
+
   draw();
 }
 
