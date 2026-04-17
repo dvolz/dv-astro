@@ -15,7 +15,7 @@ import {
 import { draw, initRenderer } from "./renderers";
 import { startSharkAnim, startBounceAnim, tickShimmer } from "./animation";
 import { getHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
-import { randomTileColor, randomArcticTileColor } from "./config";
+import { randomColorFromPalette } from "./config";
 
 // ── Dying-enemy dissolve loop ─────────────────────────────────────────────
 
@@ -104,6 +104,9 @@ export function checkDepthTransition(): void {
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     gs.ammoniteMovesCounter = 0;
     gs.coralMovesCounter = 0;
+    gs.colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
+    );
     spawnCoral();
     let placed = 0, attempts = 0;
     while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
@@ -142,7 +145,7 @@ export function checkDepthTransition(): void {
     gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
     seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
     gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomArcticTileColor()),
+      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
     );
     // Ensure 5 enemies on entry
     while (gs.enemies.length + gs.bigEnemies.length < 5) gs.enemies.push(spawnEnemy());
@@ -189,7 +192,7 @@ export function init(): void {
 
   // Grid state
   gs.colors = Array.from({ length: GRID }, () =>
-    Array.from({ length: GRID }, () => randomTileColor()),
+    Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
   );
   gs.pickups = Array.from({ length: GRID }, () =>
     Array.from({ length: GRID }, () => Math.random() < LEVEL_CONFIG[gs.currentDepth].coinInit),
@@ -615,6 +618,9 @@ export function initAtDepth(targetDepth: number): void {
     updateHudDepth(2);
     wrapper.className = "game-depth-wrapper depth-2";
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
+    gs.colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
+    );
     spawnCoral();
     let placed = 0, attempts = 0;
     while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
@@ -650,7 +656,7 @@ export function initAtDepth(targetDepth: number): void {
     gs.iceCells  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
     seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
     gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomArcticTileColor()),
+      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
     );
     gs.frozenFish = [];
     gs.frozenFishMovesCounter = 0;

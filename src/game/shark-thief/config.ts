@@ -21,18 +21,43 @@ export const ARCTIC_TILE_COLORS = [
 
 export const GRID = 25; // grid is always 25×25
 
-// Ocean tile palette — shallow sunlit reef colours
+// Ocean tile palette — shallow sunlit reef colours (Depth 1, 3, 5)
 export const TILE_COLORS = [
   "#1d7e92", "#228898", "#1a7888", "#268498", "#1e8090",
   "#248898", "#1c7682", "#247c8e", "#1e7e8e", "#207a8c",
 ];
 
+// Tropical reef palette — Caribbean turquoise water (Depth 2)
+// Hue ~183-185°: clearly warmer than depth 1's blue-teal (~190°) but not pool-green.
+export const TROPICAL_TILE_COLORS = [
+  "#148c94", "#1a9098", "#128488", "#189296", "#108090",
+  "#168e96", "#128692", "#1a9298", "#148890", "#168c94",
+];
+
+// Available background palettes — add new entries here to create more options.
+export type TilePalette = "ocean" | "tropical" | "arctic";
+
+export const TILE_PALETTES: Record<TilePalette, string[]> = {
+  ocean:    TILE_COLORS,
+  tropical: TROPICAL_TILE_COLORS,
+  arctic:   ARCTIC_TILE_COLORS,
+};
+
 export function randomTileColor(): string {
   return TILE_COLORS[Math.floor(Math.random() * TILE_COLORS.length)];
 }
 
+export function randomTropicalTileColor(): string {
+  return TROPICAL_TILE_COLORS[Math.floor(Math.random() * TROPICAL_TILE_COLORS.length)];
+}
+
 export function randomArcticTileColor(): string {
   return ARCTIC_TILE_COLORS[Math.floor(Math.random() * ARCTIC_TILE_COLORS.length)];
+}
+
+export function randomColorFromPalette(palette: TilePalette): string {
+  const colors = TILE_PALETTES[palette];
+  return colors[Math.floor(Math.random() * colors.length)];
 }
 
 // Depth metadata — colour, glow, name  →  DepthSystem.swift

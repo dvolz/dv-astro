@@ -3,6 +3,10 @@
 // Only include the shell section(s) that actually appear at that depth —
 // omitting a section means that mechanic won't show up.
 
+// Available palettes: "ocean" | "tropical" | "arctic"
+// Add new palettes to TILE_PALETTES in config.ts, then use the name here.
+import type { TilePalette } from "./config";
+
 // ── Shell / pickup types ──────────────────────────────────────────────────
 
 export interface AmmoniteConfig {
@@ -52,6 +56,7 @@ export interface DepthConfig {
   frozenFish?: FrozenFishConfig;
   icePatches?: IcePatchConfig;
 
+  tilePalette:  TilePalette; // background tile palette — "ocean" | "tropical" | "arctic"
   coinRate:     number; // probability per cell per player move of a coin spawning
   coinInit:     number; // fraction of cells pre-filled with coins at start
   descendScore: number; // points to earn in this depth before descending
@@ -68,6 +73,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       interval:  25,  // a new shell spawns 25 moves after the last is collected
       points:    10,
     },
+    tilePalette:  "ocean",
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -81,6 +87,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       interval:  15,  // a new shell spawns every 15 player moves
       points:    5,
     },
+    tilePalette:  "tropical",
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -95,6 +102,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       babyPenalty:    5,  // points lost when the baby shark is eaten by an enemy
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
     },
+    tilePalette:  "ocean",
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -111,6 +119,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     icePatches: {
       initialCount: 8, // number of ice patch shapes seeded at the start of this depth
     },
+    tilePalette:  "arctic",
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -118,6 +127,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   5: {
+    tilePalette:  "ocean",
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
