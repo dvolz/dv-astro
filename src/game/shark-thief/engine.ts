@@ -417,7 +417,7 @@ export function moveShark(dx: number, dy: number): void {
     if (termEnemyHit) { endGame(); return; }
 
     // Step 6: Respawn fish at new valid location
-    spawnFrozenFish();
+    spawnFrozenFishIfNeeded();
   }
 
   // Coin growth (random per-cell rate)
