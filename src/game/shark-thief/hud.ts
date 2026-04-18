@@ -17,6 +17,21 @@ let _hudDepthBtn:  HTMLElement | null = null;
 let _hudDepthLabel: HTMLElement | null = null;
 
 export function getHudScore():      HTMLElement { return _hudScore      ??= document.getElementById("hudScore")!; }
+
+type ScorePulseMode = "normal" | "special" | "penalty" | "none";
+
+export function updateHudScore(score: number, mode: ScorePulseMode = "normal"): void {
+  const el = getHudScore();
+  el.textContent = String(score);
+  if (mode === "none") return;
+  el.classList.remove("score-pulse", "score-pulse-special", "score-pulse-penalty");
+  void el.offsetWidth; // force reflow to restart animation
+  el.classList.add(
+    mode === "special" ? "score-pulse-special" :
+    mode === "penalty" ? "score-pulse-penalty" :
+    "score-pulse"
+  );
+}
 export function getHudTimeEl():     HTMLElement { return _hudTimeEl     ??= document.getElementById("hudTime")!; }
 export function getHudLvTime():     HTMLElement { return _hudLvTime     ??= document.getElementById("hudLvTime")!; }
 export function getHudDepthBtn():   HTMLElement { return _hudDepthBtn   ??= document.getElementById("hudDepthBtn")!; }

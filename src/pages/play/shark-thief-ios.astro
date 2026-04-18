@@ -269,148 +269,128 @@ export const blogData = {
     color: var(--ocean-abyss);
   }
 
-  /* ── DIVE IN dropdown trigger ── */
-  /* When it has unlocked depths, render as a proper dropdown toggle */
-  .pixel-btn-dive-toggle {
-    display: flex;
+  /* ── Inline confirm (NEW DIVE / depth select) ── */
+  .menu-confirm {
+    display: none;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.7rem;
+    padding: 0.9rem 1rem;
+    border: 2px solid rgba(239, 71, 111, 0.4);
+    border-radius: 2px;
+    background: rgba(239, 71, 111, 0.06);
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: -0.4rem;
 
-    &::after {
-      content: "▼";
-      font-size: 0.6em;
-      opacity: 0.65;
-      margin-left: 0.8em;
-      transition: transform 0.18s ease, opacity 0.18s ease;
-    }
-    &.open::after {
-      transform: rotate(180deg);
-      opacity: 1;
-    }
-    &.open {
-      background: var(--cyan);
-      color: var(--ocean-abyss);
-      transform: scale(0.95);
-      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
-    }
+    &.visible { display: flex; }
   }
 
-  /* ── Depth Sub-Button Toggle Panel ── */
-  /* Negative margins cancel the parent flex gap when collapsed so LEADERBOARD
-     doesn't drift away from DIVE IN. Margins animate with the panel. */
-  .depth-sub-btns {
+  .menu-confirm-msg {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    color: var(--coral-danger);
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 2;
+    margin: 0;
+  }
+
+  .menu-confirm-row {
+    display: flex;
+    gap: 0.8rem;
+    width: 100%;
+  }
+
+  .pixel-btn-confirm-yes {
+    flex: 1;
+    border-color: var(--coral-danger);
+    color: var(--coral-danger);
+    font-size: 0.65rem;
+    padding: 0.7rem 1rem;
+    &:hover { background: var(--coral-danger); color: #fff; box-shadow: 0 0 10px rgba(239,71,111,0.5); }
+  }
+
+  .pixel-btn-confirm-no {
+    flex: 1;
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    padding: 0.7rem 1rem;
+    &:hover { background: var(--text-muted); color: var(--ocean-abyss); }
+  }
+
+  /* ── Depth Select Popup ── */
+  .depth-select-btns {
+    padding: 1rem 1.4rem;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    width: 100%;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    /* collapsed: eat the gap above and below */
-    margin-top: -0.6rem;
-    margin-bottom: -0.6rem;
-    transition:
-      max-height 0.22s ease-out,
-      opacity 0.18s ease-out,
-      margin-top 0.22s ease-out,
-      margin-bottom 0.22s ease-out;
-    pointer-events: none;
-
-    &.expanded {
-      max-height: 20rem;
-      opacity: 1;
-      margin-top: 0;
-      margin-bottom: 0;
-      pointer-events: all;
-    }
+    gap: 0.65rem;
   }
 
-  /* Depth sub-buttons are injected via JS innerHTML, so they don't carry
-     Astro's scope hash. Use :global() inside the scoped .depth-sub-btns
-     parent so the scope hash is still anchored to the component. */
-
-  /* Base pixel-btn style for all injected sub-buttons */
-  .depth-sub-btns :global(button) {
+  /* Depth buttons injected via JS — exact pixel-btn spec at main-menu size */
+  .depth-select-btns :global(button) {
     font-family: var(--font-pixel);
-    font-size: 1.05rem; /* match .main-menu-buttons .pixel-btn */
+    font-size: 1.05rem;
     letter-spacing: 0.06em;
-    padding: 0.85rem 2rem; /* slightly tighter than main 1.2rem */
+    padding: 1.2rem 2rem;
     border: 3px solid var(--cyan);
     border-radius: 2px;
     background: transparent;
     color: var(--cyan);
     cursor: pointer;
     text-transform: uppercase;
-    min-height: 40px;
+    min-height: 44px;
     touch-action: manipulation;
     width: 100%;
     transition: background 0.08s, box-shadow 0.08s, color 0.08s;
 
-    &:hover {
-      background: var(--cyan);
-      color: var(--ocean-abyss);
-      box-shadow: 0 0 14px rgba(72, 202, 228, 0.5);
-    }
+    &:hover { background: var(--cyan); color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(72,202,228,0.5); }
     &:active { transform: scale(0.95); }
   }
 
-  /* Depth 2: lighter coral — derived from coral shell sprite highlight */
-  .depth-sub-btns :global(.pixel-btn-d2) {
-    border-color: #daa070;
-    color: #daa070;
-
-    &:hover {
-      background: #daa070;
-      color: var(--ocean-abyss);
-      box-shadow: 0 0 14px rgba(218, 160, 112, 0.5);
-    }
+  .depth-select-btns :global(.ds-d2) {
+    border-color: #daa070; color: #daa070;
+    &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(218,160,112,0.5); }
   }
-
-  /* Depth 3: nursery pink */
-  .depth-sub-btns :global(.pixel-btn-d3) {
-    border-color: #e06fa0;
-    color: #e06fa0;
+  .depth-select-btns :global(.ds-d3) {
+    border-color: #e06fa0; color: #e06fa0;
     &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
   }
-  /* Depth 4: arctic ice blue */
-  .depth-sub-btns :global(.pixel-btn-d4) {
-    border-color: #7fd8f0;
-    color: #7fd8f0;
-
-    &:hover {
-      background: #7fd8f0;
-      color: var(--ocean-abyss);
-      box-shadow: 0 0 14px rgba(127, 216, 240, 0.5);
-    }
+  .depth-select-btns :global(.ds-d4) {
+    border-color: #7fd8f0; color: #7fd8f0;
+    &:hover { background: #7fd8f0; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(127,216,240,0.5); }
   }
-  /* Depth 5: toxic green */
-  .depth-sub-btns :global(.pixel-btn-d5) {
-    border-color: #6abf3a;
-    color: #6abf3a;
-
-    &:hover {
-      background: #6abf3a;
-      color: var(--ocean-abyss);
-      box-shadow: 0 0 14px rgba(106, 191, 58, 0.5);
-    }
+  .depth-select-btns :global(.ds-d5) {
+    border-color: #6abf3a; color: #6abf3a;
+    &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(106,191,58,0.5); }
   }
-  /* Depth 6: abyss violet */
-  .depth-sub-btns :global(.pixel-btn-d6) {
-    border-color: #9d6fe0;
-    color: #9d6fe0;
-
-    &:hover {
-      background: #9d6fe0;
-      color: var(--ocean-abyss);
-      box-shadow: 0 0 14px rgba(157, 111, 224, 0.5);
-    }
+  .depth-select-btns :global(.ds-d6) {
+    border-color: #9d6fe0; color: #9d6fe0;
+    &:hover { background: #9d6fe0; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(157,111,224,0.5); }
   }
 
-  /* Sub-panel top border connects visually to the open DIVE IN button */
-  .depth-sub-btns.expanded {
-    border-top: 2px solid rgba(218, 160, 112, 0.25);
-    padding-top: 0.7rem;
-    gap: 0.6rem;
+  /* Confirm strip at bottom of depth select popup */
+  .depth-select-confirm {
+    display: none;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1rem 1.4rem 1.4rem;
+    border-top: 1px solid rgba(239, 71, 111, 0.25);
+    background: rgba(239, 71, 111, 0.05);
+
+    &.visible { display: flex; }
+
+    .menu-confirm-msg {
+      font-size: 0.75rem;
+      line-height: 2;
+    }
+
+    .pixel-btn-confirm-yes,
+    .pixel-btn-confirm-no {
+      font-size: 1.05rem;
+      padding: 1.2rem 2rem;
+    }
   }
 
   /* ── Main Menu Best Score ── */
@@ -508,6 +488,39 @@ export const blogData = {
   .hud-stat-score {
     font-size: 2.2rem;
     color: var(--gold);
+    display: inline-block;
+  }
+
+  @keyframes score-pulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes score-pulse-special {
+    0%   { transform: scale(1);    color: var(--gold); }
+    30%  { transform: scale(1.65); color: #ffffff; }
+    65%  { transform: scale(1.55); color: #fff8c0; }
+    100% { transform: scale(1);    color: var(--gold); }
+  }
+
+  .hud-stat-score.score-pulse {
+    animation: score-pulse 280ms ease-out forwards;
+  }
+
+  .hud-stat-score.score-pulse-special {
+    animation: score-pulse-special 480ms ease-out forwards;
+  }
+
+  @keyframes score-pulse-penalty {
+    0%   { transform: scale(1);    color: var(--gold); }
+    30%  { transform: scale(1.65); color: #ff4444; }
+    65%  { transform: scale(1.55); color: #ff8888; }
+    100% { transform: scale(1);    color: var(--gold); }
+  }
+
+  .hud-stat-score.score-pulse-penalty {
+    animation: score-pulse-penalty 480ms ease-out forwards;
   }
 
   .hud-stat-divider {
@@ -624,8 +637,23 @@ export const blogData = {
     width: 100%;
     max-width: 440px;
     overflow: hidden;
+    position: relative;
     transform: translateY(10px);
     transition: transform 0.2s ease, border-color 0.2s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.06) 2px,
+        rgba(0, 0, 0, 0.06) 4px
+      );
+      pointer-events: none;
+    }
 
     .depth-info-overlay.visible & {
       transform: translateY(0);
@@ -1682,17 +1710,43 @@ export const blogData = {
       </div>
       <div class="main-menu-buttons">
         <button class="pixel-btn pixel-btn-continue" id="menuContinueBtn" style="display:none">CONTINUE</button>
-        <button class="pixel-btn" id="menuPlayBtn">DIVE IN</button>
-        <div class="depth-sub-btns" id="depthSubBtns"></div>
-        <button class="pixel-btn pixel-btn-muted" id="menuLeaderboardBtn"
-          >LEADERBOARD</button
-        >
-        <button class="pixel-btn pixel-btn-muted" id="menuSettingsBtn"
-          >SETTINGS</button
-        >
+        <button class="pixel-btn" id="menuNewDiveBtn">NEW DIVE</button>
+        <div class="menu-confirm" id="menuNewDiveConfirm">
+          <p class="menu-confirm-msg">THIS WILL END YOUR CURRENT DIVE</p>
+          <div class="menu-confirm-row">
+            <button class="pixel-btn pixel-btn-confirm-yes" id="menuNewDiveYes">YES</button>
+            <button class="pixel-btn pixel-btn-confirm-no" id="menuNewDiveNo">CANCEL</button>
+          </div>
+        </div>
+        <button class="pixel-btn pixel-btn-muted" id="menuDepthSelectBtn" style="display:none">DEPTH SELECT</button>
+        <button class="pixel-btn pixel-btn-muted" id="menuLeaderboardBtn">LEADERBOARD</button>
+        <button class="pixel-btn pixel-btn-muted" id="menuSettingsBtn">SETTINGS</button>
         <button class="pixel-btn pixel-btn-abandon" id="menuAbandonBtn" style="display:none">ABANDON DIVE</button>
       </div>
       <p class="main-menu-depth" id="menuDepthLabel"></p>
+    </div>
+
+    <!-- ── Depth Select Popup ── -->
+    <div class="depth-info-overlay" id="depthSelectOverlay">
+      <div class="depth-info-panel">
+        <div class="depth-info-header">
+          <div>
+            <div class="depth-info-badge" id="depthSelectBadge">DEPTH SELECT</div>
+            <div class="depth-info-name">CHOOSE A STARTING DEPTH</div>
+          </div>
+          <button class="hud-btn" id="depthSelectClose" aria-label="Close depth select">✕</button>
+        </div>
+        <div class="depth-select-btns" id="depthSelectBtns">
+          <!-- injected via JS -->
+        </div>
+        <div class="depth-select-confirm" id="depthSelectConfirm">
+          <p class="menu-confirm-msg">THIS WILL END YOUR CURRENT DIVE</p>
+          <div class="menu-confirm-row">
+            <button class="pixel-btn pixel-btn-confirm-yes" id="depthSelectConfirmYes">YES</button>
+            <button class="pixel-btn pixel-btn-confirm-no" id="depthSelectConfirmNo">CANCEL</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ── Screen 4: Game ── GameView.swift -->

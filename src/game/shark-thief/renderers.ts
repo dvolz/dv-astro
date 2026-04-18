@@ -81,6 +81,59 @@ export function drawCoralShell(
   ctx.restore();
 }
 
+// ── Coral barrier — variant dispatch ─────────────────────────────────────
+//    The draw loop calls drawCoralBarrier(ctx, cx, cy, CELL, type) where
+//    type = (r * 7 + c * 11) % CORAL_BARRIER_VARIANTS.
+//    To add a new shape: implement a drawCoralBarrierN function below,
+//    increment CORAL_BARRIER_VARIANTS, and add a case in the switch.
+
+const CORAL_BARRIER_VARIANTS = 1; // bump when adding new types
+
+export function drawCoralBarrier(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number,
+  CELL: number,
+  type: number,
+): void {
+  ctx.save();
+
+  const p = (f: number) => Math.round(f * CELL);
+  const R = (fx: number, fy: number, fw: number, fh: number) =>
+    ctx.fillRect(cx + p(fx), cy + p(fy), Math.max(1, p(fw)), Math.max(1, p(fh)));
+
+  switch (type) {
+    default:
+    case 0:
+      // ── Orange block (original) ───────────────────────────────────────────
+      ctx.fillStyle = "#7a4a30"; R(0, 0, 1, 1);
+      ctx.fillStyle = "#c8906a"; R(1/CELL, 1/CELL, 1 - 2/CELL, 1 - 2/CELL);
+      if (CELL >= 8) {
+        ctx.fillStyle = "#e0b898";
+        const d = Math.max(2, Math.floor(CELL * 0.15)) / CELL;
+        R(2/CELL, 2/CELL, d, d);
+        R(1 - d - 2/CELL, 2/CELL, d, d);
+      }
+      break;
+
+    // ── Add new coral variants here ───────────────────────────────────────
+    // case 1: drawCoralBarrier1(ctx, cx, cy, CELL, p, R); break;
+    // case 2: drawCoralBarrier2(ctx, cx, cy, CELL, p, R); break;
+  }
+
+  ctx.restore();
+}
+
+// ── Placeholder for next coral shape — copy this block to add a new one ──
+// function drawCoralBarrier1(
+//   ctx: CanvasRenderingContext2D,
+//   cx: number, cy: number,
+//   CELL: number,
+//   p: (f: number) => number,
+//   R: (fx: number, fy: number, fw: number, fh: number) => void,
+// ): void {
+//   // draw here
+// }
+
 // ── Shark egg — mermaid's purse capsule (Depth 3 pickup) ─────────────────
 
 export function drawSharkEgg(
@@ -454,15 +507,7 @@ export function draw(): void {
   for (let r = 0; r < GRID; r++)
     for (let c = 0; c < GRID; c++) {
       if (!gs.coral[r][c]) continue;
-      const cx = c * CELL, cy = r * CELL;
-      ctx.fillStyle = "#7a4a30"; ctx.fillRect(cx, cy, CELL, CELL);
-      ctx.fillStyle = "#c8906a"; ctx.fillRect(cx + 1, cy + 1, CELL - 2, CELL - 2);
-      if (CELL >= 8) {
-        ctx.fillStyle = "#e0b898";
-        const dot = Math.max(2, Math.floor(CELL * 0.15));
-        ctx.fillRect(cx + 2, cy + 2, dot, dot);
-        ctx.fillRect(cx + CELL - dot - 2, cy + 2, dot, dot);
-      }
+      drawCoralBarrier(ctx, c * CELL, r * CELL, CELL, (r * 7 + c * 11) % CORAL_BARRIER_VARIANTS);
     }
 
   // Ice patches (Depth 4 — Arctic)

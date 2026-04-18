@@ -14,7 +14,7 @@ import {
 } from "./persistence";
 import { draw, initRenderer } from "./renderers";
 import { startSharkAnim, startBounceAnim, tickShimmer } from "./animation";
-import { getHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
+import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
 import { randomColorFromPalette } from "./config";
 
 // ── Dying-enemy dissolve loop ─────────────────────────────────────────────
@@ -206,7 +206,7 @@ export function init(): void {
   gs.totalTimeMs    = 0;
 
   stopHudClock();
-  getHudScore().textContent   = "0";
+  updateHudScore(0, "none");
   getHudTimeEl().textContent  = "00:00";
   getHudLvTime().textContent  = "00:00";
   updateHudDepth(1);
@@ -217,6 +217,9 @@ export function init(): void {
   );
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
   document.getElementById("gameDepthWrapper")!.className = "game-depth-wrapper depth-1";
+  const flash = document.getElementById("depthFlash")!;
+  flash.classList.remove("flashing");
+  flash.textContent = "";
 
   // Grid state
   gs.colors = Array.from({ length: GRID }, () =>
@@ -276,6 +279,17 @@ export function init(): void {
   draw();
 }
 
+// ── Mid-slide coin collection (shared by ice-slide and frozen-fish-slide) ──
+
+function collectCoinMidSlide(cx: number, cy: number): void {
+  gs.pickups[cy][cx] = false;
+  gs.score++;
+  gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+  updateHudScore(gs.score);
+  gs.enemies.push(spawnEnemy());
+  checkDepthTransition();
+}
+
 // ── Move shark one step ───────────────────────────────────────────────────
 
 export function moveShark(dx: number, dy: number): void {
@@ -297,7 +311,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.coral[ny][nx] = true;
     gs.score += LEVEL_CONFIG[gs.currentDepth].coral?.points ?? 5;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-    getHudScore().textContent = String(gs.score);
+    updateHudScore(gs.score, "special");
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
     startBounceAnim(nx, ny);
@@ -326,14 +340,7 @@ export function moveShark(dx: number, dy: number): void {
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
       // Collect coins mid-slide
-      if (gs.pickups[cy][cx]) {
-        gs.pickups[cy][cx] = false;
-        gs.score++;
-        gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-        getHudScore().textContent = String(gs.score);
-        gs.enemies.push(spawnEnemy());
-        checkDepthTransition();
-      }
+      if (gs.pickups[cy][cx]) collectCoinMidSlide(cx, cy);
       return "continue";
     });
     gs.shark.x = slide.x;
@@ -364,7 +371,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.pickups[ny][nx] = false;
     gs.score++;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-    getHudScore().textContent = String(gs.score);
+    updateHudScore(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
   }
@@ -375,7 +382,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.ammoniteMovesCounter = 0;
     gs.score += LEVEL_CONFIG[gs.currentDepth].ammonite?.points ?? 10;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-    getHudScore().textContent = String(gs.score);
+    updateHudScore(gs.score, "special");
     gs.bigEnemies.push(spawnBigEnemy());
     checkDepthTransition();
   }
@@ -385,13 +392,14 @@ export function moveShark(dx: number, dy: number): void {
     gs.sharkEgg = null;
     gs.score += LEVEL_CONFIG[gs.currentDepth].egg?.points ?? 10;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-    getHudScore().textContent = String(gs.score);
+    updateHudScore(gs.score, "special");
     gs.enemies.push(spawnEnemy());
     // Capture egg interval before transition may change currentDepth
     const eggInterval = LEVEL_CONFIG[gs.currentDepth].egg?.interval ?? 0;
     checkDepthTransition();
-    gs.babySharks.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
-    // Only respawn egg if this depth still has egg config (guards against depth transition mid-block)
+    // Only hatch and respawn if still on a depth that has egg config (guards against transition mid-block)
+    if (LEVEL_CONFIG[gs.currentDepth].egg)
+      gs.babySharks.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
     if (LEVEL_CONFIG[gs.currentDepth].egg) {
       if (eggInterval === 0) {
         spawnSharkEgg();
@@ -407,7 +415,7 @@ export function moveShark(dx: number, dy: number): void {
     // Step 1: Award points
     gs.score += LEVEL_CONFIG[gs.currentDepth].frozenFish?.points ?? 5;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-    getHudScore().textContent = String(gs.score);
+    updateHudScore(gs.score, "special");
 
     // Step 2: Spawn 1 new enemy
     gs.enemies.push(spawnEnemy());
@@ -428,14 +436,7 @@ export function moveShark(dx: number, dy: number): void {
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
       // Collect coins mid-slide
-      if (gs.pickups[cy][cx]) {
-        gs.pickups[cy][cx] = false;
-        gs.score++;
-        gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
-        getHudScore().textContent = String(gs.score);
-        gs.enemies.push(spawnEnemy());
-        checkDepthTransition();
-      }
+      if (gs.pickups[cy][cx]) collectCoinMidSlide(cx, cy);
       return "continue";
     });
 
@@ -460,7 +461,8 @@ export function moveShark(dx: number, dy: number): void {
     const barrelIdx = gs.toxicBarrels.findIndex(b => b.x === gs.shark.x && b.y === gs.shark.y);
     if (barrelIdx !== -1) {
       gs.score += LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.points ?? 8;
-      getHudScore().textContent = String(gs.score);
+      gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+      updateHudScore(gs.score, "special");
       gs.enemies.push(spawnEnemy());
       checkDepthTransition();
       const { x: bx, y: by } = gs.toxicBarrels[barrelIdx];
@@ -530,8 +532,9 @@ export function moveShark(dx: number, dy: number): void {
     if (eaten) {
       gs.bloodCells.push({ x: b.x, y: b.y, movesRemaining: 20 });
       gs.babySharks.splice(i, 1);
+      gs.sharkPositionHistory.splice(i, 1); // close the gap so babies behind re-form immediately
       gs.score = Math.max(0, gs.score - (LEVEL_CONFIG[gs.currentDepth].egg?.babyPenalty ?? 5));
-      getHudScore().textContent = String(gs.score);
+      updateHudScore(gs.score, "penalty");
     }
   }
   gs.bloodCells.forEach(bc => bc.movesRemaining--);
@@ -646,7 +649,7 @@ export function loadGame(save: any): void {
   gs.levelTimes    = save.levelTimes || [];
   gs.totalTimeMs   = 0;
 
-  getHudScore().textContent = String(gs.score);
+  updateHudScore(gs.score, "none");
   gs.highScore = getHighScore();
   updateHudDepth(gs.currentDepth);
   startHudClock(
