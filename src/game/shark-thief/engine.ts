@@ -13,7 +13,7 @@ import {
   calcSharkScore, saveGame, clearSave, updateMaxDepth,
 } from "./persistence";
 import { draw, initRenderer } from "./renderers";
-import { startSharkAnim, startBounceAnim, tickShimmer } from "./animation";
+import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
 import { randomColorFromPalette } from "./config";
 
@@ -175,6 +175,10 @@ export function checkDepthTransition(): void {
     while (gs.enemies.length + gs.bigEnemies.length < keep5) gs.enemies.push(spawnEnemy());
     const barrelInitCount = LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.initCount ?? 0;
     for (let i = 0; i < barrelInitCount; i++) spawnToxicBarrelIfNeeded();
+    gs.cloudPulse.fill(0);
+    gs.cloudPulseSpeed.fill(0);
+    if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
+    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
   } else if (gs.currentDepth === 6) {
     const keep6 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
     clearCloseEnemies(keep6);
@@ -274,6 +278,12 @@ export function init(): void {
   gs.shimmerSpeed.fill(0);
   if (gs.shimmerRafId) cancelAnimationFrame(gs.shimmerRafId);
   if (gs.shimmerMode) gs.shimmerRafId = requestAnimationFrame(tickShimmer);
+
+  // Reset cloud pulse
+  gs.cloudPulse.fill(0);
+  gs.cloudPulseSpeed.fill(0);
+  if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
+  if (gs.currentDepth === 5) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 
   gs.enemies = [spawnEnemy()];
   draw();
@@ -667,6 +677,11 @@ export function loadGame(save: any): void {
   gs.shimmerSpeed.fill(0);
   if (gs.shimmerRafId) cancelAnimationFrame(gs.shimmerRafId);
   if (gs.shimmerMode) gs.shimmerRafId = requestAnimationFrame(tickShimmer);
+
+  gs.cloudPulse.fill(0);
+  gs.cloudPulseSpeed.fill(0);
+  if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
+  if (gs.currentDepth === 5) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
   draw();

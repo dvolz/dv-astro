@@ -1,6 +1,6 @@
 // ===== Animation =====  →  SharkNode.swift / GameScene.swift animation loops
 
-import { ANIM_DURATION } from "./config";
+import { ANIM_DURATION, GRID } from "./config";
 import { gs } from "./state";
 import { draw } from "./renderers";
 
@@ -96,6 +96,27 @@ function tickEnemyAnims(now: number): void {
   } else {
     gs.enemyAnimRafId = null;
   }
+}
+
+// ── Toxic cloud pulse — gaseous cells surge and fade (Depth 5) ──────────
+
+export function tickCloudPulse(): void {
+  if (gs.currentDepth !== 5 || gs.gameOver) { gs.cloudPulseRafId = null; return; }
+  let dirty = false;
+  for (const cell of gs.toxicClouds) {
+    const i = cell.y * GRID + cell.x;
+    if (gs.cloudPulseSpeed[i] !== 0) {
+      gs.cloudPulse[i] = Math.max(0, Math.min(1, gs.cloudPulse[i] + gs.cloudPulseSpeed[i]));
+      if (gs.cloudPulse[i] >= 1)      gs.cloudPulseSpeed[i] = -0.022;
+      else if (gs.cloudPulse[i] <= 0) gs.cloudPulseSpeed[i] = 0;
+      dirty = true;
+    } else if (Math.random() < 0.012) {
+      gs.cloudPulseSpeed[i] = 0.022 + Math.random() * 0.022;
+      dirty = true;
+    }
+  }
+  if (dirty) draw();
+  gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 }
 
 // ── Water shimmer — caustic light flickers on ocean tiles ────────────────

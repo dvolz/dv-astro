@@ -297,27 +297,53 @@ export function drawToxicBarrel(
 export function drawToxicCloud(
   ctx: CanvasRenderingContext2D,
   gridX: number, gridY: number, CELL: number,
+  pulseIntensity: number = 0,
 ): void {
   const px = gridX * CELL, py = gridY * CELL;
   ctx.save();
 
   ctx.globalAlpha = 1.0;
-  ctx.fillStyle = "#b8d428";
+  ctx.fillStyle = "#88cc20";
   ctx.fillRect(px, py, CELL, CELL);
 
-  const seed = (gridX * 31 + gridY * 17) & 0xff;
-  ctx.globalAlpha = 0.18 + (seed & 0x0f) / 0x0f * 0.14;
-  ctx.fillStyle = "#7a9010";
-  const dotSize = Math.max(1, Math.round(CELL * 0.28));
-  const ox = (seed & 0x03) * Math.round(CELL * 0.18);
-  const oy = ((seed >> 2) & 0x03) * Math.round(CELL * 0.18);
-  ctx.fillRect(px + ox, py + oy, dotSize, dotSize);
+  if (pulseIntensity > 0.02) {
+    ctx.globalAlpha = pulseIntensity * 0.35;
+    ctx.fillStyle = "#ccff55";
+    ctx.fillRect(px, py, CELL, CELL);
+  }
 
-  ctx.globalAlpha = 0.12 + ((seed >> 4) & 0x0f) / 0x0f * 0.10;
-  ctx.fillStyle = "#d8f040";
-  const ox2 = CELL - ox - dotSize;
-  const oy2 = CELL - oy - dotSize;
-  ctx.fillRect(px + ox2, py + oy2, dotSize, dotSize);
+  const seed  = (gridX * 31 + gridY * 17) & 0xff;
+  const seedB = (seed ^ 0x5a) & 0xff;
+  const dotSize = Math.max(1, Math.round(CELL * 0.28));
+  const step = Math.round(CELL * 0.18);
+
+  // Rest position
+  const oxA = (seed  & 0x03) * step;
+  const oyA = ((seed  >> 2) & 0x03) * step;
+  // Shimmer-to position (different cell area)
+  const oxB = (seedB & 0x03) * step;
+  const oyB = ((seedB >> 2) & 0x03) * step;
+
+  const darkAlpha  = 0.18 + (seed & 0x0f) / 0x0f * 0.14;
+  const lightAlpha = 0.12 + ((seed >> 4) & 0x0f) / 0x0f * 0.10;
+
+  // Dark dot fades out of A, fades into B during pulse
+  ctx.fillStyle = "#4a8010";
+  ctx.globalAlpha = darkAlpha * (1 - pulseIntensity);
+  ctx.fillRect(px + oxA, py + oyA, dotSize, dotSize);
+  if (pulseIntensity > 0.02) {
+    ctx.globalAlpha = darkAlpha * pulseIntensity;
+    ctx.fillRect(px + oxB, py + oyB, dotSize, dotSize);
+  }
+
+  // Light dot mirrors the same cross-fade
+  ctx.fillStyle = "#aaee38";
+  ctx.globalAlpha = lightAlpha * (1 - pulseIntensity);
+  ctx.fillRect(px + (CELL - oxA - dotSize), py + (CELL - oyA - dotSize), dotSize, dotSize);
+  if (pulseIntensity > 0.02) {
+    ctx.globalAlpha = lightAlpha * pulseIntensity;
+    ctx.fillRect(px + (CELL - oxB - dotSize), py + (CELL - oyB - dotSize), dotSize, dotSize);
+  }
 
   ctx.restore();
 }
@@ -649,7 +675,7 @@ export function draw(): void {
   // Toxic clouds (Depth 5) — drawn last so they naturally cover everything underneath
   if (gs.currentDepth === 5 && gs.toxicClouds.length > 0) {
     for (const cell of gs.toxicClouds) {
-      drawToxicCloud(ctx, cell.x, cell.y, CELL);
+      drawToxicCloud(ctx, cell.x, cell.y, CELL, gs.cloudPulse[cell.y * GRID + cell.x]);
     }
   }
 }

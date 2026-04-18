@@ -107,6 +107,11 @@ export const gs = {
   shimmerSpeed:     new Float32Array(GRID * GRID),
   shimmerRafId:     null as number | null,
 
+  // ── Toxic cloud pulse (Depth 5) ───────────────────────────────────────
+  cloudPulse:      new Float32Array(GRID * GRID),
+  cloudPulseSpeed: new Float32Array(GRID * GRID),
+  cloudPulseRafId: null as number | null,
+
   // ── Settings (read from localStorage at startup) ──────────────────────
   colorblindMode: false,
   shimmerMode:    false,
