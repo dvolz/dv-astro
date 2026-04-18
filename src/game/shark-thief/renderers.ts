@@ -605,6 +605,9 @@ export function draw(): void {
   for (const b of gs.babySharks)
     drawBabyShark(ctx, b.x, b.y, CELL, gs.sharkDir);
 
-  // Player shark
-  drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
+  // Player shark — hidden while inside a toxic cloud
+  const sharkInCloud = gs.currentDepth === 5 &&
+    gs.toxicClouds.some(c => c.x === gs.shark.x && c.y === gs.shark.y);
+  if (!sharkInCloud)
+    drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
 }

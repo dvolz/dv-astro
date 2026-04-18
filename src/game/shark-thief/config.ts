@@ -16,11 +16,11 @@ export const TILE_COLORS = [
   "#248898", "#1c7682", "#247c8e", "#1e7e8e", "#207a8c",
 ];
 
-// Tropical reef palette — Caribbean turquoise water (Depth 2)
-// Hue ~183-185°: clearly warmer than depth 1's blue-teal (~190°) but not pool-green.
+// Tropical reef palette — vibrant turquoise water (Depth 2)
+// Hue ~176-182°: true turquoise, clearly brighter and greener than depth 1's blue-teal.
 export const TROPICAL_TILE_COLORS = [
-  "#148c94", "#1a9098", "#128488", "#189296", "#108090",
-  "#168e96", "#128692", "#1a9298", "#148890", "#168c94",
+  "#26b8b4", "#2ebcb8", "#22b0ac", "#2ab8b4", "#24b4b0",
+  "#2cb6b2", "#20aeaa", "#30bab6", "#26b2ae", "#28b6b2",
 ];
 
 // Nursery palette — ocean palette shifted cooler (Depth 3)
