@@ -31,12 +31,12 @@ export const NURSERY_TILE_COLORS = [
   "#247ea0", "#1c6c8a", "#247296", "#1e7496", "#207094",
 ];
 
-// Toxic palette — contaminated murky green water (Depth 5)
-// Hue ~120-128°, L~48-54% — same brightness band as the ocean palette so
-// enemies and coins remain visible. Desaturated enough to feel poisoned, not vivid.
+// Toxic palette — ocean palette shifted slightly toward green (Depth 5)
+// Hue ~185-188° vs ocean's ~190°: same brightness, just murky enough to feel wrong.
+// Low chroma keeps the green tint subtle so cloud pickups pop against it.
 export const TOXIC_TILE_COLORS = [
-  "#3d993d", "#439743", "#398d39", "#3f8d3f", "#3b933f",
-  "#438b41", "#398f3d", "#3f8f3f", "#3d913f", "#3b8d3b",
+  "#1d8488", "#228e8e", "#1a7e7e", "#268a8e", "#1e8686",
+  "#248e8e", "#1c7c78", "#248284", "#1e8484", "#208082",
 ];
 
 // Available background palettes — add new entries here to create more options.

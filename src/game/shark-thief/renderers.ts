@@ -594,20 +594,17 @@ export function draw(): void {
     ctx.shadowBlur = 0;
   }
 
-  // Toxic clouds (Depth 5) — renders after all enemies so clouds obscure them
+  // Baby sharks
+  for (const b of gs.babySharks)
+    drawBabyShark(ctx, b.x, b.y, CELL, gs.sharkDir);
+
+  // Player shark
+  drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
+
+  // Toxic clouds (Depth 5) — drawn last so they naturally cover everything underneath
   if (gs.currentDepth === 5 && gs.toxicClouds.length > 0) {
     for (const cell of gs.toxicClouds) {
       drawToxicCloud(ctx, cell.x, cell.y, CELL);
     }
   }
-
-  // Baby sharks
-  for (const b of gs.babySharks)
-    drawBabyShark(ctx, b.x, b.y, CELL, gs.sharkDir);
-
-  // Player shark — hidden while inside a toxic cloud
-  const sharkInCloud = gs.currentDepth === 5 &&
-    gs.toxicClouds.some(c => c.x === gs.shark.x && c.y === gs.shark.y);
-  if (!sharkInCloud)
-    drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
 }
