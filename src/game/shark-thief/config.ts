@@ -1,19 +1,8 @@
 // ===== GameConfig =====  →  GameConfig.swift
+// Per-depth tuning (palettes, spawn rates, shell configs, canvas colours) lives in level-config.ts.
 
-export const ANIM_DURATION = 80;       // ms — ease-out quad shark slide
-export const MIN_ENEMY_DIST = 5;       // min Manhattan distance for enemy spawn
-export const PICKUP_RATE    = 0.00025; // per cell per move
-export const PICKUP_INIT    = 0.05;    // 5% of cells on init
-export const DYING_DURATION = 450;     // ms per dying-enemy dissolve animation
-
-// Shell spawn system — guaranteed counter (not random)
-export const AMMONITE_INTERVAL  = 25; // moves between ammonite respawns
-export const CORAL_INTERVAL     = 15; // moves between coral shell spawns
-export const CORAL_MAX_ON_BOARD = 6;  // max coral shells on board at once
-export const CORAL_PICKUP_INIT  = 4;  // shells seeded on entering depth 2
-
-export const ARCTIC_FISH_POINTS = 5;       // confirmed by design doc
-export const ARCTIC_PATCH_COUNT = 5;       // 5 patches seeded at level start
+export const ANIM_DURATION  = 80;  // ms — ease-out quad shark slide
+export const DYING_DURATION = 450; // ms per dying-enemy dissolve animation
 export const ARCTIC_TILE_COLORS = [
   "#8ab8cc", "#7aafc4", "#8cbfd4", "#82b4c8", "#90c0d0",
   "#7ab0c4", "#88bcd0", "#7cb2c8", "#86bace", "#7aaecc",
@@ -34,26 +23,32 @@ export const TROPICAL_TILE_COLORS = [
   "#168e96", "#128692", "#1a9298", "#148890", "#168c94",
 ];
 
+// Nursery palette — ocean palette shifted cooler (Depth 3)
+// Same lightness as depth 1 so enemies stay visible; G reduced ~10, B increased ~8
+// to push from teal (~190°) toward a cooler blue-teal (~200°).
+export const NURSERY_TILE_COLORS = [
+  "#1d749a", "#227ea0", "#1a6e90", "#267aa0", "#1e7698",
+  "#247ea0", "#1c6c8a", "#247296", "#1e7496", "#207094",
+];
+
+// Toxic palette — contaminated murky green water (Depth 5)
+// Hue ~120-128°, L~48-54% — same brightness band as the ocean palette so
+// enemies and coins remain visible. Desaturated enough to feel poisoned, not vivid.
+export const TOXIC_TILE_COLORS = [
+  "#3d993d", "#439743", "#398d39", "#3f8d3f", "#3b933f",
+  "#438b41", "#398f3d", "#3f8f3f", "#3d913f", "#3b8d3b",
+];
+
 // Available background palettes — add new entries here to create more options.
-export type TilePalette = "ocean" | "tropical" | "arctic";
+export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic";
 
 export const TILE_PALETTES: Record<TilePalette, string[]> = {
   ocean:    TILE_COLORS,
   tropical: TROPICAL_TILE_COLORS,
   arctic:   ARCTIC_TILE_COLORS,
+  nursery:  NURSERY_TILE_COLORS,
+  toxic:    TOXIC_TILE_COLORS,
 };
-
-export function randomTileColor(): string {
-  return TILE_COLORS[Math.floor(Math.random() * TILE_COLORS.length)];
-}
-
-export function randomTropicalTileColor(): string {
-  return TROPICAL_TILE_COLORS[Math.floor(Math.random() * TROPICAL_TILE_COLORS.length)];
-}
-
-export function randomArcticTileColor(): string {
-  return ARCTIC_TILE_COLORS[Math.floor(Math.random() * ARCTIC_TILE_COLORS.length)];
-}
 
 export function randomColorFromPalette(palette: TilePalette): string {
   const colors = TILE_PALETTES[palette];
@@ -66,5 +61,6 @@ export const DEPTH_META: Record<number, { color: string; glow: string; name: str
   2: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
   3: { color: "#e06fa0", glow: "rgba(224,111,160,0.5)",  name: "NURSERY" },
   4: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
-  5: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
+  5: { color: "#6abf3a", glow: "rgba(106,191,58,0.5)",   name: "TOXIC" },
+  6: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
 };

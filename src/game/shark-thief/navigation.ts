@@ -43,14 +43,16 @@ export function refreshMenuState(): void {
   playBtn.classList.remove("open");
 
   if (maxDepth >= 2) {
-    let html = `<button class="pixel-btn pixel-btn-sub" data-depth="1">DEPTH 1 — FRESH</button>`;
+    let html = `<button class="pixel-btn pixel-btn-sub" data-depth="1">DEPTH 1 — SHALLOWS</button>`;
     html    += `<button class="pixel-btn pixel-btn-sub pixel-btn-d2" data-depth="2">DEPTH 2 — REEF</button>`;
     if (maxDepth >= 3)
       html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d3" data-depth="3">DEPTH 3 — NURSERY</button>`;
     if (maxDepth >= 4)
       html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d4" data-depth="4">DEPTH 4 — ARCTIC</button>`;
     if (maxDepth >= 5)
-      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d5" data-depth="5">DEPTH 5 — ABYSS</button>`;
+      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d5" data-depth="5">DEPTH 5 — TOXIC</button>`;
+    if (maxDepth >= 6)
+      html  += `<button class="pixel-btn pixel-btn-sub pixel-btn-d6" data-depth="6">DEPTH 6 — ABYSS</button>`;
     depthSubBtns.innerHTML = html;
     depthSubBtns.querySelectorAll("[data-depth]").forEach(btn => {
       btn.addEventListener("click", () => {

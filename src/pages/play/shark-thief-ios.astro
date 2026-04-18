@@ -383,8 +383,19 @@ export const blogData = {
       box-shadow: 0 0 14px rgba(127, 216, 240, 0.5);
     }
   }
-  /* Depth 5: abyss violet */
+  /* Depth 5: toxic green */
   .depth-sub-btns :global(.pixel-btn-d5) {
+    border-color: #6abf3a;
+    color: #6abf3a;
+
+    &:hover {
+      background: #6abf3a;
+      color: var(--ocean-abyss);
+      box-shadow: 0 0 14px rgba(106, 191, 58, 0.5);
+    }
+  }
+  /* Depth 6: abyss violet */
+  .depth-sub-btns :global(.pixel-btn-d6) {
     border-color: #9d6fe0;
     color: #9d6fe0;
 
@@ -440,23 +451,7 @@ export const blogData = {
     flex-direction: column;
     align-items: center;
     flex: 1;
-    transition: background 0.8s ease;
-
-    &.depth-1 {
-      background: var(--ocean-abyss);
-    }
-    &.depth-2 {
-      background: #071828;
-    }
-    &.depth-3 {
-      background: #0f0812;  // dark warm — nursery
-    }
-    &.depth-4 {
-      background: #0a1a2e;  // Arctic — cold dark blue
-    }
-    &.depth-5 {
-      background: #040f1a;  // Abyss/Leviathan — near-black
-    }
+    background: var(--ocean-abyss);
   }
 
   /* ── HUD ── */
@@ -582,6 +577,11 @@ export const blogData = {
       &:hover { background: #7fd8f0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(127,216,240,0.5); }
     }
     &.depth-5 {
+      border-color: #6abf3a;
+      color: #6abf3a;
+      &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(106,191,58,0.5); }
+    }
+    &.depth-6 {
       border-color: #9d6fe0;
       color: #9d6fe0;
       &:hover { background: #9d6fe0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(157,111,224,0.5); }

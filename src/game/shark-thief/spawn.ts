@@ -16,6 +16,13 @@ function isInCenterSafeZone(x: number, y: number, size: number): boolean {
   return x >= startX && x < startX + size && y >= startY && y < startY + size;
 }
 
+function isInCloudBuffer(x: number, y: number, buffer: number): boolean {
+  for (const cell of gs.toxicClouds) {
+    if (Math.abs(x - cell.x) + Math.abs(y - cell.y) <= buffer) return true;
+  }
+  return false;
+}
+
 // ── Ammonite (Depth 1 super pickup) ─────────────────────────────────────
 
 function countAmmonites(): number {
@@ -155,6 +162,29 @@ export function seedIcePatches(count: number): void {
   }
 }
 
+// ── Toxic barrel (Depth 5) ───────────────────────────────────────────────
+
+export function spawnToxicBarrelIfNeeded(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].toxicBarrel;
+  if (!cfg || gs.toxicBarrels.length >= cfg.max) return;
+  let bx: number, by: number, attempts = 0;
+  do {
+    bx = Math.floor(Math.random() * GRID);
+    by = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    Math.abs(bx - gs.shark.x) + Math.abs(by - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+    gs.pickups[by][bx]                                    ||
+    gs.superPickups[by][bx]                               ||
+    gs.toxicBarrels.some(b => b.x === bx && b.y === by)   ||
+    isInCloudBuffer(bx, by, cfg.cloudBuffer)               ||
+    (cfg.centerSafeZone ? isInCenterSafeZone(bx, by, cfg.centerSafeZone) : false)
+  );
+  gs.toxicBarrels.push({ x: bx, y: by });
+  gs.toxicBarrelMovesCounter = 0;
+}
+
 // ── Enemies ──────────────────────────────────────────────────────────────
 
 export function spawnEnemy(): Enemy {
@@ -172,7 +202,9 @@ export function spawnEnemy(): Enemy {
     gs.pickups[ey]?.[ex]         ||
     gs.superPickups[ey]?.[ex]    ||
     gs.coralPickups[ey]?.[ex]    ||
-    gs.frozenFish.some(f => f.x === ex && f.y === ey)
+    gs.frozenFish.some(f => f.x === ex && f.y === ey) ||
+    (gs.currentDepth === 5 && gs.toxicClouds.length > 0 &&
+      isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
   );
   return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };
 }
@@ -201,15 +233,17 @@ export function spawnBigEnemy(): BigEnemy {
 // ── Coral barriers (Depth 2) ─────────────────────────────────────────────
 
 export function spawnCoral(): void {
-  const N = Math.max(5, Math.floor(GRID * GRID * 0.02)); // ~2% of cells
+  const cfg = LEVEL_CONFIG[gs.currentDepth].coral;
+  if (!cfg) return;
+  const { barrierCount, barrierMinDist } = cfg;
   let placed = 0, attempts = 0;
-  while (placed < N && attempts < 2000) {
+  while (placed < barrierCount && attempts < 2000) {
     attempts++;
     const cx = Math.floor(Math.random() * GRID);
     const cy = Math.floor(Math.random() * GRID);
     if (gs.coral[cy][cx]) continue;
     if (cx === gs.shark.x && cy === gs.shark.y) continue;
-    if (Math.abs(cx - gs.shark.x) + Math.abs(cy - gs.shark.y) < 4) continue;
+    if (Math.abs(cx - gs.shark.x) + Math.abs(cy - gs.shark.y) < barrierMinDist) continue;
     if (gs.enemies.some(e => e.x === cx && e.y === cy)) continue;
     if (gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1)) continue;
     if (gs.pickups[cy][cx] || gs.superPickups[cy][cx]) continue;

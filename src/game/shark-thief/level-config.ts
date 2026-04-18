@@ -3,7 +3,7 @@
 // Only include the shell section(s) that actually appear at that depth —
 // omitting a section means that mechanic won't show up.
 
-// Available palettes: "ocean" | "tropical" | "arctic"
+// Available palettes: "ocean" | "tropical" | "arctic" | "nursery" | "toxic"
 // Add new palettes to TILE_PALETTES in config.ts, then use the name here.
 import type { TilePalette } from "./config";
 
@@ -23,6 +23,8 @@ export interface CoralConfig {
   interval:       number;  // player moves between spawns
   points:         number;  // points awarded per coral shell collected
   centerSafeZone?: number; // side length of a square in the center where this pickup won't spawn
+  barrierCount:   number;  // permanent coral barrier blocks placed at depth entry
+  barrierMinDist: number;  // min Manhattan distance from shark when placing a barrier
 }
 
 export interface EggConfig {
@@ -45,23 +47,35 @@ export interface IcePatchConfig {
   initialCount: number; // ice patch shapes seeded at depth start
 }
 
+export interface ToxicBarrelConfig {
+  initCount:       number;  // barrels placed when entering this depth
+  max:             number;  // max barrels on the board at once
+  interval:        number;  // player moves between a collection and the next barrel spawn
+  points:          number;  // points awarded per barrel collected
+  centerSafeZone?: number;  // side length of center square where barrels won't spawn
+  cloudBuffer:     number;  // Manhattan distance around each cloud cell excluded from enemy spawns
+  cloudSize:       number;  // full width/height of each cloud (corners are always removed)
+}
+
 // ── Per-depth config ──────────────────────────────────────────────────────
 
 export interface DepthConfig {
   // Only define the shell type(s) that appear at this depth.
   // Omit any that shouldn't appear — they'll be inactive.
-  ammonite?:   AmmoniteConfig;
-  coral?:      CoralConfig;
-  egg?:        EggConfig;
-  frozenFish?: FrozenFishConfig;
-  icePatches?: IcePatchConfig;
+  ammonite?:    AmmoniteConfig;
+  coral?:       CoralConfig;
+  egg?:         EggConfig;
+  frozenFish?:  FrozenFishConfig;
+  icePatches?:  IcePatchConfig;
+  toxicBarrel?: ToxicBarrelConfig;
 
-  tilePalette:  TilePalette; // background tile palette — "ocean" | "tropical" | "arctic"
-  enemyKeep:    number; // normal enemies carried over from the previous depth on transition
-  coinRate:     number; // probability per cell per player move of a coin spawning
-  coinInit:     number; // fraction of cells pre-filled with coins at start
-  descendScore: number; // points to earn in this depth before descending
-  minEnemyDist: number; // min Manhattan distance from shark for enemy spawn
+  tilePalette:  TilePalette; // background tile palette
+  canvasBase:   string;      // canvas fill colour drawn behind the tile grid
+  enemyKeep:    number;      // normal enemies carried over from the previous depth on transition
+  coinRate:     number;      // probability per cell per player move of a coin spawning
+  coinInit:     number;      // fraction of cells pre-filled with coins at start
+  descendScore: number;      // points to earn in this depth before descending
+  minEnemyDist: number;      // min Manhattan distance from shark for enemy spawn
 }
 
 // ── Level definitions ─────────────────────────────────────────────────────
@@ -75,6 +89,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       points:    10,
     },
     tilePalette:  "ocean",
+    canvasBase:   "#0f5262",
     enemyKeep:    5,  // enemies carried in from depth 1 start (depth 1 always spawns fresh)
     coinRate:     0.00025,
     coinInit:     0.05,
@@ -84,12 +99,15 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
 
   2: {
     coral: {
-      initCount: 4,   // shells placed on entering this depth
-      max:       6,   // max 6 coral shells on the board at once
-      interval:  15,  // a new shell spawns every 15 player moves
-      points:    5,
+      initCount:      4,   // pickup shells seeded on entering this depth
+      max:            6,   // max coral pickup shells on the board at once
+      interval:       15,  // a new shell spawns every 15 player moves
+      points:         5,
+      barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
+      barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
     },
     tilePalette:  "tropical",
+    canvasBase:   "#0f5262",
     enemyKeep:    1,  // normal enemies carried over from depth 1 (big enemies are always cleared)
     coinRate:     0.00025,
     coinInit:     0.05,
@@ -105,7 +123,8 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       babyPenalty:    5,  // points lost when the baby shark is eaten by an enemy
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
     },
-    tilePalette:  "ocean",
+    tilePalette:  "nursery",
+    canvasBase:   "#0a4a5e",
     enemyKeep:    10, // enemies carried over from depth 2
     coinRate:     0.00025,
     coinInit:     0.05,
@@ -124,6 +143,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       initialCount: 8, // number of ice patch shapes seeded at the start of this depth
     },
     tilePalette:  "arctic",
+    canvasBase:   "#0a1a2e",
     enemyKeep:    5,  // enemies carried over from depth 3
     coinRate:     0.00025,
     coinInit:     0.05,
@@ -132,8 +152,28 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   5: {
+    toxicBarrel: {
+      initCount:       1,
+      max:             4,
+      interval:        20,
+      points:          8,
+      centerSafeZone:  8,
+      cloudBuffer:     2,
+      cloudSize:       4,
+    },
+    tilePalette:  "toxic",
+    canvasBase:   "#0a1f0a",
+    enemyKeep:    8,
+    coinRate:     0.00025,
+    coinInit:     0.05,
+    descendScore: 100,
+    minEnemyDist: 6,
+  },
+
+  6: {
     tilePalette:  "ocean",
-    enemyKeep:    5,  // enemies carried over from depth 4
+    canvasBase:   "#0f5262",
+    enemyKeep:    5,  // enemies carried over from depth 5
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,

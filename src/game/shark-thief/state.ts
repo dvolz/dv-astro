@@ -77,6 +77,11 @@ export const gs = {
   frozenFish:  [] as Array<{ x: number; y: number }>,
   frozenFishMovesCounter: 0,
 
+  // ── Depth 5 — Toxic ──────────────────────────────────────────────────────
+  toxicClouds:             [] as Array<{ x: number; y: number }>,
+  toxicBarrels:            [] as Array<{ x: number; y: number }>,
+  toxicBarrelMovesCounter: 0,
+
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,
   depthEntryScore: 0, // score when current depth was entered

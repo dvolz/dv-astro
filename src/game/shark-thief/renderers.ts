@@ -2,6 +2,7 @@
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
 import { GRID, DYING_DURATION } from "./config";
+import { LEVEL_CONFIG } from "./level-config";
 import { gs } from "./state";
 
 // ── Canvas management ─────────────────────────────────────────────────────
@@ -193,6 +194,81 @@ export function drawFrozenFish(
   ctx.restore();
 }
 
+// ── Toxic barrel — rusty drum, leaking green fluid (Depth 5) ─────────────
+
+export function drawToxicBarrel(
+  ctx: CanvasRenderingContext2D,
+  px: number, py: number, ps: number,
+): void {
+  ctx.save();
+  const cx = px + ps / 2;
+  const bw = ps * 0.62, bh = ps * 0.78;
+  const bx = Math.round(cx - bw / 2), by = Math.round(py + ps * 0.12);
+
+  ctx.fillStyle = "#1a0800";
+  ctx.fillRect(bx - 1, by - 1, Math.round(bw) + 2, Math.round(bh) + 2);
+
+  ctx.fillStyle = "#7a3010";
+  ctx.fillRect(bx, by, Math.round(bw), Math.round(bh));
+
+  ctx.fillStyle = "#a04820";
+  ctx.fillRect(bx + 1, by + 1, Math.round(bw) - 2, Math.round(bh) - 2);
+
+  ctx.fillStyle = "#3a1408";
+  const bandH = Math.max(1, Math.round(ps * 0.055));
+  for (const bandY of [by + Math.round(bh * 0.22), by + Math.round(bh * 0.50), by + Math.round(bh * 0.76)]) {
+    ctx.fillRect(bx, bandY, Math.round(bw), bandH);
+  }
+
+  ctx.fillStyle = "#c06030";
+  ctx.fillRect(bx + 2, by + 2, Math.max(1, Math.round(bw * 0.18)), Math.round(bh) - 4);
+
+  ctx.fillStyle = "#4a9010";
+  const lw = Math.max(1, Math.round(ps * 0.10));
+  ctx.fillRect(Math.round(cx - lw / 2), by + Math.round(bh) - 2, lw, Math.round(ps * 0.14));
+
+  ctx.fillStyle = "#3a7808";
+  ctx.fillRect(Math.round(cx - lw), by + Math.round(bh) + Math.round(ps * 0.10), lw * 2, Math.max(1, Math.round(ps * 0.07)));
+
+  ctx.fillStyle = "#88e030";
+  const dotR = Math.max(1, ps * 0.07);
+  ctx.beginPath();
+  ctx.arc(cx, by + Math.round(bh * 0.12), dotR, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ── Toxic cloud — 5×5 minus-corners (21 cells), gaseous sickly green (Depth 5) ─
+
+export function drawToxicCloud(
+  ctx: CanvasRenderingContext2D,
+  gridX: number, gridY: number, CELL: number,
+): void {
+  const px = gridX * CELL, py = gridY * CELL;
+  ctx.save();
+
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = "#b8d428";
+  ctx.fillRect(px, py, CELL, CELL);
+
+  const seed = (gridX * 31 + gridY * 17) & 0xff;
+  ctx.globalAlpha = 0.18 + (seed & 0x0f) / 0x0f * 0.14;
+  ctx.fillStyle = "#7a9010";
+  const dotSize = Math.max(1, Math.round(CELL * 0.28));
+  const ox = (seed & 0x03) * Math.round(CELL * 0.18);
+  const oy = ((seed >> 2) & 0x03) * Math.round(CELL * 0.18);
+  ctx.fillRect(px + ox, py + oy, dotSize, dotSize);
+
+  ctx.globalAlpha = 0.12 + ((seed >> 4) & 0x0f) / 0x0f * 0.10;
+  ctx.fillStyle = "#d8f040";
+  const ox2 = CELL - ox - dotSize;
+  const oy2 = CELL - oy - dotSize;
+  ctx.fillRect(px + ox2, py + oy2, dotSize, dotSize);
+
+  ctx.restore();
+}
+
 // ── Blood cell — 5-layer visceral pool when baby shark is eaten (Depth 3) ─
 
 export function drawBloodCell(
@@ -356,7 +432,7 @@ export function draw(): void {
     }
     ctx.stroke();
   } else {
-    ctx.fillStyle = gs.currentDepth === 4 ? "#0a1a2e" : "#0f5262";
+    ctx.fillStyle = LEVEL_CONFIG[gs.currentDepth].canvasBase;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < GRID; r++)
       for (let c = 0; c < GRID; c++) {
@@ -459,6 +535,14 @@ export function draw(): void {
         drawCoralShell(ctx, cpx, cpy, cps);
       }
 
+  // Toxic barrels (Depth 5)
+  if (gs.currentDepth === 5 && gs.toxicBarrels.length > 0) {
+    const bp = CELL * 0.06;
+    for (const barrel of gs.toxicBarrels) {
+      drawToxicBarrel(ctx, barrel.x * CELL + bp, barrel.y * CELL + bp, CELL - bp * 2);
+    }
+  }
+
   // Dying enemies (dissolve animation)
   if (gs.dyingEnemies.length > 0) {
     const now = performance.now();
@@ -508,6 +592,13 @@ export function draw(): void {
     ctx.fillStyle = "#0f2035"; ctx.fillRect(lx, ly, lw, lw);
     ctx.fillStyle = "#162840"; ctx.fillRect(lx + 3, ly + 3, lw - 6, lw - 6);
     ctx.shadowBlur = 0;
+  }
+
+  // Toxic clouds (Depth 5) — renders after all enemies so clouds obscure them
+  if (gs.currentDepth === 5 && gs.toxicClouds.length > 0) {
+    for (const cell of gs.toxicClouds) {
+      drawToxicCloud(ctx, cell.x, cell.y, CELL);
+    }
   }
 
   // Baby sharks

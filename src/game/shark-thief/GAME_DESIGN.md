@@ -1,7 +1,7 @@
 # Shark Thief — Game Design Document
 
 > **Living document.** Updated by Zak as design decisions are made.
-> Last updated: 2026-04-16 (signature piece exclusivity principle finalized)
+> Last updated: 2026-04-17 (level config system documented)
 
 ---
 
@@ -125,6 +125,75 @@ All enemies (regular, big, leviathan) use Manhattan-distance pathfinding: find t
 4. **Deaths should feel legible.** The player should always understand why they died — surrounded by enemies they spawned, trapped by a wall they created, or baby eaten while distracted.
 5. **The board is shared with enemies.** Coral barriers block the player AND enemies. Strategic use of the environment is rewarded.
 6. **Each depth is a clean mechanical slate.** Every depth introduces exactly one signature piece. When the player descends, the previous depth's signature piece disappears entirely — it does not carry forward. Coins and regular enemies persist across depths; signature pieces do not. This keeps each depth legible and prevents mechanics from stacking into unreadable complexity. New depth, new rule to learn — not a new rule layered on top of everything before.
+
+---
+
+## Level Design and Depth Configuration
+
+All depth tuning lives in one file: `/Users/dvolz/Sites/dv-astro/src/game/shark-thief/level-config.ts`. The bottom section, `LEVEL_CONFIG`, is a numbered list of depth objects — one per depth. That is the only file a designer needs to touch to change how any depth plays.
+
+The grid is always 25x25 (625 cells total). Every count, distance, and density number below should be read against that fixed canvas.
+
+---
+
+### The Knobs and What They Actually Do
+
+**`descendScore`** — the primary pacing lever. This is how many points the player must earn before the depth ends. At 100, a player collecting only coins needs to grab 100 coins, which is a lot of enemy accumulation. Raise this to make a depth feel longer and more grind-y; lower it for a sprint. This number sets the emotional length of a depth more than any other field.
+
+**`enemyKeep`** — how many normal enemies survive the transition into this depth. This is the opening pressure. Depth 1 starts at 0 (clean slate, learn the loop). Depth 2 gets 1 carry-over enemy — almost nothing, because coral barriers are the real challenge. Depth 3 gets 10 — the player arrives already under pressure, which is intentional: the Nursery should feel crowded from the first move. Think of this as "what does the first 10 seconds feel like?"
+
+**`coinRate`** — probability per cell per move that a coin spawns. At 0.00025, that's roughly one coin every 6-7 moves. Lower this to make coins feel scarce and precious; raise it to create a cluttered, coin-rich board. Currently identical across all depths — adjusting this per-depth is an untested lever with significant feel implications.
+
+**`coinInit`** — fraction of cells pre-filled with coins when the depth begins. At 0.05, that's about 31 coins waiting for you. This sets the density of the opening board before the player has earned anything. A lower value means a sparse, quiet start; a higher value means immediate temptation and immediate enemy accumulation.
+
+**`minEnemyDist`** — minimum Manhattan distance from the player when an enemy spawns. At 5, that gives the player a small safe bubble. Increasing this gives more reaction time after every collection; decreasing it makes spawns feel more threatening and immediate.
+
+**`tilePalette` and `canvasBase`** — these set the visual identity of a depth. The palette is the art style of the tile grid (`"ocean"`, `"tropical"`, `"nursery"`, `"arctic"`). The `canvasBase` hex color bleeds through between tiles — it's the "deep water" color and it shifts the overall mood of the whole screen. These two values together are what make each depth feel like a different place.
+
+---
+
+### Shell / Pickup Config Blocks
+
+Each depth can include zero or more pickup mechanic blocks. **Omit the block entirely to disable that mechanic** — there is no "active: false" flag needed, and no zeroing out. Depth 5 currently has no shell config at all: pure coins and enemies.
+
+All `interval` values are in **player moves, not seconds**. On a fast-moving player, 25 moves happens quickly. On a cautious one, it takes much longer. This means shell spawn rhythm is tied to player pace, which is intentional — aggressive players see more pickups.
+
+**`ammonite`** (Depth 1 — purple shells)
+- `initCount` — how many are placed on the board at game start
+- `max` — ceiling on simultaneous ammonites. Prevents the board from drowning in high-value targets
+- `interval` — moves between a collection and the next spawn. At 25, there's never more than one "choice moment" per minute of typical play
+- `points` — currently 10 pts. High enough to matter, but each one spawns a 2x2 big enemy
+- `centerSafeZone` — if set, ammonites won't spawn in that square area at the center. Keeps the middle of the board open for maneuvering
+
+**`coral`** (Depth 2 — barrier shells)
+- All the standard pickup fields (`initCount`, `max`, `interval`, `points`) work the same as ammonite
+- `barrierCount` — permanent coral wall blocks placed once when the depth begins. At 12, that's about 2% of the grid. These walls reshape both player and enemy pathfinding for the entire depth
+- `barrierMinDist` — how close to the player a barrier can be placed at entry. Prevents immediate trapping on arrival
+- `centerSafeZone` — same function as ammonite: keeps a zone in the middle clear of pickups
+
+**`egg`** (Depth 3 — shark eggs)
+- `initCount` — eggs seeded at depth entry
+- `interval` — delay (in moves) between collecting an egg and the next one spawning. At 0, the next egg appears immediately: there is always exactly 1 egg on the board
+- `points` — currently 10 pts, matching the ammonite. Both are high-risk, high-reward
+- `babyPenalty` — points lost when an enemy eats the baby shark. Currently -5. This is the asymmetric cost that makes the baby a real liability, not just a trail
+- `centerSafeZone` — eggs won't spawn in the center area. The 10x10 safe zone at Depth 3 keeps the crowded middle of the board from immediately hiding eggs in the most dangerous real estate
+
+**`frozenFish`** (Depth 4 — arctic fish)
+- `initCount`, `max`, `interval`, `points` work the same as above
+- The fish mechanic has an extra layer not captured here: collecting a fish also turns that tile into ice and immediately triggers a slide. The config only sets the pickup properties; the slide behavior is intrinsic to the mechanic
+
+**`icePatches`** (Depth 4 — ice terrain)
+- `initialCount` — number of ice shapes seeded at the start of the depth. These are placed as readable shapes (not random scatter), each one a 1x2 to 2x2 block. At 8 shapes, the board has meaningful ice zones without being overwhelmed. Raise this to create a more chaotic, commitment-heavy board; lower it for a cleaner feel with the slide mechanic still present
+
+---
+
+### How to Design a Depth
+
+Start with two questions: **What is the opening feel?** (set `enemyKeep` and `coinInit`) and **What is the signature pressure?** (choose which shell block to include and tune its `interval` and `points`).
+
+Then think about pacing: `descendScore` is how long the player spends in this depth. 100 pts is the current standard — all depths use it. That's a deliberate choice for predictability, but it's tunable if a depth needs to be a sprint or a slog.
+
+The visual identity (`tilePalette`, `canvasBase`) should reinforce the mechanical mood. Arctic is cold and commitment-heavy, so the palette is pale and the canvas base is near-black. The Nursery is open and slightly warmer. These aren't decorative — they prime the player for what kind of play the depth demands.
 
 ---
 
