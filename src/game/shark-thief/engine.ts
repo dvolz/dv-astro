@@ -15,7 +15,7 @@ import {
 import { draw, initRenderer } from "./renderers";
 import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
-import { randomColorFromPalette } from "./config";
+import { randomColorFromPalette, buildToxicColorGrid } from "./config";
 
 // ── Dying-enemy dissolve loop ─────────────────────────────────────────────
 
@@ -102,9 +102,13 @@ function teardownMechanic(cfg: DepthConfig): void {
 }
 
 function setupMechanic(cfg: DepthConfig): void {
-  gs.colors = Array.from({ length: GRID }, () =>
-    Array.from({ length: GRID }, () => randomColorFromPalette(cfg.tilePalette)),
-  );
+  if (cfg.toxicBarrel) {
+    gs.colors = buildToxicColorGrid(GRID, GRID);
+  } else {
+    gs.colors = Array.from({ length: GRID }, () =>
+      Array.from({ length: GRID }, () => randomColorFromPalette(cfg.tilePalette)),
+    );
+  }
   if (cfg.coral) {
     spawnCoral();
     let placed = 0, attempts = 0;

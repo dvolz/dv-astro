@@ -258,6 +258,9 @@ export function drawToxicBarrel(
   const bw = ps * 0.62, bh = ps * 0.78;
   const bx = Math.round(cx - bw / 2), by = Math.round(py + ps * 0.12);
 
+  ctx.shadowColor = "rgba(120, 220, 20, 0.85)";
+  ctx.shadowBlur  = Math.max(4, ps * 0.35);
+
   ctx.fillStyle = "#1a0800";
   ctx.fillRect(bx - 1, by - 1, Math.round(bw) + 2, Math.round(bh) + 2);
 
@@ -289,6 +292,9 @@ export function drawToxicBarrel(
   ctx.arc(cx, by + Math.round(bh * 0.12), dotR, 0, Math.PI * 2);
   ctx.fill();
 
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = "transparent";
+
   ctx.restore();
 }
 
@@ -301,6 +307,9 @@ export function drawToxicCloud(
 ): void {
   const px = gridX * CELL, py = gridY * CELL;
   ctx.save();
+
+  ctx.shadowColor = "rgba(136, 220, 20, 0.60)";
+  ctx.shadowBlur  = Math.max(3, CELL * 0.28);
 
   ctx.globalAlpha = 1.0;
   ctx.fillStyle = "#88cc20";
@@ -344,6 +353,9 @@ export function drawToxicCloud(
     ctx.globalAlpha = lightAlpha * pulseIntensity;
     ctx.fillRect(px + (CELL - oxB - dotSize), py + (CELL - oyB - dotSize), dotSize, dotSize);
   }
+
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = "transparent";
 
   ctx.restore();
 }

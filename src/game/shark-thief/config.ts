@@ -31,12 +31,23 @@ export const NURSERY_TILE_COLORS = [
   "#247ea0", "#1c6c8a", "#247296", "#1e7496", "#207094",
 ];
 
-// Toxic palette — ocean palette shifted slightly toward green (Depth 5)
-// Hue ~185-188° vs ocean's ~190°: same brightness, just murky enough to feel wrong.
-// Low chroma keeps the green tint subtle so cloud pickups pop against it.
+// Toxic palette — darker than ocean, green-teal shifted (Depth 5)
+// Ocean averages ~#1e7e8e; these average ~#196870 — ~14 counts darker across channels.
+// Hue stays at ~185-188° so cloud pickups still pop against it.
 export const TOXIC_TILE_COLORS = [
-  "#1d8488", "#228e8e", "#1a7e7e", "#268a8e", "#1e8686",
-  "#248e8e", "#1c7c78", "#248284", "#1e8484", "#208082",
+  "#186878", "#1c7278", "#166070", "#1a6e78", "#186a72",
+  "#1c7278", "#146068", "#1a6870", "#186870", "#1a6470",
+];
+
+// Toxic discolor variants — sickly off-hues applied to ~15% of tiles at depth entry.
+// Mixes of muted yellow-green, olive, and brackish brown to imply contamination.
+export const TOXIC_DISCOLOR_COLORS = [
+  "#2a6a3a",  // murky green
+  "#4a6a1a",  // olive
+  "#3a6030",  // dark algae
+  "#5a5a18",  // sour yellow-green
+  "#2e5a28",  // swamp green
+  "#486020",  // bile olive
 ];
 
 // Available background palettes — add new entries here to create more options.
@@ -53,6 +64,19 @@ export const TILE_PALETTES: Record<TilePalette, string[]> = {
 export function randomColorFromPalette(palette: TilePalette): string {
   const colors = TILE_PALETTES[palette];
   return colors[Math.floor(Math.random() * colors.length)];
+}
+
+export function buildToxicColorGrid(rows: number, cols: number): string[][] {
+  return Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) => {
+      // Deterministic per-cell: if hash lands in bottom 18% → discolored tile
+      const hash = ((r * 31 + c * 17) ^ (r * 7)) & 0xff;
+      if (hash < 46) { // 46/255 ≈ 18%
+        return TOXIC_DISCOLOR_COLORS[hash % TOXIC_DISCOLOR_COLORS.length];
+      }
+      return TOXIC_TILE_COLORS[hash % TOXIC_TILE_COLORS.length];
+    }),
+  );
 }
 
 // Depth metadata — colour, glow, name  →  DepthSystem.swift
