@@ -768,6 +768,10 @@ export function initAtDepth(targetDepth: number): void {
     const barrelInit = LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.initCount ?? 0;
     for (let i = 0; i < barrelInit; i++) spawnToxicBarrelIfNeeded();
     while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
+    gs.cloudPulse.fill(0);
+    gs.cloudPulseSpeed.fill(0);
+    if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
+    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
   }
   if (targetDepth >= 6) {
     gs.currentDepth = 6;
