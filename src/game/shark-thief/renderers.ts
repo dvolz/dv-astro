@@ -536,8 +536,8 @@ export function draw(): void {
       drawCoralBarrier(ctx, c * CELL, r * CELL, CELL, (r * 7 + c * 11) % CORAL_BARRIER_VARIANTS);
     }
 
-  // Ice patches (Depth 4 — Arctic)
-  if (gs.currentDepth === 4) {
+  // Ice patches (Arctic depth)
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.icePatches) {
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (!gs.iceCells[r][c]) continue;
@@ -597,8 +597,8 @@ export function draw(): void {
     }
   }
 
-  // Coral shell pickups (Depth 2)
-  if (gs.currentDepth === 2)
+  // Coral shell pickups (Reef depth)
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.coral)
     for (let r = 0; r < GRID; r++)
       for (let c = 0; c < GRID; c++) {
         if (!gs.coralPickups[r][c]) continue;
@@ -606,8 +606,8 @@ export function draw(): void {
         drawCoralShell(ctx, cpx, cpy, cps);
       }
 
-  // Toxic barrels (Depth 5)
-  if (gs.currentDepth === 5 && gs.toxicBarrels.length > 0) {
+  // Toxic barrels (Toxic depth)
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicBarrels.length > 0) {
     const bp = CELL * 0.06;
     for (const barrel of gs.toxicBarrels) {
       drawToxicBarrel(ctx, barrel.x * CELL + bp, barrel.y * CELL + bp, CELL - bp * 2);
@@ -672,8 +672,8 @@ export function draw(): void {
   // Player shark
   drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
 
-  // Toxic clouds (Depth 5) — drawn last so they naturally cover everything underneath
-  if (gs.currentDepth === 5 && gs.toxicClouds.length > 0) {
+  // Toxic clouds (Toxic depth) — drawn last so they naturally cover everything underneath
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0) {
     for (const cell of gs.toxicClouds) {
       drawToxicCloud(ctx, cell.x, cell.y, CELL, gs.cloudPulse[cell.y * GRID + cell.x]);
     }

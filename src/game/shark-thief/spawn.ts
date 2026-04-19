@@ -203,7 +203,7 @@ export function spawnEnemy(): Enemy {
     gs.superPickups[ey]?.[ex]    ||
     gs.coralPickups[ey]?.[ex]    ||
     gs.frozenFish.some(f => f.x === ex && f.y === ey) ||
-    (gs.currentDepth === 5 && gs.toxicClouds.length > 0 &&
+    (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
       isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
   );
   return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };

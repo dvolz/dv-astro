@@ -350,20 +350,20 @@ export const blogData = {
   }
 
   .depth-select-btns :global(.ds-d2) {
-    border-color: #daa070; color: #daa070;
-    &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(218,160,112,0.5); }
-  }
-  .depth-select-btns :global(.ds-d3) {
     border-color: #e06fa0; color: #e06fa0;
     &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
+  }
+  .depth-select-btns :global(.ds-d3) {
+    border-color: #6abf3a; color: #6abf3a;
+    &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(106,191,58,0.5); }
   }
   .depth-select-btns :global(.ds-d4) {
     border-color: #7fd8f0; color: #7fd8f0;
     &:hover { background: #7fd8f0; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(127,216,240,0.5); }
   }
   .depth-select-btns :global(.ds-d5) {
-    border-color: #6abf3a; color: #6abf3a;
-    &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(106,191,58,0.5); }
+    border-color: #daa070; color: #daa070;
+    &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 14px rgba(218,160,112,0.5); }
   }
   .depth-select-btns :global(.ds-d6) {
     border-color: #9d6fe0; color: #9d6fe0;
@@ -575,14 +575,14 @@ export const blogData = {
       box-shadow: 0 0 10px rgba(72, 202, 228, 0.5);
     }
     &.depth-2 {
-      border-color: #daa070;
-      color: #daa070;
-      &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(218,160,112,0.5); }
-    }
-    &.depth-3 {
       border-color: #e06fa0;
       color: #e06fa0;
       &:hover { background: #e06fa0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(224,111,160,0.5); }
+    }
+    &.depth-3 {
+      border-color: #6abf3a;
+      color: #6abf3a;
+      &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(106,191,58,0.5); }
     }
     &.depth-4 {
       border-color: #7fd8f0;
@@ -590,9 +590,9 @@ export const blogData = {
       &:hover { background: #7fd8f0; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(127,216,240,0.5); }
     }
     &.depth-5 {
-      border-color: #6abf3a;
-      color: #6abf3a;
-      &:hover { background: #6abf3a; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(106,191,58,0.5); }
+      border-color: #daa070;
+      color: #daa070;
+      &:hover { background: #daa070; color: var(--ocean-abyss); box-shadow: 0 0 10px rgba(218,160,112,0.5); }
     }
     &.depth-6 {
       border-color: #9d6fe0;
@@ -2216,10 +2216,10 @@ export const blogData = {
     const container = document.getElementById("devJumpBtns")!;
     const depths = [
       { label: "DEPTH 1", depth: 1, color: "#48cae4" },
-      { label: "DEPTH 2", depth: 2, color: "#daa070" },
-      { label: "DEPTH 3", depth: 3, color: "#e06fa0" },
+      { label: "DEPTH 2", depth: 2, color: "#e06fa0" },
+      { label: "DEPTH 3", depth: 3, color: "#6abf3a" },
       { label: "DEPTH 4", depth: 4, color: "#7fd8f0" },
-      { label: "DEPTH 5", depth: 5, color: "#9d6fe0" },
+      { label: "DEPTH 5", depth: 5, color: "#daa070" },
     ];
     depths.forEach(({ label, depth, color }) => {
       const btn = document.createElement("button");

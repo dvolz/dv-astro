@@ -1,6 +1,7 @@
 // ===== Animation =====  →  SharkNode.swift / GameScene.swift animation loops
 
 import { ANIM_DURATION, GRID } from "./config";
+import { LEVEL_CONFIG } from "./level-config";
 import { gs } from "./state";
 import { draw } from "./renderers";
 
@@ -101,7 +102,7 @@ function tickEnemyAnims(now: number): void {
 // ── Toxic cloud pulse — gaseous cells surge and fade (Depth 5) ──────────
 
 export function tickCloudPulse(): void {
-  if (gs.currentDepth !== 5 || gs.gameOver) { gs.cloudPulseRafId = null; return; }
+  if (!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel || gs.gameOver) { gs.cloudPulseRafId = null; return; }
   let dirty = false;
   for (const cell of gs.toxicClouds) {
     const i = cell.y * GRID + cell.x;

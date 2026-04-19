@@ -11,14 +11,15 @@ import { buildRulesHTML } from "./data";
 
 export const MINI_CS = 40; // cell size — 5×5 grid = 200×200 canvas
 export const MINI_N  = 5;
-const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5200, 3: 5400, 4: 5000, 5: 999 };
+const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5400, 3: 999, 4: 5000, 5: 5200, 6: 999 };
 
 const MINI_OPEN_CAPTIONS: Record<number, string> = {
   1: "FIND THE PURPLE AMMONITE",
-  2: "THE CORAL SHELL BLOCKS THE PATH...",
-  3: "A SHARK EGG DRIFTS IN THE CURRENT",
+  2: "A SHARK EGG DRIFTS IN THE CURRENT",
+  3: "DEPTH 3 IS TOXIC TERRITORY...",
   4: "ICE MAKES YOU SLIDE...",
-  5: "DEPTH 5 IS UNCHARTED TERRITORY...",
+  5: "THE CORAL SHELL BLOCKS THE PATH...",
+  6: "DEPTH 6 IS UNCHARTED TERRITORY...",
 };
 
 // Pre-seeded tile grids (deterministic — no flicker)
@@ -480,7 +481,25 @@ function renderD4(ctx: CanvasRenderingContext2D, elapsed: number): void {
   else                    setMiniCaption("DON'T SLIDE INTO AN ENEMY — THAT'S DEATH");
 }
 
-function renderD5(ctx: CanvasRenderingContext2D, _e: number): void {
+function renderD3Stub(ctx: CanvasRenderingContext2D, _e: number): void {
+  ctx.fillStyle = "#0a1f0a"; ctx.fillRect(0, 0, 200, 200);
+  for (let r = 0; r < MINI_N; r++)
+    for (let c = 0; c < MINI_N; c++) {
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = MINI_TILE_COLORS_D1[r * MINI_N + c];
+      ctx.fillRect(c * MINI_CS, r * MINI_CS, MINI_CS, MINI_CS);
+    }
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.font = "bold 52px monospace"; ctx.fillStyle = "rgba(106,191,58,0.4)";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("☣", 100, 100);
+  ctx.restore();
+  setMiniCaption("DEPTH 3 IS TOXIC TERRITORY...");
+  updateMovePips(0);
+}
+
+function renderD6Stub(ctx: CanvasRenderingContext2D, _e: number): void {
   ctx.fillStyle = "#040f1a"; ctx.fillRect(0, 0, 200, 200);
   for (let r = 0; r < MINI_N; r++)
     for (let c = 0; c < MINI_N; c++) {
@@ -494,7 +513,7 @@ function renderD5(ctx: CanvasRenderingContext2D, _e: number): void {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText("?", 100, 100);
   ctx.restore();
-  setMiniCaption("DEPTH 5 IS UNCHARTED TERRITORY...");
+  setMiniCaption("DEPTH 6 IS UNCHARTED TERRITORY...");
   updateMovePips(0);
 }
 
@@ -503,11 +522,12 @@ function renderMiniScene(depth: number, elapsed: number): void {
   if (!canvas) return;
   const ctx = canvas.getContext("2d")!;
   ctx.clearRect(0, 0, 200, 200);
-  if      (depth === 1) renderD1(ctx, elapsed);
-  else if (depth === 2) renderD2(ctx, elapsed);
-  else if (depth === 3) renderD3(ctx, elapsed);
-  else if (depth === 4) renderD4(ctx, elapsed);
-  else                  renderD5(ctx, elapsed);
+  if      (depth === 1) renderD1(ctx, elapsed);        // Shallows — ammonite
+  else if (depth === 2) renderD3(ctx, elapsed);        // Nursery — shark egg (was D3 scene)
+  else if (depth === 3) renderD3Stub(ctx, elapsed);    // Toxic — stub
+  else if (depth === 4) renderD4(ctx, elapsed);        // Arctic — ice/fish
+  else if (depth === 5) renderD2(ctx, elapsed);        // Reef — coral shell (was D2 scene)
+  else                  renderD6Stub(ctx, elapsed);    // Abyss — stub
 }
 
 function syncMiniControls(): void {

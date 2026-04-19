@@ -2,7 +2,7 @@
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
 import { GRID, DYING_DURATION } from "./config";
-import { LEVEL_CONFIG } from "./level-config";
+import { LEVEL_CONFIG, ICE_DEPTH, type DepthConfig } from "./level-config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
 import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded } from "./spawn";
@@ -68,6 +68,83 @@ export function clearCloseEnemies(keepN: number): void {
   startDyingLoop();
 }
 
+// ── Mechanic teardown / setup helpers ────────────────────────────────────
+
+function teardownMechanic(cfg: DepthConfig): void {
+  if (cfg.coral) {
+    for (let r = 0; r < GRID; r++) {
+      gs.coral[r].fill(false);
+      gs.coralPickups[r].fill(false);
+      gs.superPickups[r].fill(false);
+    }
+    gs.coralMovesCounter = 0;
+  }
+  if (cfg.egg) {
+    gs.sharkEgg = null;
+    gs.babySharks = [];
+    gs.bloodCells = [];
+    gs.sharkPositionHistory = [];
+    gs.eggMovesCounter = 0;
+  }
+  if (cfg.icePatches || cfg.frozenFish) {
+    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    gs.frozenFish = [];
+    gs.frozenFishMovesCounter = 0;
+  }
+  if (cfg.toxicBarrel) {
+    gs.toxicClouds = [];
+    gs.toxicBarrels = [];
+    gs.toxicBarrelMovesCounter = 0;
+    gs.cloudPulse.fill(0);
+    gs.cloudPulseSpeed.fill(0);
+    if (gs.cloudPulseRafId) { cancelAnimationFrame(gs.cloudPulseRafId); gs.cloudPulseRafId = null; }
+  }
+}
+
+function setupMechanic(cfg: DepthConfig): void {
+  gs.colors = Array.from({ length: GRID }, () =>
+    Array.from({ length: GRID }, () => randomColorFromPalette(cfg.tilePalette)),
+  );
+  if (cfg.coral) {
+    spawnCoral();
+    let placed = 0, attempts = 0;
+    while (placed < (cfg.coral.initCount ?? 0) && attempts < 800) {
+      attempts++;
+      const cpx = Math.floor(Math.random() * GRID);
+      const cpy = Math.floor(Math.random() * GRID);
+      if (!gs.coralPickups[cpy][cpx] && !gs.pickups[cpy][cpx] && !gs.superPickups[cpy][cpx] && !gs.coral[cpy][cpx] && !(cpx === gs.shark.x && cpy === gs.shark.y)) {
+        gs.coralPickups[cpy][cpx] = true; placed++;
+      }
+    }
+  }
+  if (cfg.egg) {
+    if ((cfg.egg.initCount ?? 0) > 0) spawnSharkEgg();
+  }
+  if (cfg.icePatches) {
+    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+    seedIcePatches(cfg.icePatches.initialCount ?? 5);
+  }
+  if (cfg.frozenFish) {
+    gs.frozenFish = [];
+    gs.frozenFishMovesCounter = 0;
+    for (let i = 0; i < (cfg.frozenFish.initCount ?? 0); i++) spawnFrozenFishIfNeeded();
+  }
+  if (cfg.toxicBarrel) {
+    gs.toxicClouds = [];
+    gs.toxicBarrels = [];
+    gs.toxicBarrelMovesCounter = 0;
+    for (let i = 0; i < (cfg.toxicBarrel.initCount ?? 0); i++) spawnToxicBarrelIfNeeded();
+    gs.cloudPulse.fill(0);
+    gs.cloudPulseSpeed.fill(0);
+    if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
+    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
+  }
+  if (cfg.ammonite) {
+    gs.ammoniteMovesCounter = 0;
+    for (let i = 0; i < (cfg.ammonite.initCount ?? 0); i++) spawnAmmoniteIfNeeded();
+  }
+}
+
 // ── Depth transition ──────────────────────────────────────────────────────
 
 export function checkDepthTransition(): void {
@@ -76,123 +153,44 @@ export function checkDepthTransition(): void {
 
   gs.levelTimes.push(performance.now() - gs.levelStartTime);
   gs.levelStartTime = performance.now();
-  gs.currentDepth++;
+  const prevDepth = gs.currentDepth;
   gs.depthEntryScore = gs.score;
-  updateHudDepth(gs.currentDepth);
 
   const flash = document.getElementById("depthFlash")!;
-  flash.textContent = `DEPTH ${gs.currentDepth}`;
+  flash.textContent = `DEPTH ${prevDepth + 1}`;
   flash.classList.remove("flashing");
   void (flash as HTMLElement).offsetWidth;
   flash.classList.add("flashing");
 
   const wrapper = document.getElementById("gameDepthWrapper")!;
-  wrapper.className = `game-depth-wrapper depth-${gs.currentDepth}`;
+  wrapper.className = `game-depth-wrapper depth-${prevDepth + 1}`;
 
-  updateMaxDepth(gs.currentDepth);
+  updateMaxDepth(prevDepth + 1);
 
-  if (gs.currentDepth === 2) {
-    const keep2 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
-    clearCloseEnemies(keep2);
-    // Big enemies are a Depth 1 signature piece — dissolve any that survived
+  // Tear down the mechanic from the depth we're leaving
+  teardownMechanic(LEVEL_CONFIG[prevDepth]);
+
+  gs.currentDepth++;
+  updateHudDepth(gs.currentDepth);
+
+  // Depth 1 (Shallows) special exit: dissolve big enemies and clear super pickups
+  if (prevDepth === 1) {
     for (const be of gs.bigEnemies) {
       gs.dyingEnemies.push({ x: be.x, y: be.y, isBig: true, startTime: performance.now() });
     }
     gs.bigEnemies = [];
     startDyingLoop();
-    // Bring normal enemies back up to keep2
-    while (gs.enemies.length < keep2) gs.enemies.push(spawnEnemy());
     for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
     gs.ammoniteMovesCounter = 0;
-    gs.coralMovesCounter = 0;
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    spawnCoral();
-    let placed = 0, attempts = 0;
-    while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
-      attempts++;
-      const cpx = Math.floor(Math.random() * GRID);
-      const cpy = Math.floor(Math.random() * GRID);
-      if (
-        !gs.coralPickups[cpy][cpx] && !gs.pickups[cpy][cpx] &&
-        !gs.superPickups[cpy][cpx] && !gs.coral[cpy][cpx] &&
-        !(cpx === gs.shark.x && cpy === gs.shark.y)
-      ) { gs.coralPickups[cpy][cpx] = true; placed++; }
-    }
-  } else if (gs.currentDepth === 3) {
-    const keep3 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
-    clearCloseEnemies(keep3);
-    while (gs.enemies.length + gs.bigEnemies.length < keep3) gs.enemies.push(spawnEnemy());
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    for (let r = 0; r < GRID; r++) {
-      gs.coral[r].fill(false);
-      gs.coralPickups[r].fill(false);
-      gs.superPickups[r].fill(false);
-    }
-    gs.coralMovesCounter = 0;
-    gs.sharkEgg = null;
-    gs.eggMovesCounter = 0;
-    gs.babySharks = [];
-    gs.bloodCells = [];
-    gs.sharkPositionHistory = [];
-    if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
-  } else if (gs.currentDepth === 4) {
-    const keep4 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
-    clearCloseEnemies(keep4);
-    // Clear Depth 3 signature pieces
-    gs.sharkEgg = null;
-    gs.babySharks = [];
-    gs.bloodCells = [];
-    gs.sharkPositionHistory = [];
-    gs.eggMovesCounter = 0;
-    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    // Ensure enemyKeep enemies on entry
-    while (gs.enemies.length + gs.bigEnemies.length < keep4) gs.enemies.push(spawnEnemy());
-    // Spawn initial frozen fish
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    const fishInitCount = LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0;
-    for (let i = 0; i < fishInitCount; i++) spawnFrozenFishIfNeeded();
-  } else if (gs.currentDepth === 5) {
-    const keep5 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
-    clearCloseEnemies(keep5);
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    gs.toxicClouds = [];
-    gs.toxicBarrels = [];
-    gs.toxicBarrelMovesCounter = 0;
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    while (gs.enemies.length + gs.bigEnemies.length < keep5) gs.enemies.push(spawnEnemy());
-    const barrelInitCount = LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.initCount ?? 0;
-    for (let i = 0; i < barrelInitCount; i++) spawnToxicBarrelIfNeeded();
-    gs.cloudPulse.fill(0);
-    gs.cloudPulseSpeed.fill(0);
-    if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
-    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
-  } else if (gs.currentDepth === 6) {
-    const keep6 = LEVEL_CONFIG[gs.currentDepth].enemyKeep;
-    clearCloseEnemies(keep6);
-    gs.toxicClouds = [];
-    gs.toxicBarrels = [];
-    gs.toxicBarrelMovesCounter = 0;
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    spawnLeviathan();
   }
+
+  clearCloseEnemies(LEVEL_CONFIG[gs.currentDepth].enemyKeep);
+  while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
+
+  setupMechanic(LEVEL_CONFIG[gs.currentDepth]);
+
+  // Depth 6 always spawns the leviathan
+  if (gs.currentDepth === 6) spawnLeviathan();
 }
 
 // ── Init (fresh game from depth 1) ───────────────────────────────────────
@@ -283,7 +281,7 @@ export function init(): void {
   gs.cloudPulse.fill(0);
   gs.cloudPulseSpeed.fill(0);
   if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
-  if (gs.currentDepth === 5) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
+  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 
   gs.enemies = [spawnEnemy()];
   draw();
@@ -466,8 +464,8 @@ export function moveShark(dx: number, dy: number): void {
     spawnFrozenFishIfNeeded();
   }
 
-  // Toxic barrel (Depth 5)
-  if (gs.currentDepth === 5) {
+  // Toxic barrel (Toxic depth)
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) {
     const barrelIdx = gs.toxicBarrels.findIndex(b => b.x === gs.shark.x && b.y === gs.shark.y);
     if (barrelIdx !== -1) {
       gs.score += LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.points ?? 8;
@@ -648,7 +646,7 @@ export function loadGame(save: any): void {
   // Always re-seed ice from config rather than restoring from save — ensures
   // changes to icePatches.initialCount take effect without needing a fresh game.
   gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-  if (gs.currentDepth >= 4) {
+  if (gs.currentDepth >= ICE_DEPTH) {
     seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
   }
   gs.frozenFish = save.frozenFish || [];
@@ -681,7 +679,7 @@ export function loadGame(save: any): void {
   gs.cloudPulse.fill(0);
   gs.cloudPulseSpeed.fill(0);
   if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
-  if (gs.currentDepth === 5) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
+  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
   draw();
@@ -698,95 +696,20 @@ export function initAtDepth(targetDepth: number): void {
   if (targetDepth > 1) gs.startedFromDepth1 = false;
 
   const wrapper = document.getElementById("gameDepthWrapper")!;
-  if (targetDepth >= 2) {
-    gs.currentDepth = 2;
-    updateHudDepth(2);
-    wrapper.className = "game-depth-wrapper depth-2";
-    for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    spawnCoral();
-    let placed = 0, attempts = 0;
-    while (placed < (LEVEL_CONFIG[gs.currentDepth].coral?.initCount ?? 0) && attempts < 800) {
-      attempts++;
-      const cpx = Math.floor(Math.random() * GRID);
-      const cpy = Math.floor(Math.random() * GRID);
-      if (!gs.coralPickups[cpy][cpx] && !gs.pickups[cpy][cpx] && !gs.coral[cpy][cpx] && !(cpx === gs.shark.x && cpy === gs.shark.y)) {
-        gs.coralPickups[cpy][cpx] = true; placed++;
-      }
+  for (let d = 2; d <= targetDepth; d++) {
+    if (d > 2) teardownMechanic(LEVEL_CONFIG[d - 1]);
+    // Depth 1 special exit: clear big enemies and super pickups
+    if (d === 2) {
+      gs.bigEnemies = [];
+      for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
+      gs.ammoniteMovesCounter = 0;
     }
-    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
-  }
-  if (targetDepth >= 3) {
-    gs.currentDepth = 3;
-    updateHudDepth(3);
-    wrapper.className = "game-depth-wrapper depth-3";
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    for (let r = 0; r < GRID; r++) {
-      gs.coral[r].fill(false);
-      gs.coralPickups[r].fill(false);
-      gs.superPickups[r].fill(false);
-    }
-    gs.babySharks = [];
-    gs.bloodCells = [];
-    gs.sharkPositionHistory = [];
-    if ((LEVEL_CONFIG[gs.currentDepth].egg?.initCount ?? 0) > 0) spawnSharkEgg();
-    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
-  }
-  if (targetDepth >= 4) {
-    gs.currentDepth = 4;
-    updateHudDepth(4);
-    wrapper.className = "game-depth-wrapper depth-4";
-    gs.sharkEgg  = null;
-    gs.iceCells  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    seedIcePatches(LEVEL_CONFIG[gs.currentDepth].icePatches?.initialCount ?? 5);
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    const fishInit = LEVEL_CONFIG[gs.currentDepth].frozenFish?.initCount ?? 0;
-    for (let i = 0; i < fishInit; i++) spawnFrozenFishIfNeeded();
-    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
-  }
-  if (targetDepth >= 5) {
-    gs.currentDepth = 5;
-    updateHudDepth(5);
-    wrapper.className = "game-depth-wrapper depth-5";
-    gs.iceCells   = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    gs.toxicClouds = [];
-    gs.toxicBarrels = [];
-    gs.toxicBarrelMovesCounter = 0;
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    const barrelInit = LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.initCount ?? 0;
-    for (let i = 0; i < barrelInit; i++) spawnToxicBarrelIfNeeded();
-    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
-    gs.cloudPulse.fill(0);
-    gs.cloudPulseSpeed.fill(0);
-    if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
-    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
-  }
-  if (targetDepth >= 6) {
-    gs.currentDepth = 6;
-    updateHudDepth(6);
-    wrapper.className = "game-depth-wrapper depth-6";
-    gs.toxicClouds = [];
-    gs.toxicBarrels = [];
-    gs.toxicBarrelMovesCounter = 0;
-    gs.iceCells = Array.from({ length: GRID }, () => Array(GRID).fill(false));
-    gs.frozenFish = [];
-    gs.frozenFishMovesCounter = 0;
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
-    );
-    spawnLeviathan();
+    gs.currentDepth = d;
+    updateHudDepth(d);
+    wrapper.className = `game-depth-wrapper depth-${d}`;
+    setupMechanic(LEVEL_CONFIG[d]);
+    if (d === 6) spawnLeviathan();
+    while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[d].enemyKeep) gs.enemies.push(spawnEnemy());
   }
 
   // Final reset: discard all intermediate enemies and spawn exactly what the target depth wants.

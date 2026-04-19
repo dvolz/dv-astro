@@ -79,6 +79,9 @@ export interface DepthConfig {
 }
 
 // ── Level definitions ─────────────────────────────────────────────────────
+// To reorder mechanics: move the config block to the desired depth key.
+// All mechanic-presence guards in the codebase read from LEVEL_CONFIG — no
+// hardcoded depth numbers exist outside this file.
 
 export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   1: {
@@ -98,24 +101,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   2: {
-    coral: {
-      initCount:      4,   // pickup shells seeded on entering this depth
-      max:            6,   // max coral pickup shells on the board at once
-      interval:       15,  // a new shell spawns every 15 player moves
-      points:         5,
-      barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
-      barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
-    },
-    tilePalette:  "tropical",
-    canvasBase:   "#0f5262",
-    enemyKeep:    1,  // normal enemies carried over from depth 1 (big enemies are always cleared)
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
-  },
-
-  3: {
+    // The Nursery (was depth 3)
     egg: {
       initCount:      1,  // eggs placed on entering this depth
       interval:       0,  // moves after collecting an egg before the next spawns (0 = immediate)
@@ -125,33 +111,15 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     },
     tilePalette:  "nursery",
     canvasBase:   "#0a4a5e",
-    enemyKeep:    10, // enemies carried over from depth 2
+    enemyKeep:    5,  // enemies carried over from depth 1
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
     minEnemyDist: 5,
   },
 
-  4: {
-    frozenFish: {
-      initCount: 1, // fish placed on entering this depth
-      max:       3, // max frozen fish on the board at once
-      interval:  20, // moves after collecting a fish before the next one spawns
-      points:    5, // points per frozen fish collected
-    },
-    icePatches: {
-      initialCount: 8, // number of ice patch shapes seeded at the start of this depth
-    },
-    tilePalette:  "arctic",
-    canvasBase:   "#0a1a2e",
-    enemyKeep:    5,  // enemies carried over from depth 3
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
-  },
-
-  5: {
+  3: {
+    // Toxic (was depth 5)
     toxicBarrel: {
       initCount:       1,
       max:             4,
@@ -170,6 +138,45 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     minEnemyDist: 6,
   },
 
+  4: {
+    // The Arctic (same position, was depth 4)
+    frozenFish: {
+      initCount: 1, // fish placed on entering this depth
+      max:       3, // max frozen fish on the board at once
+      interval:  20, // moves after collecting a fish before the next one spawns
+      points:    5, // points per frozen fish collected
+    },
+    icePatches: {
+      initialCount: 8, // number of ice patch shapes seeded at the start of this depth
+    },
+    tilePalette:  "arctic",
+    canvasBase:   "#0a1a2e",
+    enemyKeep:    10, // enemies carried over from depth 3
+    coinRate:     0.00025,
+    coinInit:     0.05,
+    descendScore: 100,
+    minEnemyDist: 5,
+  },
+
+  5: {
+    // The Reef (was depth 2)
+    coral: {
+      initCount:      4,   // pickup shells seeded on entering this depth
+      max:            6,   // max coral pickup shells on the board at once
+      interval:       15,  // a new shell spawns every 15 player moves
+      points:         5,
+      barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
+      barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
+    },
+    tilePalette:  "tropical",
+    canvasBase:   "#0f5262",
+    enemyKeep:    12, // enemies carried over from depth 4
+    coinRate:     0.00025,
+    coinInit:     0.05,
+    descendScore: 100,
+    minEnemyDist: 5,
+  },
+
   6: {
     tilePalette:  "ocean",
     canvasBase:   "#0f5262",
@@ -180,3 +187,12 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     minEnemyDist: 5,
   },
 };
+
+// ── Mechanic-presence constants ───────────────────────────────────────────
+// Derived from LEVEL_CONFIG — never hardcode depth numbers in the game logic.
+// If you move a mechanic to a different depth key above, these update automatically.
+
+export const TOXIC_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].toxicBarrel))!;
+export const CORAL_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
+export const ICE_DEPTH     = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
+export const NURSERY_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
