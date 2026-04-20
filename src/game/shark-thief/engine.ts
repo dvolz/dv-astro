@@ -371,6 +371,22 @@ function collectCoinMidSlide(cx: number, cy: number): void {
   checkDepthTransition();
 }
 
+function collectFishMidSlide(cx: number, cy: number): void {
+  const idx = gs.frozenFish.findIndex(f => f.x === cx && f.y === cy);
+  if (idx === -1) return;
+  gs.frozenFish.splice(idx, 1);
+  gs.score += LEVEL_CONFIG[gs.currentDepth].frozenFish?.points ?? 5;
+  gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+  updateHudScore(gs.score, "special");
+  gs.enemies.push(spawnEnemy());
+  checkDepthTransition();
+  for (const [ox, oy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) {
+    const nx = cx + ox, ny = cy + oy;
+    if (nx >= 0 && nx < GRID && ny >= 0 && ny < GRID) gs.iceCells[ny][nx] = true;
+  }
+  spawnFrozenFishIfNeeded();
+}
+
 // ── Neutral fish movement (Depth 6 — Busy Pacific) ───────────────────────
 
 function moveNeutralFish(): void {
@@ -502,14 +518,15 @@ export function moveShark(dx: number, dy: number): void {
   else if (dy === 1) gs.sharkDir = "down";
   else if (dy === -1) gs.sharkDir = "up";
 
-  // Ice slide (Depth 4): if the shark lands on an ice cell, slide to terminal
-  if (gs.iceCells[gs.shark.y]?.[gs.shark.x]) {
+  // Ice slide (Depth 4): if the shark lands on an ice cell, slide to terminal.
+  // Skip if there's a frozen fish here — the fish collection block below handles the slide.
+  if (gs.iceCells[gs.shark.y]?.[gs.shark.x] && !gs.frozenFish.some(f => f.x === gs.shark.x && f.y === gs.shark.y)) {
     const slide = resolveSlide(gs.shark.x, gs.shark.y, dx, dy, (cx, cy) => {
       const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
-      // Collect coins mid-slide
       if (gs.pickups[cy][cx]) collectCoinMidSlide(cx, cy);
+      if (gs.frozenFish.some(f => f.x === cx && f.y === cy)) collectFishMidSlide(cx, cy);
       return "continue";
     });
     gs.shark.x = slide.x;
@@ -609,8 +626,8 @@ export function moveShark(dx: number, dy: number): void {
       const hitEnemy = gs.enemies.some(e => e.x === cx && e.y === cy) ||
         gs.bigEnemies.some(be => cx >= be.x && cx <= be.x + 1 && cy >= be.y && cy <= be.y + 1);
       if (hitEnemy) return "stop";
-      // Collect coins mid-slide
       if (gs.pickups[cy][cx]) collectCoinMidSlide(cx, cy);
+      if (gs.frozenFish.some(f => f.x === cx && f.y === cy)) collectFishMidSlide(cx, cy);
       return "continue";
     });
 
