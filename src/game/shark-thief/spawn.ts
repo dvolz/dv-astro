@@ -2,7 +2,7 @@
 
 import { GRID } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
-import { gs, type Enemy, type BigEnemy } from "./state";
+import { gs, type Enemy, type BigEnemy, type NeutralFish } from "./state";
 import { bigEnemyOverlaps } from "./collision";
 
 // ── Center safe zone ─────────────────────────────────────────────────────
@@ -185,6 +185,90 @@ export function spawnToxicBarrelIfNeeded(): void {
   gs.toxicBarrelMovesCounter = 0;
 }
 
+// ── Neutral fish (Depth 6 — Busy Pacific) ───────────────────────────────
+
+export function seedNeutralFish(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
+  if (!cfg) return;
+  gs.neutralFish = [];
+
+  const specs: Array<{ type: NeutralFish["type"]; spec: typeof cfg.mackerel }> = [
+    { type: "mackerel",  spec: cfg.mackerel  },
+    { type: "grouper",   spec: cfg.grouper   },
+    { type: "garibaldi", spec: cfg.garibaldi },
+  ];
+
+  for (const { type, spec } of specs) {
+    for (let i = 0; i < spec.count; i++) {
+      let fx: number, fy: number, attempts = 0;
+      do {
+        fx = spec.size === 2
+          ? Math.floor(Math.random() * (GRID - 1))
+          : Math.floor(Math.random() * GRID);
+        fy = spec.size === 2
+          ? Math.floor(Math.random() * (GRID - 1))
+          : Math.floor(Math.random() * GRID);
+        attempts++;
+        if (attempts > 1000) break;
+      } while (
+        Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+        gs.neutralFish.some(f => {
+          if (spec.size === 2 || f.size === 2) {
+            return Math.abs(f.x - fx) <= Math.max(f.size, spec.size) - 1 &&
+                   Math.abs(f.y - fy) <= Math.max(f.size, spec.size) - 1;
+          }
+          return f.x === fx && f.y === fy;
+        }) ||
+        gs.pickups[fy]?.[fx] ||
+        gs.coral[fy]?.[fx]   ||
+        (spec.size === 2 && (gs.coral[fy]?.[fx+1] || gs.coral[fy+1]?.[fx] || gs.coral[fy+1]?.[fx+1]))
+      );
+      if (attempts <= 1000) {
+        gs.neutralFish.push({
+          type, x: fx, y: fy, size: spec.size, moveAccum: 0, dir: "right",
+        });
+      }
+    }
+  }
+}
+
+// ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
+
+export function seedKelp(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp;
+  if (!cfg) return;
+  gs.kelpCells = [];
+
+  // Place kelp columns — each column is anchored at bottom of grid,
+  // extends upward by a random height between minHeight and maxHeight.
+  // cellCount controls the total raw cells placed; we place columns until
+  // we've consumed approximately that budget.
+  let placed = 0;
+  let attempts = 0;
+  while (placed < cfg.cellCount && attempts < 2000) {
+    attempts++;
+    const col = Math.floor(Math.random() * GRID);
+    const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
+    // Anchor from bottom row upward
+    const baseRow = GRID - 1;
+    let colPlaced = 0;
+    for (let h = 0; h < height && baseRow - h >= 0; h++) {
+      const ky = baseRow - h;
+      const kx = col;
+      // Don't double-place on same cell
+      if (!gs.kelpCells.some(k => k.x === kx && k.y === ky)) {
+        // height field: h+1 where h=0 is root (bottom), h=height-1 is tip (top)
+        gs.kelpCells.push({ x: kx, y: ky, height: h + 1 });
+        colPlaced++;
+      }
+    }
+    placed += colPlaced;
+  }
+
+  // Rebuild fast-lookup set
+  gs.kelpSet = new Set(gs.kelpCells.map(k => `${k.x},${k.y}`));
+}
+
 // ── Enemies ──────────────────────────────────────────────────────────────
 
 export function spawnEnemy(): Enemy {
@@ -203,6 +287,12 @@ export function spawnEnemy(): Enemy {
     gs.superPickups[ey]?.[ex]    ||
     gs.coralPickups[ey]?.[ex]    ||
     gs.frozenFish.some(f => f.x === ex && f.y === ey) ||
+    gs.neutralFish.some(f => {
+      if (f.size === 2) {
+        return ex >= f.x && ex <= f.x + 1 && ey >= f.y && ey <= f.y + 1;
+      }
+      return f.x === ex && f.y === ey;
+    }) ||
     (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
       isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
   );

@@ -41,12 +41,13 @@ function buildDepthSelectButtons(): void {
   const container = document.getElementById("depthSelectBtns")!;
 
   const depths: Array<{ depth: number; cls: string; label: string }> = [
-    { depth: 1, cls: "",       label: "DEPTH 1 — THE SHALLOWS" },
-    { depth: 2, cls: "ds-d2",  label: "DEPTH 2 — THE NURSERY"  },
-    { depth: 3, cls: "ds-d3",  label: "DEPTH 3 — TOXIC"        },
-    { depth: 4, cls: "ds-d4",  label: "DEPTH 4 — THE ARCTIC"   },
-    { depth: 5, cls: "ds-d5",  label: "DEPTH 5 — THE REEF"     },
-    { depth: 6, cls: "ds-d6",  label: "DEPTH 6 — THE ABYSS"    },
+    { depth: 1, cls: "",       label: "DEPTH 1 — THE SHALLOWS"  },
+    { depth: 2, cls: "ds-d2",  label: "DEPTH 2 — THE NURSERY"   },
+    { depth: 3, cls: "ds-d3",  label: "DEPTH 3 — TOXIC"         },
+    { depth: 4, cls: "ds-d4",  label: "DEPTH 4 — THE ARCTIC"    },
+    { depth: 5, cls: "ds-d5",  label: "DEPTH 5 — THE REEF"      },
+    { depth: 6, cls: "ds-d6",  label: "DEPTH 6 — BUSY PACIFIC"  },
+    { depth: 7, cls: "ds-d7",  label: "DEPTH 7 — THE ABYSS"     },
   ];
 
   container.innerHTML = depths

@@ -2,10 +2,10 @@
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
 import { GRID, DYING_DURATION } from "./config";
-import { LEVEL_CONFIG, ICE_DEPTH, type DepthConfig } from "./level-config";
+import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp } from "./spawn";
 import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
@@ -100,6 +100,11 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.cloudPulseSpeed.fill(0);
     if (gs.cloudPulseRafId) { cancelAnimationFrame(gs.cloudPulseRafId); gs.cloudPulseRafId = null; }
   }
+  if (cfg.neutralFish || cfg.kelp) {
+    gs.neutralFish = [];
+    gs.kelpCells   = [];
+    gs.kelpSet     = new Set();
+  }
 }
 
 function setupMechanic(cfg: DepthConfig): void {
@@ -145,6 +150,8 @@ function setupMechanic(cfg: DepthConfig): void {
     gs.ammoniteMovesCounter = 0;
     for (let i = 0; i < (cfg.ammonite.initCount ?? 0); i++) spawnAmmoniteIfNeeded();
   }
+  if (cfg.neutralFish) seedNeutralFish();
+  if (cfg.kelp)        seedKelp();
 }
 
 // ── Toxic contamination spread ────────────────────────────────────────────
@@ -210,7 +217,7 @@ function spreadToxicContamination(): void {
 // ── Depth transition ──────────────────────────────────────────────────────
 
 export function checkDepthTransition(): void {
-  if (gs.currentDepth >= 6) return;
+  if (gs.currentDepth >= 7) return;
   if (gs.score < gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore) return;
 
   gs.levelTimes.push(performance.now() - gs.levelStartTime);
@@ -251,8 +258,8 @@ export function checkDepthTransition(): void {
 
   setupMechanic(LEVEL_CONFIG[gs.currentDepth]);
 
-  // Depth 6 always spawns the leviathan
-  if (gs.currentDepth === 6) spawnLeviathan();
+  // Depth 7 always spawns the leviathan
+  if (gs.currentDepth === 7) spawnLeviathan();
 }
 
 // ── Init (fresh game from depth 1) ───────────────────────────────────────
@@ -311,6 +318,9 @@ export function init(): void {
   gs.toxicBarrels             = [];
   gs.toxicBarrelMovesCounter  = 0;
   gs.toxicContamination       = [];
+  gs.neutralFish = [];
+  gs.kelpCells   = [];
+  gs.kelpSet     = new Set();
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -361,6 +371,75 @@ function collectCoinMidSlide(cx: number, cy: number): void {
   checkDepthTransition();
 }
 
+// ── Neutral fish movement (Depth 6 — Busy Pacific) ───────────────────────
+
+function moveNeutralFish(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
+  if (!cfg) return;
+
+  const dirs: Array<[number, number]> = [[1,0],[-1,0],[0,1],[0,-1]];
+
+  for (const fish of gs.neutralFish) {
+    fish.moveAccum++;
+    const spec = cfg[fish.type];
+    if (fish.moveAccum < spec.speedDivisor) continue;
+    fish.moveAccum = 0;
+
+    // Shuffle directions; try each until one is valid
+    const shuffled = dirs.slice().sort(() => Math.random() - 0.5);
+    for (const [dx, dy] of shuffled) {
+      const nx = fish.x + dx;
+      const ny = fish.y + dy;
+
+      // Bounds check — fish never leave the board
+      if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) continue;
+      if (fish.size === 2 && (nx + 1 >= GRID || ny + 1 >= GRID)) continue;
+
+      // Coral barriers block fish
+      if (gs.coral[ny]?.[nx]) continue;
+      if (fish.size === 2 && (
+        gs.coral[ny]?.[nx+1] || gs.coral[ny+1]?.[nx] || gs.coral[ny+1]?.[nx+1]
+      )) continue;
+
+      // Fish cannot pass through other neutral fish
+      const fishBlocked = gs.neutralFish.some(other => {
+        if (other === fish) return false;
+        if (other.size === 2) {
+          return nx >= other.x && nx <= other.x + 1 && ny >= other.y && ny <= other.y + 1;
+        }
+        if (fish.size === 2) {
+          return other.x >= nx && other.x <= nx + 1 && other.y >= ny && other.y <= ny + 1;
+        }
+        return other.x === nx && other.y === ny;
+      });
+      if (fishBlocked) continue;
+
+      // Fish can move — apply
+      fish.x = nx;
+      fish.y = ny;
+      if (dx === 1)  fish.dir = "right";
+      if (dx === -1) fish.dir = "left";
+      if (dy === 1)  fish.dir = "down";
+      if (dy === -1) fish.dir = "up";
+
+      // Fish eats coin — no enemy spawn, no score
+      const footprint: Array<[number, number]> = fish.size === 2
+        ? [[0,0],[1,0],[0,1],[1,1]]
+        : [[0,0]];
+      for (const [fdx, fdy] of footprint) {
+        const cx = fish.x + fdx, cy = fish.y + fdy;
+        if (gs.pickups[cy]?.[cx]) {
+          gs.pickups[cy][cx] = false;
+          // No enemy spawn, no score — that's the mechanic
+        }
+      }
+
+      break;
+    }
+    // If no valid direction found, fish stays put this turn — that's fine
+  }
+}
+
 // ── Move shark one step ───────────────────────────────────────────────────
 
 export function moveShark(dx: number, dy: number): void {
@@ -388,6 +467,25 @@ export function moveShark(dx: number, dy: number): void {
     startBounceAnim(nx, ny);
     saveGame();
     return;
+  }
+
+  // Neutral fish: impassable (same rule as coral — move blocked)
+  if (gs.neutralFish.length > 0) {
+    const blocked = gs.neutralFish.some(f => {
+      if (f.size === 2) {
+        return nx >= f.x && nx <= f.x + 1 && ny >= f.y && ny <= f.y + 1;
+      }
+      return f.x === nx && f.y === ny;
+    });
+    if (blocked) {
+      // Update facing direction so the shark looks toward the fish
+      if (dx === 1) gs.sharkDir = "right";
+      else if (dx === -1) gs.sharkDir = "left";
+      else if (dy === 1) gs.sharkDir = "down";
+      else if (dy === -1) gs.sharkDir = "up";
+      startBounceAnim(nx, ny);
+      return;  // move cancelled — same as coral bump, no score, no enemy, no move counter increment
+    }
   }
 
   gs.sharkPrevX = gs.shark.x;
@@ -435,6 +533,11 @@ export function moveShark(dx: number, dy: number): void {
     if (diffX === 0 && diffY === 0) continue;
     if (Math.abs(diffX) >= Math.abs(diffY)) b.x += Math.sign(diffX);
     else b.y += Math.sign(diffY);
+  }
+
+  // Neutral fish movement (Depth 6 — Busy Pacific)
+  if (LEVEL_CONFIG[gs.currentDepth].neutralFish) {
+    moveNeutralFish();
   }
 
   // Coin pickup
@@ -751,6 +854,15 @@ export function loadGame(save: any): void {
     gs.toxicContamination = [];
   }
 
+  gs.neutralFish = [];
+  gs.kelpCells   = [];
+  gs.kelpSet     = new Set();
+  // Re-seed at depth if applicable — same pattern as ice patch re-seeding
+  if (gs.currentDepth === PACIFIC_DEPTH) {
+    seedNeutralFish();
+    seedKelp();
+  }
+
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
   draw();
 }
@@ -778,7 +890,7 @@ export function initAtDepth(targetDepth: number): void {
     updateHudDepth(d);
     wrapper.className = `game-depth-wrapper depth-${d}`;
     setupMechanic(LEVEL_CONFIG[d]);
-    if (d === 6) spawnLeviathan();
+    if (d === 7) spawnLeviathan();
     while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[d].enemyKeep) gs.enemies.push(spawnEnemy());
   }
 

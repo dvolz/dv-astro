@@ -17,6 +17,22 @@ export interface BigEnemy {
 export interface Leviathan { x: number; y: number; }
 export interface BabyShark { x: number; y: number; }
 export interface BloodCell { x: number; y: number; movesRemaining: number; }
+
+export interface NeutralFish {
+  type:      "mackerel" | "grouper" | "garibaldi";
+  x:         number;
+  y:         number;
+  size:      1 | 2;       // 1×1 or 2×2
+  moveAccum: number;      // counts player moves; fish moves when moveAccum >= speedDivisor
+  dir:       "right" | "left" | "up" | "down";  // current facing, for sprite flip
+}
+
+export interface KelpCell {
+  x:      number;
+  y:      number;
+  height: number;  // how many cells tall this kelp strand is (1 = root/bottom, maxHeight = tip/top)
+}
+
 export interface DyingEnemy {
   x: number; y: number;
   isBig: boolean;      // 2×2 block if true
@@ -82,6 +98,11 @@ export const gs = {
   toxicBarrels:            [] as Array<{ x: number; y: number }>,
   toxicBarrelMovesCounter: 0,
   toxicContamination:      [] as number[][], // 25×25 values 0–1; grows each move from cloud cells
+
+  // ── Depth 6 — Busy Pacific ───────────────────────────────────────────────
+  neutralFish:       [] as NeutralFish[],
+  kelpCells:         [] as KelpCell[],  // static for the run; seeded at depth start
+  kelpSet:           new Set<string>(), // "x,y" fast lookup — rebuilt when kelpCells changes
 
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,

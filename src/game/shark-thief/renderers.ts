@@ -2,8 +2,8 @@
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
 import { GRID, DYING_DURATION } from "./config";
-import { LEVEL_CONFIG } from "./level-config";
-import { gs } from "./state";
+import { LEVEL_CONFIG, PACIFIC_DEPTH } from "./level-config";
+import { gs, type NeutralFish } from "./state";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -516,6 +516,76 @@ export function drawSharkOnCtx(
   ctx.restore();
 }
 
+// ── Kelp terrain (Depth 6 — Busy Pacific) ────────────────────────────────
+
+function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
+  const now = Date.now();
+  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp;
+  const swayPeriod = cfg?.swayPeriod ?? 3000;
+  const maxH = cfg?.maxHeight ?? 10;
+
+  for (const kc of gs.kelpCells) {
+    const px = kc.x * CELL;
+    const py = kc.y * CELL;
+
+    // height=1 is root (bottom), height=maxH is tip (top)
+    // Sway amplitude increases toward the tip
+    const tipFraction = kc.height / maxH;  // 0 at root, 1 at tip
+    const swayAmp = tipFraction * CELL * 0.35;
+    const swayOffset = Math.sin((now / swayPeriod) * Math.PI * 2 + kc.x * 0.8) * swayAmp;
+
+    // Color: darker at root (bottom), brighter at tip
+    const darkGreen   = "#1a5a1a";
+    const midGreen    = "#2e8a2e";
+    const brightGreen = "#3daa3d";
+    const color = tipFraction < 0.33 ? darkGreen : tipFraction < 0.66 ? midGreen : brightGreen;
+
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    ctx.fillStyle = color;
+    // Slightly narrow rectangle with horizontal sway offset
+    const kw = Math.max(2, CELL * 0.35);
+    const kx = px + (CELL - kw) / 2 + swayOffset;
+    ctx.fillRect(Math.round(kx), py, Math.round(kw), CELL);
+
+    // Highlight edge for depth
+    ctx.fillStyle = "rgba(100, 220, 100, 0.25)";
+    ctx.fillRect(Math.round(kx), py, Math.max(1, Math.round(kw * 0.2)), CELL);
+
+    ctx.restore();
+  }
+}
+
+// ── Neutral fish placeholder (Depth 6 — Busy Pacific) ────────────────────
+
+function drawNeutralFishPlaceholder(
+  ctx: CanvasRenderingContext2D,
+  fish: NeutralFish,
+  CELL: number,
+): void {
+  const px = fish.x * CELL;
+  const py = fish.y * CELL;
+  const size = fish.size * CELL;
+
+  // Placeholder colors — will be replaced by actual sprites
+  const colors: Record<NeutralFish["type"], string> = {
+    mackerel:  "#8ab0d8",  // silver-blue
+    grouper:   "#a07848",  // earth-toned
+    garibaldi: "#ff7020",  // vivid orange
+  };
+
+  ctx.save();
+  ctx.fillStyle = colors[fish.type];
+  ctx.fillRect(px + 2, py + 2, size - 4, size - 4);
+  // Simple direction indicator — a dot on the "head" side
+  ctx.fillStyle = "#000000";
+  const dotSize = Math.max(2, CELL * 0.15);
+  const dotX = fish.dir === "right" ? px + size - dotSize - 2 : px + 2;
+  const dotY = py + size / 2 - dotSize / 2;
+  ctx.fillRect(dotX, dotY, dotSize, dotSize);
+  ctx.restore();
+}
+
 // ── Main game render function ─────────────────────────────────────────────
 
 export function draw(): void {
@@ -537,6 +607,15 @@ export function draw(): void {
   } else {
     ctx.fillStyle = LEVEL_CONFIG[gs.currentDepth].canvasBase;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Depth 6 — sunlight gradient (lighter top, darker bottom)
+    if (gs.currentDepth === PACIFIC_DEPTH) {
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0,   "rgba(120, 220, 255, 0.18)");
+      grad.addColorStop(0.5, "rgba(60,  160, 220, 0.08)");
+      grad.addColorStop(1,   "rgba(0,   40,  80,  0.22)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     const now = Date.now();
     const hasContam = gs.toxicContamination.length > 0;
     for (let r = 0; r < GRID; r++)
@@ -690,6 +769,13 @@ export function draw(): void {
     ctx.fillStyle = "#2d1a4a"; ctx.fillRect(bx, by, bw, bw);
   }
 
+  // Neutral fish (Depth 6 — Busy Pacific)
+  if (gs.currentDepth === PACIFIC_DEPTH && gs.neutralFish.length > 0) {
+    for (const fish of gs.neutralFish) {
+      drawNeutralFishPlaceholder(ctx, fish, CELL);
+    }
+  }
+
   // Leviathan (3×3, Depth 4)
   if (gs.leviathan) {
     const lx = gs.leviathan.x * CELL, ly = gs.leviathan.y * CELL, lw = CELL * 3;
@@ -706,6 +792,11 @@ export function draw(): void {
 
   // Player shark
   drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
+
+  // Kelp drawn AFTER player so it occludes the shark when standing in kelp cell
+  if (gs.currentDepth === PACIFIC_DEPTH && gs.kelpCells.length > 0) {
+    drawKelp(ctx, CELL);
+  }
 
   // Toxic clouds (Toxic depth) — drawn last so they naturally cover everything underneath
   if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0) {

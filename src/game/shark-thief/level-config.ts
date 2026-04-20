@@ -57,6 +57,27 @@ export interface ToxicBarrelConfig {
   cloudSize:       number;  // full width/height of each cloud (corners are always removed)
 }
 
+export type NeutralFishType = "mackerel" | "grouper" | "garibaldi";
+
+export interface NeutralFishSpecConfig {
+  count:          number;  // how many of this species spawn at depth start
+  speedDivisor:   number;  // fish moves once per N player moves (1 = every move, 2 = every 2 moves, etc.)
+  size:           1 | 2;   // 1 = 1×1 tile, 2 = 2×2 tiles (Grouper only)
+}
+
+export interface NeutralFishConfig {
+  mackerel:   NeutralFishSpecConfig;
+  grouper:    NeutralFishSpecConfig;
+  garibaldi:  NeutralFishSpecConfig;
+}
+
+export interface KelpConfig {
+  cellCount:  number;  // total individual kelp cells to seed (not strands — raw cells)
+  minHeight:  number;  // minimum cells per kelp column
+  maxHeight:  number;  // maximum cells per kelp column
+  swayPeriod: number;  // ms for one full sway cycle (purely visual, no gameplay effect)
+}
+
 // ── Per-depth config ──────────────────────────────────────────────────────
 
 export interface DepthConfig {
@@ -68,6 +89,8 @@ export interface DepthConfig {
   frozenFish?:  FrozenFishConfig;
   icePatches?:  IcePatchConfig;
   toxicBarrel?: ToxicBarrelConfig;
+  neutralFish?: NeutralFishConfig;
+  kelp?:        KelpConfig;
 
   tilePalette:  TilePalette; // background tile palette
   canvasBase:   string;      // canvas fill colour drawn behind the tile grid
@@ -178,9 +201,31 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   6: {
+    // The Busy Pacific
+    neutralFish: {
+      mackerel:  { count: 3, speedDivisor: 2, size: 1 },
+      grouper:   { count: 1, speedDivisor: 3, size: 2 },
+      garibaldi: { count: 3, speedDivisor: 1, size: 1 },
+    },
+    kelp: {
+      cellCount:  60,   // ~10% of grid; tune up/down to taste
+      minHeight:  3,
+      maxHeight:  10,
+      swayPeriod: 3000, // 3s cycle
+    },
+    tilePalette:  "pacific",
+    canvasBase:   "#0c4a5a",
+    enemyKeep:    14,
+    coinRate:     0.00025,
+    coinInit:     0.05,
+    descendScore: 100,
+    minEnemyDist: 5,
+  },
+
+  7: {
     tilePalette:  "ocean",
     canvasBase:   "#0f5262",
-    enemyKeep:    5,  // enemies carried over from depth 5
+    enemyKeep:    5,
     coinRate:     0.00025,
     coinInit:     0.05,
     descendScore: 100,
@@ -196,3 +241,4 @@ export const TOXIC_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!
 export const CORAL_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
 export const ICE_DEPTH     = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
 export const NURSERY_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
+export const PACIFIC_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].neutralFish))!;

@@ -38,8 +38,15 @@ export const TOXIC_TILE_COLORS = [
   "#218595", "#19737f", "#21798b", "#1b7b8b", "#1d7789",
 ];
 
+// Pacific kelp forest palette — sunlit surface water, brighter and slightly bluer than ocean (Depth 6)
+// Hue ~195°, higher lightness range to suggest light filtering down through kelp.
+export const PACIFIC_TILE_COLORS = [
+  "#2a8faa", "#1e8aa8", "#2c94b0", "#2488a4", "#309aac",
+  "#1a86a2", "#2890a8", "#228ca6", "#2e96ae", "#2084a0",
+];
+
 // Available background palettes — add new entries here to create more options.
-export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic";
+export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic" | "pacific";
 
 export const TILE_PALETTES: Record<TilePalette, string[]> = {
   ocean:    TILE_COLORS,
@@ -47,6 +54,7 @@ export const TILE_PALETTES: Record<TilePalette, string[]> = {
   arctic:   ARCTIC_TILE_COLORS,
   nursery:  NURSERY_TILE_COLORS,
   toxic:    TOXIC_TILE_COLORS,
+  pacific:  PACIFIC_TILE_COLORS,
 };
 
 export function randomColorFromPalette(palette: TilePalette): string {
@@ -61,5 +69,6 @@ export const DEPTH_META: Record<number, { color: string; glow: string; name: str
   3: { color: "#6abf3a", glow: "rgba(106,191,58,0.5)",   name: "TOXIC" },
   4: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
   5: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
-  6: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
+  6: { color: "#48d4b8", glow: "rgba(72,212,184,0.5)",   name: "BUSY PACIFIC" },
+  7: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
 };
