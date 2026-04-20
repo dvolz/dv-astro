@@ -15,7 +15,7 @@ import {
 import { draw, initRenderer } from "./renderers";
 import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
-import { randomColorFromPalette, buildToxicColorGrid } from "./config";
+import { randomColorFromPalette } from "./config";
 
 // ── Dying-enemy dissolve loop ─────────────────────────────────────────────
 
@@ -95,6 +95,7 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.toxicClouds = [];
     gs.toxicBarrels = [];
     gs.toxicBarrelMovesCounter = 0;
+    gs.toxicContamination = [];
     gs.cloudPulse.fill(0);
     gs.cloudPulseSpeed.fill(0);
     if (gs.cloudPulseRafId) { cancelAnimationFrame(gs.cloudPulseRafId); gs.cloudPulseRafId = null; }
@@ -102,13 +103,9 @@ function teardownMechanic(cfg: DepthConfig): void {
 }
 
 function setupMechanic(cfg: DepthConfig): void {
-  if (cfg.toxicBarrel) {
-    gs.colors = buildToxicColorGrid(GRID, GRID);
-  } else {
-    gs.colors = Array.from({ length: GRID }, () =>
-      Array.from({ length: GRID }, () => randomColorFromPalette(cfg.tilePalette)),
-    );
-  }
+  gs.colors = Array.from({ length: GRID }, () =>
+    Array.from({ length: GRID }, () => randomColorFromPalette(cfg.tilePalette)),
+  );
   if (cfg.coral) {
     spawnCoral();
     let placed = 0, attempts = 0;
@@ -137,6 +134,7 @@ function setupMechanic(cfg: DepthConfig): void {
     gs.toxicClouds = [];
     gs.toxicBarrels = [];
     gs.toxicBarrelMovesCounter = 0;
+    gs.toxicContamination = Array.from({ length: GRID }, () => Array(GRID).fill(0));
     for (let i = 0; i < (cfg.toxicBarrel.initCount ?? 0); i++) spawnToxicBarrelIfNeeded();
     gs.cloudPulse.fill(0);
     gs.cloudPulseSpeed.fill(0);
@@ -147,6 +145,46 @@ function setupMechanic(cfg: DepthConfig): void {
     gs.ammoniteMovesCounter = 0;
     for (let i = 0; i < (cfg.ammonite.initCount ?? 0); i++) spawnAmmoniteIfNeeded();
   }
+}
+
+// ── Toxic contamination spread ────────────────────────────────────────────
+
+function pseudoRandFloat(r: number, c: number, seed: number): number {
+  return (((r * 1619 + c * 31337 + seed * 2053) ^ (r * 7 + c * 13)) & 0xff) / 255;
+}
+
+function spreadToxicContamination(): void {
+  const contam = gs.toxicContamination;
+  if (!contam.length) return;
+
+  const cloudSet = new Set(gs.toxicClouds.map(cl => `${cl.x},${cl.y}`));
+
+  // Decay non-cloud cells so contamination fades if clouds move away
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      if (!cloudSet.has(`${c},${r}`)) contam[r][c] *= 0.97;
+
+  // Anchor cloud cells at full contamination
+  for (const { x, y } of gs.toxicClouds) contam[y][x] = 1.0;
+
+  // One diffusion pass — write into a buffer to avoid in-place race
+  const buf: number[][] = Array.from({ length: GRID }, (_, r) => contam[r].slice());
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
+      const v = contam[r][c];
+      if (v < 0.01) continue;
+      const spread = v * 0.09;
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]) {
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nr >= GRID || nc < 0 || nc >= GRID) continue;
+        const jitter = 0.6 + 0.8 * pseudoRandFloat(nr, nc, gs.moveCount);
+        buf[nr][nc] = Math.min(1.0, buf[nr][nc] + spread * jitter);
+      }
+    }
+  }
+
+  for (let r = 0; r < GRID; r++) contam[r] = buf[r];
+  for (const { x, y } of gs.toxicClouds) contam[y][x] = 1.0;
 }
 
 // ── Depth transition ──────────────────────────────────────────────────────
@@ -252,6 +290,7 @@ export function init(): void {
   gs.toxicClouds              = [];
   gs.toxicBarrels             = [];
   gs.toxicBarrelMovesCounter  = 0;
+  gs.toxicContamination       = [];
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -559,6 +598,8 @@ export function moveShark(dx: number, dy: number): void {
     if (gs.shark.x >= be.x && gs.shark.x <= be.x + 1 && gs.shark.y >= be.y && gs.shark.y <= be.y + 1) { endGame(); return; }
   if (leviathanCollision(gs.shark, gs.leviathan)) { endGame(); return; }
 
+  if (depthCfg.toxicBarrel) spreadToxicContamination();
+
   saveGame();
   startSharkAnim();
 }
@@ -683,7 +724,12 @@ export function loadGame(save: any): void {
   gs.cloudPulse.fill(0);
   gs.cloudPulseSpeed.fill(0);
   if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
-  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
+  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) {
+    gs.toxicContamination = Array.from({ length: GRID }, () => Array(GRID).fill(0));
+    gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
+  } else {
+    gs.toxicContamination = [];
+  }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
   draw();

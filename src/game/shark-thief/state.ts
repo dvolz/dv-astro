@@ -81,6 +81,7 @@ export const gs = {
   toxicClouds:             [] as Array<{ x: number; y: number }>,
   toxicBarrels:            [] as Array<{ x: number; y: number }>,
   toxicBarrelMovesCounter: 0,
+  toxicContamination:      [] as number[][], // 25×25 values 0–1; grows each move from cloud cells
 
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,

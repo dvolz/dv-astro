@@ -5,6 +5,18 @@ import { GRID, DYING_DURATION } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
 import { gs } from "./state";
 
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function blendHex(base: string, tR: number, tG: number, tB: number, t: number): string {
+  const r = parseInt(base.slice(1, 3), 16);
+  const g = parseInt(base.slice(3, 5), 16);
+  const b = parseInt(base.slice(5, 7), 16);
+  const rr = Math.round(r + (tR - r) * t) & 0xff;
+  const gg = Math.round(g + (tG - g) * t) & 0xff;
+  const bb = Math.round(b + (tB - b) * t) & 0xff;
+  return `#${rr.toString(16).padStart(2, "0")}${gg.toString(16).padStart(2, "0")}${bb.toString(16).padStart(2, "0")}`;
+}
+
 // ── Canvas management ─────────────────────────────────────────────────────
 
 let _canvas: HTMLCanvasElement;
@@ -525,9 +537,20 @@ export function draw(): void {
   } else {
     ctx.fillStyle = LEVEL_CONFIG[gs.currentDepth].canvasBase;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const now = Date.now();
+    const hasContam = gs.toxicContamination.length > 0;
     for (let r = 0; r < GRID; r++)
       for (let c = 0; c < GRID; c++) {
-        ctx.fillStyle = gs.colors[r][c];
+        let color = gs.colors[r][c];
+        if (hasContam) {
+          const cv = gs.toxicContamination[r][c];
+          if (cv > 0.01) {
+            const shimmer = 0.04 * Math.sin(now / 800 + r * 0.7 + c * 1.1);
+            const t = Math.max(0, Math.min(1, cv * 0.55 + shimmer));
+            color = blendHex(color, 80, 140, 20, t);
+          }
+        }
+        ctx.fillStyle = color;
         ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
       }
     if (gs.shimmerMode) {
