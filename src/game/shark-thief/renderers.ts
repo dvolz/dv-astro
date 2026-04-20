@@ -4,6 +4,7 @@
 import { GRID, DYING_DURATION } from "./config";
 import { LEVEL_CONFIG, PACIFIC_DEPTH } from "./level-config";
 import { gs, type NeutralFish } from "./state";
+import { drawNeutralFish } from "./sprites";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -556,35 +557,7 @@ function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
   }
 }
 
-// ── Neutral fish placeholder (Depth 6 — Busy Pacific) ────────────────────
-
-function drawNeutralFishPlaceholder(
-  ctx: CanvasRenderingContext2D,
-  fish: NeutralFish,
-  CELL: number,
-): void {
-  const px = fish.x * CELL;
-  const py = fish.y * CELL;
-  const size = fish.size * CELL;
-
-  // Placeholder colors — will be replaced by actual sprites
-  const colors: Record<NeutralFish["type"], string> = {
-    mackerel:  "#8ab0d8",  // silver-blue
-    grouper:   "#a07848",  // earth-toned
-    garibaldi: "#ff7020",  // vivid orange
-  };
-
-  ctx.save();
-  ctx.fillStyle = colors[fish.type];
-  ctx.fillRect(px + 2, py + 2, size - 4, size - 4);
-  // Simple direction indicator — a dot on the "head" side
-  ctx.fillStyle = "#000000";
-  const dotSize = Math.max(2, CELL * 0.15);
-  const dotX = fish.dir === "right" ? px + size - dotSize - 2 : px + 2;
-  const dotY = py + size / 2 - dotSize / 2;
-  ctx.fillRect(dotX, dotY, dotSize, dotSize);
-  ctx.restore();
-}
+// Neutral fish sprites are in sprites.ts — drawNeutralFish() imported above.
 
 // ── Main game render function ─────────────────────────────────────────────
 
@@ -772,7 +745,7 @@ export function draw(): void {
   // Neutral fish (Depth 6 — Busy Pacific)
   if (gs.currentDepth === PACIFIC_DEPTH && gs.neutralFish.length > 0) {
     for (const fish of gs.neutralFish) {
-      drawNeutralFishPlaceholder(ctx, fish, CELL);
+      drawNeutralFish(ctx, fish, CELL);
     }
   }
 
