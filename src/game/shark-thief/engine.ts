@@ -185,6 +185,26 @@ function spreadToxicContamination(): void {
 
   for (let r = 0; r < GRID; r++) contam[r] = buf[r];
   for (const { x, y } of gs.toxicClouds) contam[y][x] = 1.0;
+
+  // Cap spread to 3–5 tiles from nearest cloud cell; per-cell variation for organic edges
+  if (gs.toxicClouds.length > 0) {
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (contam[r][c] < 0.01 || cloudSet.has(`${c},${r}`)) continue;
+        let minDist = Infinity;
+        for (const { x, y } of gs.toxicClouds) {
+          const d = Math.sqrt((c - x) ** 2 + (r - y) ** 2);
+          if (d < minDist) minDist = d;
+        }
+        const maxRadius = 3 + pseudoRandFloat(r, c, 77) * 2; // 3.0–5.0, fixed per cell
+        if (minDist >= maxRadius) {
+          contam[r][c] = 0;
+        } else if (minDist > maxRadius - 1.2) {
+          contam[r][c] *= (maxRadius - minDist) / 1.2; // soft fade at boundary
+        }
+      }
+    }
+  }
 }
 
 // ── Depth transition ──────────────────────────────────────────────────────
