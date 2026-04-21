@@ -239,33 +239,26 @@ export function seedKelp(): void {
   if (!cfg) return;
   gs.kelpCells = [];
 
-  // Place kelp columns — each column is anchored at bottom of grid,
-  // extends upward by a random height between minHeight and maxHeight.
-  // cellCount controls the total raw cells placed; we place columns until
-  // we've consumed approximately that budget.
-  let placed = 0;
-  let attempts = 0;
-  while (placed < cfg.cellCount && attempts < 2000) {
-    attempts++;
-    const col = Math.floor(Math.random() * GRID);
+  // Divide the grid width into strandCount equal zones. Each strand gets one
+  // zone and picks a column near the zone's centre with a small random jitter
+  // (±30% of zone width) so strands feel natural but don't clump or leave gaps.
+  const zoneWidth = GRID / cfg.strandCount;
+  const baseRow = GRID - 1;
+
+  for (let i = 0; i < cfg.strandCount; i++) {
+    const idealCol = i * zoneWidth + zoneWidth / 2;
+    const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
+    const col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
     const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
-    // Anchor from bottom row upward
-    const baseRow = GRID - 1;
-    let colPlaced = 0;
+
     for (let h = 0; h < height && baseRow - h >= 0; h++) {
       const ky = baseRow - h;
-      const kx = col;
-      // Don't double-place on same cell
-      if (!gs.kelpCells.some(k => k.x === kx && k.y === ky)) {
-        // height field: h+1 where h=0 is root (bottom), h=height-1 is tip (top)
-        gs.kelpCells.push({ x: kx, y: ky, height: h + 1 });
-        colPlaced++;
+      if (!gs.kelpCells.some(k => k.x === col && k.y === ky)) {
+        gs.kelpCells.push({ x: col, y: ky, height: h + 1 });
       }
     }
-    placed += colPlaced;
   }
 
-  // Rebuild fast-lookup set
   gs.kelpSet = new Set(gs.kelpCells.map(k => `${k.x},${k.y}`));
 }
 

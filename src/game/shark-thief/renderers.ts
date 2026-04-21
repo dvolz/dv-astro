@@ -517,6 +517,67 @@ export function drawSharkOnCtx(
   ctx.restore();
 }
 
+// ── Pacific depth lighting (Depth 6) ─────────────────────────────────────
+// Drawn after the tile grid so it tints tiles. Drawn before entities so
+// enemies/fish/player remain fully visible on top.
+
+function drawPacificLighting(ctx: CanvasRenderingContext2D, w: number, h: number, now: number): void {
+  // ── Depth gradient: light cyan at surface, deep navy at bottom ──────────
+  const depthGrad = ctx.createLinearGradient(0, 0, 0, h);
+  depthGrad.addColorStop(0,    "rgba(160, 230, 255, 0.30)"); // bright surface wash
+  depthGrad.addColorStop(0.22, "rgba(100, 195, 245, 0.14)");
+  depthGrad.addColorStop(0.50, "rgba(30,  110, 185, 0.03)"); // near-neutral mid
+  depthGrad.addColorStop(1,    "rgba(0,    18,  52, 0.34)"); // deep dark blue
+  ctx.fillStyle = depthGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // ── Sun rays: animated wedges from a point above the canvas ─────────────
+  // Origin drifts very slowly so rays feel alive without being distracting.
+  const drift = Math.sin(now / 11000) * w * 0.025;
+  const ox = w * 0.44 + drift;
+  const oy = -h * 0.07;
+  const rayLen = h * 1.8; // long enough to always reach the bottom
+
+  // [center angle from vertical (radians), peak opacity]
+  const rays: Array<[number, number]> = [
+    [-0.42, 0.038],
+    [-0.24, 0.058],
+    [-0.09, 0.072],
+    [ 0.07, 0.066],
+    [ 0.22, 0.052],
+    [ 0.38, 0.036],
+    [ 0.54, 0.028],
+  ];
+  const halfAngle = 0.030;
+
+  ctx.save();
+  for (const [angle, peak] of rays) {
+    const farX1 = ox + Math.sin(angle - halfAngle) * rayLen;
+    const farY1 = oy + Math.cos(angle - halfAngle) * rayLen;
+    const farX2 = ox + Math.sin(angle + halfAngle) * rayLen;
+    const farY2 = oy + Math.cos(angle + halfAngle) * rayLen;
+
+    // Gradient runs from origin toward the far midpoint of the ray.
+    // Warm pale yellow near the surface, cooler blue-white lower.
+    const midX = ox + Math.sin(angle) * rayLen * 0.55;
+    const midY = oy + Math.cos(angle) * rayLen * 0.55;
+    const g = ctx.createLinearGradient(ox, oy, midX, midY);
+    g.addColorStop(0,    `rgba(255, 244, 195, ${peak})`);       // pale gold at surface
+    g.addColorStop(0.30, `rgba(230, 245, 255, ${peak * 0.65})`); // cool blue-white
+    g.addColorStop(0.70, `rgba(200, 230, 255, ${peak * 0.25})`); // faint
+    g.addColorStop(1,    "rgba(180, 220, 255, 0)");              // gone
+
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    ctx.lineTo(farX1, farY1);
+    ctx.lineTo(farX2, farY2);
+    ctx.closePath();
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 // ── Kelp terrain (Depth 6 — Busy Pacific) ────────────────────────────────
 
 function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
@@ -580,15 +641,6 @@ export function draw(): void {
   } else {
     ctx.fillStyle = LEVEL_CONFIG[gs.currentDepth].canvasBase;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Depth 6 — sunlight gradient (lighter top, darker bottom)
-    if (gs.currentDepth === PACIFIC_DEPTH) {
-      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grad.addColorStop(0,   "rgba(120, 220, 255, 0.18)");
-      grad.addColorStop(0.5, "rgba(60,  160, 220, 0.08)");
-      grad.addColorStop(1,   "rgba(0,   40,  80,  0.22)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
     const now = Date.now();
     const hasContam = gs.toxicContamination.length > 0;
     for (let r = 0; r < GRID; r++)
@@ -605,6 +657,10 @@ export function draw(): void {
         ctx.fillStyle = color;
         ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
       }
+    // Depth 6 — sunlight filtering effect drawn over tiles, under entities
+    if (gs.currentDepth === PACIFIC_DEPTH) {
+      drawPacificLighting(ctx, canvas.width, canvas.height, now);
+    }
     if (gs.shimmerMode) {
       ctx.fillStyle = "#d8f4fc";
       for (let r = 0; r < GRID; r++)

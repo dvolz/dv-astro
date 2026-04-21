@@ -72,10 +72,10 @@ export interface NeutralFishConfig {
 }
 
 export interface KelpConfig {
-  cellCount:  number;  // total individual kelp cells to seed (not strands — raw cells)
-  minHeight:  number;  // minimum cells per kelp column
-  maxHeight:  number;  // maximum cells per kelp column
-  swayPeriod: number;  // ms for one full sway cycle (purely visual, no gameplay effect)
+  strandCount: number;  // number of kelp columns to place, spread evenly across the board
+  minHeight:   number;  // minimum cells per kelp column
+  maxHeight:   number;  // maximum cells per kelp column
+  swayPeriod:  number;  // ms for one full sway cycle (purely visual, no gameplay effect)
 }
 
 // ── Per-depth config ──────────────────────────────────────────────────────
@@ -203,15 +203,15 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   6: {
     // The Busy Pacific
     neutralFish: {
-      mackerel:  { count: 3, speedDivisor: 2, size: 1 },
-      grouper:   { count: 1, speedDivisor: 3, size: 2 },
-      garibaldi: { count: 3, speedDivisor: 1, size: 1 },
+      mackerel:  { count: 4, speedDivisor: 2, size: 1 },
+      grouper:   { count: 2, speedDivisor: 3, size: 2 },
+      garibaldi: { count: 4, speedDivisor: 1, size: 1 },
     },
     kelp: {
-      cellCount:  60,   // ~10% of grid; tune up/down to taste
-      minHeight:  3,
-      maxHeight:  10,
-      swayPeriod: 3000, // 3s cycle
+      strandCount: 10,
+      minHeight:   19,
+      maxHeight:   22,
+      swayPeriod:  3000, // 3s cycle
     },
     tilePalette:  "pacific",
     canvasBase:   "#0c4a5a",

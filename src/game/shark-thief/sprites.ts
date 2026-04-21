@@ -175,13 +175,15 @@ export function drawNeutralFish(
 ): void {
   const { name, sprite } = SPRITE_MAP[fish.type];
   const destW = fish.size * CELL;
-  const destH = fish.size * CELL;
+  // Mackerel is sleek — render at 55% of cell height so it doesn't fill the tile
+  const destH = fish.type === "mackerel" ? fish.size * CELL * 0.55 : fish.size * CELL;
   const canvas = getCanvas(name, sprite, destW, destH);
 
   const px = fish.x * CELL;
   const py = fish.y * CELL;
   const cx = px + destW / 2;
-  const cy = py + destH / 2;
+  // Center vertically within the cell using full CELL height, not destH
+  const cy = py + fish.size * CELL / 2;
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;

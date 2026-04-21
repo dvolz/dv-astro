@@ -417,6 +417,12 @@ function moveNeutralFish(): void {
         gs.coral[ny]?.[nx+1] || gs.coral[ny+1]?.[nx] || gs.coral[ny+1]?.[nx+1]
       )) continue;
 
+      // Fish cannot move onto the shark
+      const sharkBlocked = fish.size === 2
+        ? (gs.shark.x >= nx && gs.shark.x <= nx + 1 && gs.shark.y >= ny && gs.shark.y <= ny + 1)
+        : (nx === gs.shark.x && ny === gs.shark.y);
+      if (sharkBlocked) continue;
+
       // Fish cannot pass through other neutral fish
       const fishBlocked = gs.neutralFish.some(other => {
         if (other === fish) return false;
