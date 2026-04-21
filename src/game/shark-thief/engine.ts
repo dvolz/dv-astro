@@ -413,33 +413,19 @@ function moveNeutralFish(): void {
       const ny = fish.y + dy;
 
       // Bounds check — fish never leave the board
-      if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID) continue;
-      if (fish.size === 2 && (nx + 1 >= GRID || ny + 1 >= GRID)) continue;
+      if (nx < 0 || ny < 0 || nx + fish.sizeX > GRID || ny + fish.sizeY > GRID) continue;
 
       // Coral barriers block fish
-      if (gs.coral[ny]?.[nx]) continue;
-      if (fish.size === 2 && (
-        gs.coral[ny]?.[nx+1] || gs.coral[ny+1]?.[nx] || gs.coral[ny+1]?.[nx+1]
-      )) continue;
+      let coralBlocked = false;
+      for (let fdy = 0; fdy < fish.sizeY && !coralBlocked; fdy++)
+        for (let fdx = 0; fdx < fish.sizeX && !coralBlocked; fdx++)
+          if (gs.coral[ny + fdy]?.[nx + fdx]) coralBlocked = true;
+      if (coralBlocked) continue;
 
       // Fish cannot move onto the shark
-      const sharkBlocked = fish.size === 2
-        ? (gs.shark.x >= nx && gs.shark.x <= nx + 1 && gs.shark.y >= ny && gs.shark.y <= ny + 1)
-        : (nx === gs.shark.x && ny === gs.shark.y);
+      const sharkBlocked = gs.shark.x >= nx && gs.shark.x < nx + fish.sizeX &&
+                           gs.shark.y >= ny && gs.shark.y < ny + fish.sizeY;
       if (sharkBlocked) continue;
-
-      // Fish cannot pass through other neutral fish
-      const fishBlocked = gs.neutralFish.some(other => {
-        if (other === fish) return false;
-        if (other.size === 2) {
-          return nx >= other.x && nx <= other.x + 1 && ny >= other.y && ny <= other.y + 1;
-        }
-        if (fish.size === 2) {
-          return other.x >= nx && other.x <= nx + 1 && other.y >= ny && other.y <= ny + 1;
-        }
-        return other.x === nx && other.y === ny;
-      });
-      if (fishBlocked) continue;
 
       // Fish can move — apply
       fish.x = nx;
@@ -450,14 +436,10 @@ function moveNeutralFish(): void {
       if (dy === -1) fish.dir = "up";
 
       // Fish eats coin — no enemy spawn, no score
-      const footprint: Array<[number, number]> = fish.size === 2
-        ? [[0,0],[1,0],[0,1],[1,1]]
-        : [[0,0]];
-      for (const [fdx, fdy] of footprint) {
-        const cx = fish.x + fdx, cy = fish.y + fdy;
-        if (gs.pickups[cy]?.[cx]) {
-          gs.pickups[cy][cx] = false;
-          // No enemy spawn, no score — that's the mechanic
+      for (let fdy = 0; fdy < fish.sizeY; fdy++) {
+        for (let fdx = 0; fdx < fish.sizeX; fdx++) {
+          const cx = fish.x + fdx, cy = fish.y + fdy;
+          if (gs.pickups[cy]?.[cx]) gs.pickups[cy][cx] = false;
         }
       }
 
@@ -498,12 +480,9 @@ export function moveShark(dx: number, dy: number): void {
 
   // Neutral fish: impassable (same rule as coral — move blocked)
   if (gs.neutralFish.length > 0) {
-    const blocked = gs.neutralFish.some(f => {
-      if (f.size === 2) {
-        return nx >= f.x && nx <= f.x + 1 && ny >= f.y && ny <= f.y + 1;
-      }
-      return f.x === nx && f.y === ny;
-    });
+    const blocked = gs.neutralFish.some(f =>
+      nx >= f.x && nx < f.x + f.sizeX && ny >= f.y && ny < f.y + f.sizeY
+    );
     if (blocked) {
       // Update facing direction so the shark looks toward the fish
       if (dx === 1) gs.sharkDir = "right";

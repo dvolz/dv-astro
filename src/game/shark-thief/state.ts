@@ -22,7 +22,8 @@ export interface NeutralFish {
   type:      "mackerel" | "grouper" | "garibaldi";
   x:         number;
   y:         number;
-  size:      1 | 2;       // 1×1 or 2×2
+  sizeX:     number;  // grid cells wide
+  sizeY:     number;  // grid cells tall
   moveAccum: number;      // counts player moves; fish moves when moveAccum >= speedDivisor
   dir:       "right" | "left" | "up" | "down";  // current facing, for sprite flip
 }

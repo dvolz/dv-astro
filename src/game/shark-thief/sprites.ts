@@ -1,6 +1,6 @@
 // Pixel art sprites — Depth 6 neutral fish (Busy Pacific)
 // Sega Genesis aesthetic: bold outlines, chunky highlights, ≤16 colors per sprite.
-// All sprites 16×16. Rendered right-facing; left/up/down via canvas transform.
+// Mackerel: 32×16. Garibaldi/Grouper: 16×16. Rendered right-facing; left/up/down via canvas transform.
 // Offscreen canvases are built once and cached by (name + destW).
 
 import type { NeutralFish } from "./state";
@@ -17,14 +17,19 @@ export interface SpriteData {
 // We stay within 9 per sprite to match that chunky, saturated look.
 
 const P_MACKEREL: (string | null)[] = [
-  null,      // 0 transparent
-  '#0d1520', // 1 outline
-  '#1c3850', // 2 dark dorsal
-  '#2c5878', // 3 dorsal
-  '#4888a8', // 4 mid blue-silver
-  '#78aac8', // 5 silver-blue (base color)
-  '#b0d4e8', // 6 light flank
-  '#dceef8', // 7 highlight
+  null,       // 0  transparent
+  '#0a1220',  // 1  outline
+  '#182e48',  // 2  dark tail
+  '#0d2840',  // 3  dark wavy stripe marking
+  '#2a5878',  // 4  dorsal/back
+  '#4888a8',  // 5  upper flank blue
+  '#78aac8',  // 6  silver-blue base
+  '#a8c8d8',  // 7  light silver flank
+  '#d0e8f5',  // 8  belly
+  '#f0f8ff',  // 9  belly highlight
+  '#f8fcff',  // 10 eye white
+  '#040c18',  // 11 eye pupil
+  '#c0d8ee',  // 12 eye sclera rim
 ];
 
 const P_GARIBALDI: (string | null)[] = [
@@ -52,26 +57,43 @@ const P_GROUPER: (string | null)[] = [
   '#501008', // 9 dark spot / mottling
 ];
 
-// ── MACKEREL 16×16 — right-facing, top-down ──────────────────────────────────
-// Sleek torpedo silhouette. Forked tail left, pointed snout right.
-// Body spans rows 3–12 (widest 6px at centre). Sega chunky dorsal highlight.
+// ── MACKEREL 32×16 — right-facing, top-down ──────────────────────────────────
+// 2×1 torpedo silhouette. Forked tail at left, pointed snout at right.
+// Body rows 4–11 (50% of sprite height) keeps the fish slim in the cell.
+// Dark wavy stripe markings on back (rows 5, 10). Eye near head (cols 23–25, rows 6–8).
 const _M: number[][] = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // top prong tip
-  [1,2,2,3,4,4,5,5,5,4,4,3,2,1,0,0], // top prong + upper body edge
-  [0,1,3,5,5,6,5,5,6,6,5,5,4,2,1,0], // upper body
-  [0,1,3,5,6,7,6,5,6,6,5,5,4,3,2,1], // highlight + snout (col 15)
-  [0,1,3,5,6,7,6,5,6,6,5,5,4,3,2,1], // highlight
-  [0,1,3,5,6,7,6,5,6,6,5,5,4,3,2,1], // highlight
-  [0,1,3,5,5,6,5,5,6,6,5,5,4,2,1,0], // lower body
-  [1,2,2,3,4,4,5,5,5,4,4,3,2,1,0,0], // bottom prong + lower body edge
-  [1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // bottom prong
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // bottom prong tip
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 0
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 1
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 2
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 3: tail top prong tip
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 4: upper body edge + tail fork top
+  [1,2,2,1,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,3,2,1,0,0],
+  // Row 5: upper body — dark wavy mackerel stripe markings
+  [0,1,3,4,3,3,5,3,3,5,5,3,3,5,5,3,3,5,5,5,6,6,5,5,4,3,2,1,0,0,0,0],
+  // Row 6: upper silver body + eye left ring / sclera / white
+  [0,0,1,4,5,6,6,7,7,6,7,7,6,7,7,6,7,7,7,7,7,7,7,1,12,10,5,4,3,1,0,0],
+  // Row 7: belly transition + eye pupil / white
+  [0,0,1,4,6,7,7,7,7,7,7,7,7,7,7,7,7,7,8,8,8,8,8,1,11,10,6,4,3,1,0,0],
+  // Row 8: belly highlight + eye sclera bottom / white highlight
+  [0,0,1,4,6,7,7,7,7,7,7,7,7,7,7,7,7,7,8,9,9,9,8,1,12, 9,6,4,3,1,0,0],
+  // Row 9: lower silver body (mirrored upper)
+  [0,0,1,4,5,6,6,7,7,6,7,7,6,7,7,6,7,7,7,7,7,7,7,7,7,6,5,4,3,1,0,0],
+  // Row 10: lower body — dark wavy markings (symmetric with row 5)
+  [0,1,3,4,3,3,5,3,3,5,5,3,3,5,5,3,3,5,5,5,6,6,5,5,4,3,2,1,0,0,0,0],
+  // Row 11: lower body edge + tail fork bottom
+  [1,2,2,1,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,4,3,2,1,0,0],
+  // Row 12: tail bottom fork
+  [1,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 13: tail bottom prong tip
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 14
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // Row 15
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ];
 
 // ── GARIBALDI 16×16 — right-facing, top-down ─────────────────────────────────
@@ -119,7 +141,7 @@ const _GR: number[][] = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ];
 
-export const MACKEREL_SPRITE:  SpriteData = { width: 16, height: 16, palette: P_MACKEREL,  pixels: _M  };
+export const MACKEREL_SPRITE:  SpriteData = { width: 32, height: 16, palette: P_MACKEREL,  pixels: _M  };
 export const GARIBALDI_SPRITE: SpriteData = { width: 16, height: 16, palette: P_GARIBALDI, pixels: _G  };
 export const GROUPER_SPRITE:   SpriteData = { width: 16, height: 16, palette: P_GROUPER,   pixels: _GR };
 
@@ -174,16 +196,14 @@ export function drawNeutralFish(
   CELL:  number,
 ): void {
   const { name, sprite } = SPRITE_MAP[fish.type];
-  const destW = fish.size * CELL;
-  // Mackerel is sleek — render at 55% of cell height so it doesn't fill the tile
-  const destH = fish.type === "mackerel" ? fish.size * CELL * 0.55 : fish.size * CELL;
+  const destW = fish.sizeX * CELL;
+  const destH = fish.sizeY * CELL;
   const canvas = getCanvas(name, sprite, destW, destH);
 
   const px = fish.x * CELL;
   const py = fish.y * CELL;
   const cx = px + destW / 2;
-  // Center vertically within the cell using full CELL height, not destH
-  const cy = py + fish.size * CELL / 2;
+  const cy = py + destH / 2;
 
   ctx.save();
   ctx.imageSmoothingEnabled = false;

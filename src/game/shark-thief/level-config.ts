@@ -62,7 +62,8 @@ export type NeutralFishType = "mackerel" | "grouper" | "garibaldi";
 export interface NeutralFishSpecConfig {
   count:          number;  // how many of this species spawn at depth start
   speedDivisor:   number;  // fish moves once per N player moves (1 = every move, 2 = every 2 moves, etc.)
-  size:           1 | 2;   // 1 = 1×1 tile, 2 = 2×2 tiles (Grouper only)
+  sizeX:          number;  // grid cells wide
+  sizeY:          number;  // grid cells tall
 }
 
 export interface NeutralFishConfig {
@@ -217,9 +218,9 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   6: {
     // The Busy Pacific
     neutralFish: {
-      mackerel:  { count: 4, speedDivisor: 2, size: 1 },
-      grouper:   { count: 2, speedDivisor: 3, size: 2 },
-      garibaldi: { count: 4, speedDivisor: 1, size: 1 },
+      mackerel:  { count: 4, speedDivisor: 2, sizeX: 2, sizeY: 1 },
+      grouper:   { count: 2, speedDivisor: 3, sizeX: 2, sizeY: 2 },
+      garibaldi: { count: 4, speedDivisor: 1, sizeX: 1, sizeY: 1 },
     },
     kelp: {
       strandCount:    10,

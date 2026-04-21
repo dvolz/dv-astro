@@ -202,30 +202,27 @@ export function seedNeutralFish(): void {
     for (let i = 0; i < spec.count; i++) {
       let fx: number, fy: number, attempts = 0;
       do {
-        fx = spec.size === 2
-          ? Math.floor(Math.random() * (GRID - 1))
-          : Math.floor(Math.random() * GRID);
-        fy = spec.size === 2
-          ? Math.floor(Math.random() * (GRID - 1))
-          : Math.floor(Math.random() * GRID);
+        fx = Math.floor(Math.random() * (GRID - spec.sizeX + 1));
+        fy = Math.floor(Math.random() * (GRID - spec.sizeY + 1));
         attempts++;
         if (attempts > 1000) break;
       } while (
         Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
-        gs.neutralFish.some(f => {
-          if (spec.size === 2 || f.size === 2) {
-            return Math.abs(f.x - fx) <= Math.max(f.size, spec.size) - 1 &&
-                   Math.abs(f.y - fy) <= Math.max(f.size, spec.size) - 1;
-          }
-          return f.x === fx && f.y === fy;
-        }) ||
+        gs.neutralFish.some(f =>
+          fx < f.x + f.sizeX && fx + spec.sizeX > f.x &&
+          fy < f.y + f.sizeY && fy + spec.sizeY > f.y
+        ) ||
         gs.pickups[fy]?.[fx] ||
-        gs.coral[fy]?.[fx]   ||
-        (spec.size === 2 && (gs.coral[fy]?.[fx+1] || gs.coral[fy+1]?.[fx] || gs.coral[fy+1]?.[fx+1]))
+        (function() {
+          for (let dy = 0; dy < spec.sizeY; dy++)
+            for (let dx = 0; dx < spec.sizeX; dx++)
+              if (gs.coral[fy + dy]?.[fx + dx]) return true;
+          return false;
+        })()
       );
       if (attempts <= 1000) {
         gs.neutralFish.push({
-          type, x: fx, y: fy, size: spec.size, moveAccum: 0, dir: "right",
+          type, x: fx, y: fy, sizeX: spec.sizeX, sizeY: spec.sizeY, moveAccum: 0, dir: "right",
         });
       }
     }
@@ -236,26 +233,23 @@ export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "grouper
   const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
   if (!fishCfg) return;
   const spec = fishCfg[type];
-  const size = spec.size;
+  const { sizeX, sizeY } = spec;
   let fx = 0, fy = 0, attempts = 0;
   do {
-    fx = Math.floor(Math.random() * (GRID - size + 1));
-    fy = Math.floor(Math.random() * (GRID - size + 1));
+    fx = Math.floor(Math.random() * (GRID - sizeX + 1));
+    fy = Math.floor(Math.random() * (GRID - sizeY + 1));
     attempts++;
     if (attempts > 500) return;
   } while (
     Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < 5 ||
-    gs.neutralFish.some(f => {
-      const fs = fishCfg[f.type].size;
-      for (let dx = 0; dx < Math.max(size, fs); dx++)
-        for (let dy = 0; dy < Math.max(size, fs); dy++)
-          if (f.x + dx === fx && f.y + dy === fy) return true;
-      return false;
-    }) ||
+    gs.neutralFish.some(f =>
+      fx < f.x + f.sizeX && fx + sizeX > f.x &&
+      fy < f.y + f.sizeY && fy + sizeY > f.y
+    ) ||
     gs.pickups[fy]?.[fx] ||
     gs.coral[fy]?.[fx]
   );
-  gs.neutralFish.push({ type, x: fx, y: fy, size: size as 1 | 2, moveAccum: 0, dir: "right" });
+  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right" });
 }
 
 // ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
@@ -340,12 +334,9 @@ export function spawnEnemy(): Enemy {
     gs.superPickups[ey]?.[ex]    ||
     gs.coralPickups[ey]?.[ex]    ||
     gs.frozenFish.some(f => f.x === ex && f.y === ey) ||
-    gs.neutralFish.some(f => {
-      if (f.size === 2) {
-        return ex >= f.x && ex <= f.x + 1 && ey >= f.y && ey <= f.y + 1;
-      }
-      return f.x === ex && f.y === ey;
-    }) ||
+    gs.neutralFish.some(f =>
+      ex >= f.x && ex < f.x + f.sizeX && ey >= f.y && ey < f.y + f.sizeY
+    ) ||
     gs.kelpBladdersSet.has(`${ex},${ey}`) ||
     (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
       isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
