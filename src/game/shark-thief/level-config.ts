@@ -137,7 +137,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
     },
     kelp: {
-      strandCount:    6,
+      strandCount:    26,
       minHeight:      5,
       bladderPoints:  0,
       maxHeight:      7,

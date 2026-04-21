@@ -275,11 +275,14 @@ export function seedKelp(): void {
     const idealCol = i * zoneWidth + zoneWidth / 2;
     const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
     let col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
-    // Ensure at least 2-cell gap from previously placed strand
-    let attempts = 0;
-    while (gs.kelpCells.some(k => Math.abs(k.x - col) <= 1) && attempts < 10) {
-      col = Math.min(GRID - 1, col + 1);
-      attempts++;
+    // Blades extend ~58% of cell width each side — enforce 2-cell gap to prevent overlap.
+    // Stipe-only (no blades) strands are 2–3px wide so no separation needed.
+    if (cfg.bladeEnabled) {
+      let attempts = 0;
+      while (gs.kelpCells.some(k => Math.abs(k.x - col) <= 1) && attempts < 10) {
+        col = Math.min(GRID - 1, col + 1);
+        attempts++;
+      }
     }
     const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
 
