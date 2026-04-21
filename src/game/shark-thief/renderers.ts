@@ -580,41 +580,167 @@ function drawPacificLighting(ctx: CanvasRenderingContext2D, w: number, h: number
 
 // ── Kelp terrain (Depth 6 — Busy Pacific) ────────────────────────────────
 
+const KELP_COLORS = {
+  stipe: [
+    "#3a3d0e",  // [0] root — dark olive-brown
+    "#4a5212",  // [1] lower
+    "#566118",  // [2] mid-lower
+    "#647222",  // [3] mid-upper
+    "#768530",  // [4] tip — yellow-green (lightest)
+  ],
+  blade: [
+    "#3a4a12",  // [0] root blades
+    "#4d601a",  // [1] mid blades
+    "#647830",  // [2] tip blades
+  ],
+  bladeEdge: [
+    "#4a5c1a",  // [0] root midrib
+    "#607828",  // [1] mid midrib
+    "#7a9038",  // [2] tip midrib
+  ],
+  bladder:      "#8b5e3c",
+  bladderSheen: "#a87550",
+};
+
+// Level 2 seaweed keeps the original green palette
+const SEAWEED_COLORS = {
+  stipe: [
+    "#1a5a1a",  // root
+    "#2e8a2e",  // mid
+    "#3daa3d",  // tip
+  ],
+};
+
+function drawKelpBlade(
+  ctx: CanvasRenderingContext2D,
+  attachX: number,
+  attachY: number,
+  isLeft: boolean,
+  bladeColor: string,
+  edgeColor: string,
+  CELL: number,
+  swayBias: number,
+): void {
+  const bw  = Math.round(CELL * 0.58);
+  const bh  = Math.round(CELL * 0.38);
+  const dir = isLeft ? -1 : 1;
+  const tipX = Math.round(attachX + dir * (bw + swayBias));
+  const tipY = Math.round(attachY - bh);
+  const cpX  = Math.round(attachX + dir * bw * 0.55);
+  const cpY  = Math.round(attachY - bh * 1.5);
+  const ucpX = Math.round(attachX + dir * bw * 0.3);
+  const ucpY = Math.round(attachY - bh * 0.4);
+
+  ctx.save();
+  ctx.globalAlpha = 0.80;
+  ctx.fillStyle = bladeColor;
+  ctx.beginPath();
+  ctx.moveTo(attachX, attachY);
+  ctx.quadraticCurveTo(cpX, cpY, tipX, tipY);
+  ctx.quadraticCurveTo(ucpX, ucpY, attachX, attachY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Midrib line
+  ctx.strokeStyle = edgeColor;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.50;
+  ctx.beginPath();
+  ctx.moveTo(Math.round(attachX + dir * 2), attachY);
+  ctx.quadraticCurveTo(
+    Math.round(cpX - dir * Math.round(CELL * 0.08)),
+    Math.round(cpY + bh * 0.2),
+    Math.round(tipX - dir * Math.round(CELL * 0.08)),
+    tipY,
+  );
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
   const now = Date.now();
-  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp;
-  const swayPeriod = cfg?.swayPeriod ?? 3000;
-  const maxH = cfg?.maxHeight ?? 10;
+  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp!;
+  const swayPeriod  = cfg.swayPeriod;
+  const maxH        = cfg.maxHeight;
+  const isKelpMode  = cfg.colorMode === "kelp";
+  const bladeEnabled = cfg.bladeEnabled;
 
   for (const kc of gs.kelpCells) {
     const px = kc.x * CELL;
     const py = kc.y * CELL;
+    const tipFrac   = kc.height / maxH;
+    const phase     = (now / swayPeriod) * Math.PI * 2 + kc.x * 0.8;
+    const stipeSway = Math.sin(phase) * tipFrac * CELL * 0.28;
+    const bladeSway = Math.sin(phase + 0.25) * tipFrac * CELL * 0.38;
 
-    // height=1 is root (bottom), height=maxH is tip (top)
-    // Sway amplitude increases toward the tip
-    const tipFraction = kc.height / maxH;  // 0 at root, 1 at tip
-    const swayAmp = tipFraction * CELL * 0.35;
-    const swayOffset = Math.sin((now / swayPeriod) * Math.PI * 2 + kc.x * 0.8) * swayAmp;
+    // Stipe color
+    let stipeColor: string;
+    if (isKelpMode) {
+      const idx = Math.min(4, Math.floor(tipFrac * 5));
+      stipeColor = KELP_COLORS.stipe[idx];
+    } else {
+      const idx = Math.min(2, Math.floor(tipFrac * 3));
+      stipeColor = SEAWEED_COLORS.stipe[idx];
+    }
 
-    // Color: darker at root (bottom), brighter at tip
-    const darkGreen   = "#1a5a1a";
-    const midGreen    = "#2e8a2e";
-    const brightGreen = "#3daa3d";
-    const color = tipFraction < 0.33 ? darkGreen : tipFraction < 0.66 ? midGreen : brightGreen;
+    // Draw stipe segment
+    const sw = Math.max(2, Math.round(CELL * 0.10));
+    const sx = Math.round(px + CELL / 2 + stipeSway - sw / 2);
+    ctx.globalAlpha = 0.90;
+    ctx.fillStyle = stipeColor;
+    ctx.fillRect(sx, Math.round(py), sw, CELL);
 
-    ctx.save();
-    ctx.globalAlpha = 0.82;
-    ctx.fillStyle = color;
-    // Slightly narrow rectangle with horizontal sway offset
-    const kw = Math.max(2, CELL * 0.35);
-    const kx = px + (CELL - kw) / 2 + swayOffset;
-    ctx.fillRect(Math.round(kx), py, Math.round(kw), CELL);
+    // Selout: 1px lighter left edge
+    if (isKelpMode) {
+      const lighterIdx = Math.min(4, Math.floor(tipFrac * 5) + 1);
+      ctx.fillStyle = KELP_COLORS.stipe[lighterIdx];
+      ctx.globalAlpha = 0.40;
+      ctx.fillRect(sx, Math.round(py), 1, CELL);
+    }
+    ctx.globalAlpha = 1;
 
-    // Highlight edge for depth
-    ctx.fillStyle = "rgba(100, 220, 100, 0.25)";
-    ctx.fillRect(Math.round(kx), py, Math.max(1, Math.round(kw * 0.2)), CELL);
+    // Blades — every even height step
+    if (bladeEnabled && kc.height % 2 === 0 && kc.height > 1) {
+      const bladeIdx = tipFrac < 0.33 ? 0 : tipFrac < 0.66 ? 1 : 2;
+      const isLeft   = (kc.height / 2) % 2 === 0;
+      const attachX  = Math.round(px + CELL / 2 + stipeSway);
+      const attachY  = Math.round(py + CELL * 0.5);
+      drawKelpBlade(
+        ctx, attachX, attachY, isLeft,
+        KELP_COLORS.blade[bladeIdx],
+        KELP_COLORS.bladeEdge[bladeIdx],
+        CELL, bladeSway,
+      );
+    }
+  }
 
-    ctx.restore();
+  // Bladders (Depth 6 only)
+  if (cfg.bladderEnabled) {
+    for (const b of gs.kelpBladders) {
+      if (!gs.kelpBladdersSet.has(`${b.x},${b.y}`)) continue; // already collected
+      // Find sway at this cell
+      const kc = gs.kelpCells.find(k => k.x === b.x && k.y === b.y);
+      if (!kc) continue;
+      const tipFrac   = kc.height / maxH;
+      const phase     = (Date.now() / swayPeriod) * Math.PI * 2 + b.x * 0.8;
+      const stipeSway = Math.sin(phase) * tipFrac * CELL * 0.28;
+
+      const cx = Math.round(b.x * CELL + CELL / 2 + stipeSway + Math.round(CELL * 0.12));
+      const cy = Math.round(b.y * CELL + CELL * 0.5);
+      const rx = Math.max(3, Math.round(CELL * 0.14));
+      const ry = Math.max(2, Math.round(CELL * 0.11));
+
+      ctx.save();
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = KELP_COLORS.bladder;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // 1px highlight
+      ctx.fillStyle = KELP_COLORS.bladderSheen;
+      ctx.fillRect(cx - Math.round(rx * 0.4), cy - Math.round(ry * 0.5), 1, 1);
+      ctx.restore();
+    }
   }
 }
 
@@ -823,7 +949,7 @@ export function draw(): void {
   drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
 
   // Kelp drawn AFTER player so it occludes the shark when standing in kelp cell
-  if (gs.currentDepth === PACIFIC_DEPTH && gs.kelpCells.length > 0) {
+  if (LEVEL_CONFIG[gs.currentDepth].kelp && gs.kelpCells.length > 0) {
     drawKelp(ctx, CELL);
   }
 

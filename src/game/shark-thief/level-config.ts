@@ -72,10 +72,14 @@ export interface NeutralFishConfig {
 }
 
 export interface KelpConfig {
-  strandCount: number;  // number of kelp columns to place, spread evenly across the board
-  minHeight:   number;  // minimum cells per kelp column
-  maxHeight:   number;  // maximum cells per kelp column
-  swayPeriod:  number;  // ms for one full sway cycle (purely visual, no gameplay effect)
+  strandCount:    number;  // number of kelp columns to place, spread evenly across the board
+  minHeight:      number;  // minimum cells per kelp column
+  maxHeight:      number;  // maximum cells per kelp column
+  swayPeriod:     number;  // ms for one full sway cycle (purely visual, no gameplay effect)
+  bladeEnabled:   boolean;        // true for Depth 6, false for Depth 2
+  bladderEnabled: boolean;        // true for Depth 6, false for Depth 2
+  bladderPoints:  number;         // points awarded per bladder collect (Depth 6: 5)
+  colorMode: "kelp" | "seaweed"; // "kelp" = brown-green palette, "seaweed" = original green
 }
 
 // ── Per-depth config ──────────────────────────────────────────────────────
@@ -131,6 +135,16 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       points:         10, // points per egg collected
       babyPenalty:    5,  // points lost when the baby shark is eaten by an enemy
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
+    },
+    kelp: {
+      strandCount:    6,
+      minHeight:      5,
+      bladderPoints:  0,
+      maxHeight:      7,
+      swayPeriod:     4000,
+      bladeEnabled:   false,
+      bladderEnabled: false,
+      colorMode:      "seaweed",
     },
     tilePalette:  "nursery",
     canvasBase:   "#0a4a5e",
@@ -208,10 +222,14 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       garibaldi: { count: 4, speedDivisor: 1, size: 1 },
     },
     kelp: {
-      strandCount: 10,
-      minHeight:   19,
-      maxHeight:   22,
-      swayPeriod:  3000, // 3s cycle
+      strandCount:    10,
+      minHeight:      19,
+      maxHeight:      22,
+      swayPeriod:     3000,
+      bladeEnabled:   true,
+      bladderEnabled: true,
+      bladderPoints:  5,
+      colorMode:      "kelp",
     },
     tilePalette:  "pacific",
     canvasBase:   "#0c4a5a",

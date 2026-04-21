@@ -232,6 +232,32 @@ export function seedNeutralFish(): void {
   }
 }
 
+export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "grouper"): void {
+  const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
+  if (!fishCfg) return;
+  const spec = fishCfg[type];
+  const size = spec.size;
+  let fx = 0, fy = 0, attempts = 0;
+  do {
+    fx = Math.floor(Math.random() * (GRID - size + 1));
+    fy = Math.floor(Math.random() * (GRID - size + 1));
+    attempts++;
+    if (attempts > 500) return;
+  } while (
+    Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < 5 ||
+    gs.neutralFish.some(f => {
+      const fs = fishCfg[f.type].size;
+      for (let dx = 0; dx < Math.max(size, fs); dx++)
+        for (let dy = 0; dy < Math.max(size, fs); dy++)
+          if (f.x + dx === fx && f.y + dy === fy) return true;
+      return false;
+    }) ||
+    gs.pickups[fy]?.[fx] ||
+    gs.coral[fy]?.[fx]
+  );
+  gs.neutralFish.push({ type, x: fx, y: fy, size: size as 1 | 2, moveAccum: 0, dir: "right" });
+}
+
 // ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
 
 export function seedKelp(): void {
@@ -248,7 +274,13 @@ export function seedKelp(): void {
   for (let i = 0; i < cfg.strandCount; i++) {
     const idealCol = i * zoneWidth + zoneWidth / 2;
     const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
-    const col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
+    let col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
+    // Ensure at least 2-cell gap from previously placed strand
+    let attempts = 0;
+    while (gs.kelpCells.some(k => Math.abs(k.x - col) <= 1) && attempts < 10) {
+      col = Math.min(GRID - 1, col + 1);
+      attempts++;
+    }
     const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
 
     for (let h = 0; h < height && baseRow - h >= 0; h++) {
@@ -260,6 +292,31 @@ export function seedKelp(): void {
   }
 
   gs.kelpSet = new Set(gs.kelpCells.map(k => `${k.x},${k.y}`));
+
+  // Seed one bladder per strand if bladderEnabled
+  gs.kelpBladders    = [];
+  gs.kelpBladdersSet = new Set();
+
+  if (cfg.bladderEnabled) {
+    const strands = new Map<number, { x: number; y: number; height: number }[]>();
+    for (const kc of gs.kelpCells) {
+      if (!strands.has(kc.x)) strands.set(kc.x, []);
+      strands.get(kc.x)!.push(kc);
+    }
+    let strandIdx = 0;
+    for (const [col, cells] of strands) {
+      // Deterministic height pick per strand using strand index
+      const frac = 0.3 + ((col * 7 + strandIdx * 13) % 7) / 10; // 0.30–0.99
+      const targetH = Math.round(frac * (cfg.maxHeight - 1)) + 1;
+      // Find the cell closest to targetH
+      const best = cells.reduce((a, b) =>
+        Math.abs(a.height - targetH) < Math.abs(b.height - targetH) ? a : b
+      );
+      gs.kelpBladders.push({ x: best.x, y: best.y });
+      gs.kelpBladdersSet.add(`${best.x},${best.y}`);
+      strandIdx++;
+    }
+  }
 }
 
 // ── Enemies ──────────────────────────────────────────────────────────────
@@ -286,6 +343,7 @@ export function spawnEnemy(): Enemy {
       }
       return f.x === ex && f.y === ey;
     }) ||
+    gs.kelpBladdersSet.has(`${ex},${ey}`) ||
     (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
       isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
   );

@@ -1,7 +1,7 @@
 # Shark Thief — Game Design Document
 
 > **Living document.** Updated by Zak as design decisions are made.
-> Last updated: 2026-04-17 (level config system documented)
+> Last updated: 2026-04-21 (Busy Pacific depth documented; depth order corrected)
 
 ---
 
@@ -39,35 +39,54 @@ Every depth is a fresh 100-point challenge. When a player earns 100 points withi
 - **Goal:** Learn the core loop. Enemy count climbs fast — players discover that greed kills.
 - **On entry:** There is no enemies present
 
-### Depth 2 — The Reef
+### Depth 2 — The Nursery
 
-- **Coral barriers:** permanent impassable walls that reshape the board
-- **Coral shells** (cone): worth 5 pts when touched, but convert _into_ a barrier and spawn 1 enemy. New shell every 15 moves (max 6 on board)
-- **Signature piece:** Coral shell / coral barriers — exclusive to this depth. Coral is cleared entirely on descent to Depth 3. Neither shells nor barriers appear in later depths.
-- **On entry:** Exactly 5 enemies are present when the level begins. All but the 5 furthest-away enemies are dissolved; if fewer than 5 survived the transition, new enemies are spawned to reach 5. 4 coral shell pickups seeded, ~2% of grid pre-coralled
-- **Design intent:** Force route planning. A board filling with walls changes pathfinding for both player and enemies. Strategic players use barriers to create chokepoints; reckless ones trap themselves.
-
-### Depth 3 — The Nursery
-
-- Open water again (coral cleared)
+- Open water
 - **Shark egg** (mermaid's purse): worth 10 pts, hatches a **baby shark** that follows the player in a chain
 - **Baby shark:** follows 1 cell behind. If an enemy touches it — -5 pts, blood cell appears and fades over 10 moves
 - **Always 1 egg on board** — respawns immediately on collection
-- **Signature piece:** Shark egg / baby shark — exclusive to this depth. Neither appears in the Arctic or any later depth.
-- **On entry:** Exactly 10 enemies are present when the level begins. The 10 farthest enemies are kept and the rest dissolved; if fewer than 10 survived the transition, new enemies are spawned to reach 10
+- **Signature piece:** Shark egg / baby shark — exclusive to this depth. Neither appears in later depths.
+- **On entry:** 5 enemies present.
 - **Design intent:** The baby is a liability that rewards you for collecting and punishes you if you ignore enemy positions. Emotional attachment to the chain is intentional.
 
-### Depth 4 — The Arctic _(in progress)_
+### Depth 3 — Toxic
+
+- **Toxic barrels:** collecting one spawns an enemy and expands a toxic cloud on the grid
+- **Toxic cloud:** gas cells that cover the board. Neither enemies nor the player can be seen inside. Enemies cannot spawn inside or within `cloudBuffer` tiles of a cloud
+- **Signature piece:** Toxic barrel / toxic cloud — exclusive to this depth
+- **On entry:** 8 enemies present.
+- **Design intent:** The cloud creates zones of imperfect information. The player knows where they are but not what's inside the cloud. Enemies can still path through clouds — it's not safe cover, it's a risk you can't fully read.
+
+### Depth 4 — The Arctic
 
 - **Ice patches:** Permanent slippery zones pre-seeded on the board in readable shapes (1x2, 1x3, 1x4, 2x2). Not random scatter — placed to create deliberate corridors and decision points.
 - **Frozen fish collectible:** Worth 5 pts, always 1 on board at a time, respawns immediately on collection.
 - **Signature piece:** Frozen fish / ice patches — exclusive to this depth.
 - **Frozen fish collection — two-part consequence:** When the shark enters a frozen fish tile, the fish is collected (points awarded) AND that tile instantly becomes an ice patch. The shark then slides across the newly-created ice as part of the same move, continuing until it hits a wall or a non-ice tile. The player cannot interrupt the slide — they commit to the collection and its momentum simultaneously.
 - **Enemy sliding:** Enemies follow the same ice rules as the shark. If an enemy steps onto an ice patch, it slides until it hits a wall or non-ice tile. This can work for or against the player.
-- **Design intent:** Ice makes every move a commitment. The frozen fish mechanic layers a second commitment on top — you don't just collect, you trigger a consequence you have to plan around. Strategic players learn to collect fish from angles that end the slide safely; reckless ones slide into walls or enemies.
-- **On entry:** 5 enemies present at level start.
+- **On entry:** 5 enemies present.
 
-### Depth 5 — The Abyss _(in progress)_
+### Depth 5 — The Reef
+
+- **Coral barriers:** permanent impassable walls that reshape the board
+- **Coral shells** (cone): worth 5 pts when touched, but convert _into_ a barrier and spawn 1 enemy. New shell every 15 moves (max 6 on board)
+- **Signature piece:** Coral shell / coral barriers — exclusive to this depth. Coral is cleared entirely on descent. Neither shells nor barriers appear in later depths.
+- **On entry:** 12 enemies present. 4 coral shell pickups seeded, ~2% of grid pre-coralled.
+- **Design intent:** Force route planning. A board filling with walls changes pathfinding for both player and enemies. Strategic players use barriers to create chokepoints; reckless ones trap themselves.
+
+### Depth 6 — The Busy Pacific
+
+- **Neutral fish:** Three species of ambient fish roam the board. They are impassable — moving into one cancels the move with a bounce animation (same rule as coral barriers). Fish cannot walk onto the shark's cell.
+  - **Mackerel** (silver-blue, 1×1): 4 on board, moves every 2 player turns. Sleek torpedo silhouette — rendered at 55% cell height so it reads as a fast, narrow fish.
+  - **Garibaldi** (vivid orange, 1×1): 4 on board, moves every player turn. Fastest fish; always reliably blocks movement.
+  - **Grouper** (earth-toned, 2×2): 2 on board, moves every 3 player turns. Slow and large — creates significant impassable zones.
+- **Kelp:** Columns of seaweed grow from the bottom of the board upward, reaching ~85% of canvas height with slight per-column height variation. Controlled by `strandCount` in `level-config.ts` — columns are distributed evenly across the grid width with a small jitter so they feel organic but never cluster or leave huge gaps. The shark can stand inside kelp cells; kelp is drawn on top of the player to create an occlusion effect.
+- **Signature piece:** Neutral fish + kelp — both exclusive to this depth and cleared on descent.
+- **Visual design:** `drawPacificLighting()` runs every frame after the tile grid. It applies a depth gradient (light cyan at the surface fading to deep navy at the bottom) plus 7 animated sun ray wedges that converge from a focal point above the top-center. Rays carry a pale gold color near the surface transitioning to cool blue-white lower down, simulating sunlight filtering through water. The shimmer effect layers on top of this and still functions normally.
+- **On entry:** 14 enemies present.
+- **Design intent:** The fish are environmental obstacles you cannot collect — they move around, creating a board that shifts shape every turn. The kelp adds visual density and a hiding mechanic. Together they make the Pacific feel alive and crowded without adding a traditional "collect this, spawn that" loop.
+
+### Depth 7 — The Abyss _(stub)_
 
 - **Leviathan:** 3×3 mega enemy, always present
 - **Shell:** TBD
@@ -171,12 +190,12 @@ All `interval` values are in **player moves, not seconds**. On a fast-moving pla
 - `barrierMinDist` — how close to the player a barrier can be placed at entry. Prevents immediate trapping on arrival
 - `centerSafeZone` — same function as ammonite: keeps a zone in the middle clear of pickups
 
-**`egg`** (Depth 3 — shark eggs)
+**`egg`** (Depth 2 — shark eggs)
 - `initCount` — eggs seeded at depth entry
 - `interval` — delay (in moves) between collecting an egg and the next one spawning. At 0, the next egg appears immediately: there is always exactly 1 egg on the board
 - `points` — currently 10 pts, matching the ammonite. Both are high-risk, high-reward
 - `babyPenalty` — points lost when an enemy eats the baby shark. Currently -5. This is the asymmetric cost that makes the baby a real liability, not just a trail
-- `centerSafeZone` — eggs won't spawn in the center area. The 10x10 safe zone at Depth 3 keeps the crowded middle of the board from immediately hiding eggs in the most dangerous real estate
+- `centerSafeZone` — eggs won't spawn in the center area
 
 **`frozenFish`** (Depth 4 — arctic fish)
 - `initCount`, `max`, `interval`, `points` work the same as above
@@ -184,6 +203,18 @@ All `interval` values are in **player moves, not seconds**. On a fast-moving pla
 
 **`icePatches`** (Depth 4 — ice terrain)
 - `initialCount` — number of ice shapes seeded at the start of the depth. These are placed as readable shapes (not random scatter), each one a 1x2 to 2x2 block. At 8 shapes, the board has meaningful ice zones without being overwhelmed. Raise this to create a more chaotic, commitment-heavy board; lower it for a cleaner feel with the slide mechanic still present
+
+**`neutralFish`** (Depth 6 — ambient fish species)
+- Contains three sub-objects: `mackerel`, `garibaldi`, `grouper`. Each has:
+  - `count` — how many of this species spawn at depth start
+  - `speedDivisor` — fish moves once per N player moves (1 = every move, 2 = every 2 moves, etc.)
+  - `size` — 1 (1×1 tile) or 2 (2×2 tiles, grouper only)
+- Fish are impassable and cannot walk onto the shark's cell. No pickup, no enemy spawn — pure obstacle.
+
+**`kelp`** (Depth 6 — seaweed terrain)
+- `strandCount` — number of kelp columns placed on the board. Columns are distributed evenly across the grid width with ±30% zone-width jitter, so strands feel organic but never cluster or leave large gaps. Tune this number to change how dense the kelp forest feels.
+- `minHeight` / `maxHeight` — height range (in cells) for each column. Currently 19–22, which places kelp tips 76–88% of the way up the board for a tall, near-surface-reaching forest.
+- `swayPeriod` — milliseconds per full sway cycle (visual only, no gameplay effect)
 
 ---
 
@@ -199,15 +230,11 @@ The visual identity (`tilePalette`, `canvasBase`) should reinforce the mechanica
 
 ## Open Questions / Active Decisions
 
-- **Depth 5 signature piece:** The Leviathan may itself be the signature piece (the one persistent mega-enemy replacing all special collectibles). Or Depth 5 may still need a shell/pickup exclusive to it. Needs a decision before Depth 5 design goes further.
+- **Depth 7 (The Abyss) signature piece:** The Leviathan may itself be the signature piece (the one persistent mega-enemy replacing all special collectibles). Or Depth 7 may still need a shell/pickup exclusive to it. Needs a decision before design goes further.
 - **Leviathan move rate:** Currently moves every player move — is this too punishing given its 3×3 footprint?
 - **Baby shark chain length:** Currently unbounded (you can hatch many babies). Should there be a cap?
 - **Ammonite vs big enemy balance:** Does the 10 pt reward justify the 2×2 enemy risk at Depth 1? Players may skip it entirely.
-- **Arctic depth number:** ✅ Arctic = Depth 4. Leviathan/Abyss = Depth 5.
-- **Arctic frozen fish point value:** ✅ 5 pts (lower than ammonite/egg given the forced slide risk).
-- **Arctic enemy count on entry:** ✅ 5 enemies.
-- **Arctic ice patch placement rules:** How many patches per board? Should patches avoid the player spawn cell and fish spawn cells?
-- **Arctic slide into enemy:** ✅ Death. Consistent with all other enemy contact — you triggered it, you die.
-- **Arctic slide into collectible:** If the shark slides across a coin mid-slide, is it collected? Or only at the terminal cell?
+- **Busy Pacific — does the Grouper need a pickup?** The depth currently has no collectible mechanic — fish are pure obstacles. This is intentional for now but may feel incomplete compared to other depths.
+- **Busy Pacific — kelp density:** `strandCount: 10` is a starting point. Needs playtesting to find the right balance between atmosphere and navigability.
 - **Mobile feel:** D-pad repeat delay (200ms initial, 100ms interval) — does this feel right for iOS?
-- **Depth progress HUD format:** Progress bar vs. numeric counter (e.g., "46/100")? Needs playtesting — bar is faster to read at a glance, number is more precise and communicates the 100-point goal explicitly.
+- **Depth progress HUD format:** Progress bar vs. numeric counter (e.g., "46/100")? Needs playtesting.

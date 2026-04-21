@@ -5,7 +5,7 @@ import { GRID, DYING_DURATION } from "./config";
 import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, spawnSingleNeutralFish } from "./spawn";
 import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
@@ -101,9 +101,11 @@ function teardownMechanic(cfg: DepthConfig): void {
     if (gs.cloudPulseRafId) { cancelAnimationFrame(gs.cloudPulseRafId); gs.cloudPulseRafId = null; }
   }
   if (cfg.neutralFish || cfg.kelp) {
-    gs.neutralFish = [];
-    gs.kelpCells   = [];
-    gs.kelpSet     = new Set();
+    gs.neutralFish     = [];
+    gs.kelpCells       = [];
+    gs.kelpSet         = new Set();
+    gs.kelpBladders    = [];
+    gs.kelpBladdersSet = new Set();
   }
 }
 
@@ -356,6 +358,9 @@ export function init(): void {
   if (gs.cloudPulseRafId) cancelAnimationFrame(gs.cloudPulseRafId);
   if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel) gs.cloudPulseRafId = requestAnimationFrame(tickCloudPulse);
 
+  gs.kelpBladders    = [];
+  gs.kelpBladdersSet = new Set();
+
   gs.enemies = [spawnEnemy()];
   draw();
 }
@@ -570,6 +575,20 @@ export function moveShark(dx: number, dy: number): void {
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     updateHudScore(gs.score);
     gs.enemies.push(spawnEnemy());
+    checkDepthTransition();
+  }
+
+  // Gas bladder pickup (Depth 6)
+  const bladderKey = `${nx},${ny}`;
+  if (gs.kelpBladdersSet.has(bladderKey)) {
+    gs.kelpBladdersSet.delete(bladderKey);
+    gs.kelpBladders = gs.kelpBladders.filter(b => !(b.x === nx && b.y === ny));
+    gs.score += LEVEL_CONFIG[gs.currentDepth].kelp!.bladderPoints;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+    updateHudScore(gs.score, "special");
+    gs.enemies.push(spawnEnemy());
+    const fishTypes: Array<"mackerel" | "garibaldi" | "grouper"> = ["mackerel", "garibaldi", "grouper"];
+    spawnSingleNeutralFish(fishTypes[Math.floor(Math.random() * fishTypes.length)]);
     checkDepthTransition();
   }
 
@@ -877,12 +896,17 @@ export function loadGame(save: any): void {
     gs.toxicContamination = [];
   }
 
-  gs.neutralFish = [];
-  gs.kelpCells   = [];
-  gs.kelpSet     = new Set();
+  gs.neutralFish     = [];
+  gs.kelpCells       = [];
+  gs.kelpSet         = new Set();
+  gs.kelpBladders    = [];
+  gs.kelpBladdersSet = new Set();
   // Re-seed at depth if applicable — same pattern as ice patch re-seeding
-  if (gs.currentDepth === PACIFIC_DEPTH) {
-    seedNeutralFish();
+  const retryCfg = LEVEL_CONFIG[gs.currentDepth];
+  if (retryCfg.neutralFish) seedNeutralFish();
+  if (retryCfg.kelp) {
+    gs.kelpBladders    = [];
+    gs.kelpBladdersSet = new Set();
     seedKelp();
   }
 

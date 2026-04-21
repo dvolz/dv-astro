@@ -103,6 +103,8 @@ export const gs = {
   neutralFish:       [] as NeutralFish[],
   kelpCells:         [] as KelpCell[],  // static for the run; seeded at depth start
   kelpSet:           new Set<string>(), // "x,y" fast lookup — rebuilt when kelpCells changes
+  kelpBladders:      [] as { x: number; y: number }[],
+  kelpBladdersSet:   new Set<string>(),
 
   // ── Depth system ─────────────────────────────────────────────────────
   currentDepth:    1,
