@@ -209,6 +209,35 @@ export function drawNeutralFish(
   ctx.imageSmoothingEnabled = false;
   ctx.translate(cx, cy);
 
+  // Bladder-spawn grow effect: fish scales from 0 → full over 500ms, glow fades over 2s
+  let spawnScale = 1;
+  if (fish.spawnTime !== undefined) {
+    const elapsed = Date.now() - fish.spawnTime;
+    if (elapsed < 2000) {
+      // easeOutBack over 500ms — gives a slight overshoot pop
+      const growT = Math.min(1, elapsed / 500);
+      const c1 = 1.70158, c3 = c1 + 1;
+      spawnScale = growT < 1
+        ? 1 + c3 * Math.pow(growT - 1, 3) + c1 * Math.pow(growT - 1, 2)
+        : 1;
+      ctx.scale(spawnScale, spawnScale);
+
+      // Glow drawn in scaled space (centered at 0,0)
+      const fade = Math.pow(1 - elapsed / 2000, 1.5);
+      const pulse = 0.5 + 0.5 * Math.sin((elapsed / 120) * Math.PI);
+      const pad = Math.round(CELL * 0.2);
+      ctx.save();
+      ctx.globalAlpha = fade * (0.35 + 0.55 * pulse);
+      ctx.fillStyle = "#ffd060";
+      ctx.fillRect(-destW / 2 - pad, -destH / 2 - pad, destW + pad * 2, destH + pad * 2);
+      ctx.globalAlpha = fade;
+      ctx.strokeStyle = "#fff4aa";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-destW / 2 - pad, -destH / 2 - pad, destW + pad * 2, destH + pad * 2);
+      ctx.restore();
+    }
+  }
+
   switch (fish.dir) {
     case 'right': break;
     case 'left':  ctx.scale(-1, 1);       break;

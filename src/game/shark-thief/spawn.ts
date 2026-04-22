@@ -303,6 +303,8 @@ export function seedKelp(): void {
     }
     let strandIdx = 0;
     for (const [col, cells] of strands) {
+      // Skip 25% of strands — deterministic so the same strands are skipped each run
+      if (strandIdx % 4 === 3) { strandIdx++; continue; }
       // Deterministic height pick per strand using strand index
       const frac = 0.3 + ((col * 7 + strandIdx * 13) % 7) / 10; // 0.30–0.99
       const targetH = Math.round(frac * (cfg.maxHeight - 1)) + 1;

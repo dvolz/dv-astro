@@ -598,8 +598,8 @@ const KELP_COLORS = {
     "#607828",  // [1] mid midrib
     "#7a9038",  // [2] tip midrib
   ],
-  bladder:      "#8b5e3c",
-  bladderSheen: "#a87550",
+  bladder:      "#462f1e",
+  bladderSheen: "#543b28",
 };
 
 // Level 2 seaweed keeps the original green palette
@@ -621,8 +621,8 @@ function drawKelpBlade(
   CELL: number,
   swayBias: number,
 ): void {
-  const bw  = Math.round(CELL * 0.58);
-  const bh  = Math.round(CELL * 0.38);
+  const bw  = Math.round(CELL * 1.015);
+  const bh  = Math.round(CELL * 0.665);
   const dir = isLeft ? -1 : 1;
   const tipX = Math.round(attachX + dir * (bw + swayBias));
   const tipY = Math.round(attachY - bh);
@@ -739,8 +739,8 @@ function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
 
       const cx = Math.round(b.x * CELL + CELL / 2 + stipeSway + Math.round(CELL * 0.12));
       const cy = Math.round(b.y * CELL + CELL * 0.5);
-      const rx = Math.max(3, Math.round(CELL * 0.14));
-      const ry = Math.max(2, Math.round(CELL * 0.11));
+      const rx = Math.max(3, Math.round(CELL * 0.21));
+      const ry = Math.max(2, Math.round(CELL * 0.165));
 
       ctx.save();
       ctx.globalAlpha = 1.0;

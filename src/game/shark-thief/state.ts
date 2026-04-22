@@ -31,6 +31,7 @@ export interface NeutralFish {
   animFromX:    number;
   animFromY:    number;
   animStartTime: number;
+  spawnTime?:   number;  // Date.now() when spawned from bladder; drives 2s spawn flash
 }
 
 export interface KelpCell {

@@ -638,6 +638,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.enemies.push(spawnEnemy());
     const fishTypes: Array<"mackerel" | "garibaldi" | "grouper"> = ["mackerel", "garibaldi", "grouper"];
     spawnSingleNeutralFish(fishTypes[Math.floor(Math.random() * fishTypes.length)]);
+    gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
     checkDepthTransition();
   }
 
