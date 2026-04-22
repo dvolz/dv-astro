@@ -227,15 +227,21 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       grouper:   { count: 2, speedDivisor: 3, sizeX: 2, sizeY: 2 },
       garibaldi: { count: 4, speedDivisor: 1, sizeX: 1, sizeY: 1 },
     },
-    kelp: {
-      strandCount:    10,
-      minHeight:      19,
-      maxHeight:      22,
-      swayPeriod:     3000,
-      bladeEnabled:   true,
-      bladderEnabled: true,
-      bladderPoints:  5,
+    ammonite: {
+      initCount: 1,   // ammonites placed at game start
+      max:       4,   // up to 4 purple shells on the board at once
+      interval:  25,  // a new shell spawns 25 moves after the last is collected
+      points:    10,
     },
+    // kelp: {
+    //   strandCount:    10,
+    //   minHeight:      19,
+    //   maxHeight:      22,
+    //   swayPeriod:     3000,
+    //   bladeEnabled:   true,
+    //   bladderEnabled: true,
+    //   bladderPoints:  5,
+    // },
     tilePalette:     "pacific",
     canvasBase:      "#0c4a5a",
     enemyKeep:       14,
