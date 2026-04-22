@@ -5,7 +5,7 @@ import { GRID, DYING_DURATION } from "./config";
 import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
 import { gs } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, spawnSingleNeutralFish } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish } from "./spawn";
 import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
@@ -100,6 +100,10 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.cloudPulseSpeed.fill(0);
     if (gs.cloudPulseRafId) { cancelAnimationFrame(gs.cloudPulseRafId); gs.cloudPulseRafId = null; }
   }
+  if (cfg.seagrass) {
+    gs.seagrassCells = [];
+    gs.seagrassSet   = new Set();
+  }
   if (cfg.neutralFish || cfg.kelp) {
     gs.neutralFish     = [];
     gs.kelpCells       = [];
@@ -153,6 +157,7 @@ function setupMechanic(cfg: DepthConfig): void {
     for (let i = 0; i < (cfg.ammonite.initCount ?? 0); i++) spawnAmmoniteIfNeeded();
   }
   if (cfg.neutralFish) seedNeutralFish();
+  if (cfg.seagrass)    seedSeagrass();
   if (cfg.kelp)        seedKelp();
 }
 
@@ -320,9 +325,11 @@ export function init(): void {
   gs.toxicBarrels             = [];
   gs.toxicBarrelMovesCounter  = 0;
   gs.toxicContamination       = [];
-  gs.neutralFish = [];
-  gs.kelpCells   = [];
-  gs.kelpSet     = new Set();
+  gs.neutralFish   = [];
+  gs.seagrassCells = [];
+  gs.seagrassSet   = new Set();
+  gs.kelpCells     = [];
+  gs.kelpSet       = new Set();
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -876,6 +883,8 @@ export function loadGame(save: any): void {
   }
 
   gs.neutralFish     = [];
+  gs.seagrassCells   = [];
+  gs.seagrassSet     = new Set();
   gs.kelpCells       = [];
   gs.kelpSet         = new Set();
   gs.kelpBladders    = [];
@@ -883,6 +892,7 @@ export function loadGame(save: any): void {
   // Re-seed at depth if applicable — same pattern as ice patch re-seeding
   const retryCfg = LEVEL_CONFIG[gs.currentDepth];
   if (retryCfg.neutralFish) seedNeutralFish();
+  if (retryCfg.seagrass) seedSeagrass();
   if (retryCfg.kelp) {
     gs.kelpBladders    = [];
     gs.kelpBladdersSet = new Set();

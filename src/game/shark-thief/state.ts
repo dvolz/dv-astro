@@ -100,6 +100,10 @@ export const gs = {
   toxicBarrelMovesCounter: 0,
   toxicContamination:      [] as number[][], // 25×25 values 0–1; grows each move from cloud cells
 
+  // ── Depth 2 — Nursery ────────────────────────────────────────────────────
+  seagrassCells: [] as KelpCell[],
+  seagrassSet:   new Set<string>(),
+
   // ── Depth 6 — Busy Pacific ───────────────────────────────────────────────
   neutralFish:       [] as NeutralFish[],
   kelpCells:         [] as KelpCell[],  // static for the run; seeded at depth start

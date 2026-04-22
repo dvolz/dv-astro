@@ -316,6 +316,33 @@ export function seedKelp(): void {
   }
 }
 
+// ── Seagrass terrain (Depth 2 — Nursery) ────────────────────────────────
+
+export function seedSeagrass(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].seagrass;
+  if (!cfg) return;
+  gs.seagrassCells = [];
+
+  const zoneWidth = GRID / cfg.strandCount;
+  const baseRow = GRID - 1;
+
+  for (let i = 0; i < cfg.strandCount; i++) {
+    const idealCol = i * zoneWidth + zoneWidth / 2;
+    const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
+    const col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
+    const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
+
+    for (let h = 0; h < height && baseRow - h >= 0; h++) {
+      const ky = baseRow - h;
+      if (!gs.seagrassCells.some(k => k.x === col && k.y === ky)) {
+        gs.seagrassCells.push({ x: col, y: ky, height: h + 1 });
+      }
+    }
+  }
+
+  gs.seagrassSet = new Set(gs.seagrassCells.map(k => `${k.x},${k.y}`));
+}
+
 // ── Enemies ──────────────────────────────────────────────────────────────
 
 export function spawnEnemy(): Enemy {

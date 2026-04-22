@@ -657,12 +657,35 @@ function drawKelpBlade(
   ctx.restore();
 }
 
+function drawSeagrass(ctx: CanvasRenderingContext2D, CELL: number): void {
+  const now = Date.now();
+  const cfg = LEVEL_CONFIG[gs.currentDepth].seagrass!;
+  const swayPeriod = cfg.swayPeriod;
+  const maxH       = cfg.maxHeight;
+
+  for (const kc of gs.seagrassCells) {
+    const px = kc.x * CELL;
+    const py = kc.y * CELL;
+    const tipFrac   = kc.height / maxH;
+    const phase     = (now / swayPeriod) * Math.PI * 2 + kc.x * 0.8;
+    const stipeSway = Math.sin(phase) * tipFrac * CELL * 0.28;
+
+    const idx = Math.min(2, Math.floor(tipFrac * 3));
+    const sw  = Math.max(2, Math.round(CELL * cfg.stipeWidthFraction));
+    const sx  = Math.round(px + CELL / 2 + stipeSway - sw / 2);
+
+    ctx.globalAlpha = 0.90;
+    ctx.fillStyle   = SEAWEED_COLORS.stipe[idx];
+    ctx.fillRect(sx, Math.round(py), sw, CELL);
+    ctx.globalAlpha = 1;
+  }
+}
+
 function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
   const now = Date.now();
   const cfg = LEVEL_CONFIG[gs.currentDepth].kelp!;
   const swayPeriod  = cfg.swayPeriod;
   const maxH        = cfg.maxHeight;
-  const isKelpMode  = cfg.colorMode === "kelp";
   const bladeEnabled = cfg.bladeEnabled;
 
   for (const kc of gs.kelpCells) {
@@ -673,30 +696,19 @@ function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
     const stipeSway = Math.sin(phase) * tipFrac * CELL * 0.28;
     const bladeSway = Math.sin(phase + 0.25) * tipFrac * CELL * 0.38;
 
-    // Stipe color
-    let stipeColor: string;
-    if (isKelpMode) {
-      const idx = Math.min(4, Math.floor(tipFrac * 5));
-      stipeColor = KELP_COLORS.stipe[idx];
-    } else {
-      const idx = Math.min(2, Math.floor(tipFrac * 3));
-      stipeColor = SEAWEED_COLORS.stipe[idx];
-    }
+    const idx = Math.min(4, Math.floor(tipFrac * 5));
+    const sw  = Math.max(2, Math.round(CELL * 0.10));
+    const sx  = Math.round(px + CELL / 2 + stipeSway - sw / 2);
 
-    // Draw stipe segment
-    const sw = Math.max(2, Math.round(CELL * 0.10));
-    const sx = Math.round(px + CELL / 2 + stipeSway - sw / 2);
     ctx.globalAlpha = 0.90;
-    ctx.fillStyle = stipeColor;
+    ctx.fillStyle   = KELP_COLORS.stipe[idx];
     ctx.fillRect(sx, Math.round(py), sw, CELL);
 
     // Selout: 1px lighter left edge
-    if (isKelpMode) {
-      const lighterIdx = Math.min(4, Math.floor(tipFrac * 5) + 1);
-      ctx.fillStyle = KELP_COLORS.stipe[lighterIdx];
-      ctx.globalAlpha = 0.40;
-      ctx.fillRect(sx, Math.round(py), 1, CELL);
-    }
+    const lighterIdx = Math.min(4, idx + 1);
+    ctx.fillStyle = KELP_COLORS.stipe[lighterIdx];
+    ctx.globalAlpha = 0.40;
+    ctx.fillRect(sx, Math.round(py), 1, CELL);
     ctx.globalAlpha = 1;
 
     // Blades — every even height step
@@ -948,7 +960,10 @@ export function draw(): void {
   // Player shark
   drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
 
-  // Kelp drawn AFTER player so it occludes the shark when standing in kelp cell
+  // Kelp/seagrass drawn AFTER player so it occludes the shark when standing inside
+  if (LEVEL_CONFIG[gs.currentDepth].seagrass && gs.seagrassCells.length > 0) {
+    drawSeagrass(ctx, CELL);
+  }
   if (LEVEL_CONFIG[gs.currentDepth].kelp && gs.kelpCells.length > 0) {
     drawKelp(ctx, CELL);
   }

@@ -72,15 +72,22 @@ export interface NeutralFishConfig {
   garibaldi:  NeutralFishSpecConfig;
 }
 
+export interface SeagrassConfig {
+  strandCount:        number;  // number of seagrass columns spread evenly across the board
+  minHeight:          number;  // minimum cells per column
+  maxHeight:          number;  // maximum cells per column
+  swayPeriod:         number;  // ms for one full sway cycle
+  stipeWidthFraction: number;  // stipe width as fraction of CELL (e.g. 0.20 = 20% of cell)
+}
+
 export interface KelpConfig {
   strandCount:    number;  // number of kelp columns to place, spread evenly across the board
   minHeight:      number;  // minimum cells per kelp column
   maxHeight:      number;  // maximum cells per kelp column
   swayPeriod:     number;  // ms for one full sway cycle (purely visual, no gameplay effect)
-  bladeEnabled:   boolean;        // true for Depth 6, false for Depth 2
-  bladderEnabled: boolean;        // true for Depth 6, false for Depth 2
-  bladderPoints:  number;         // points awarded per bladder collect (Depth 6: 5)
-  colorMode: "kelp" | "seaweed"; // "kelp" = brown-green palette, "seaweed" = original green
+  bladeEnabled:   boolean; // true for Depth 6
+  bladderEnabled: boolean; // true for Depth 6
+  bladderPoints:  number;  // points awarded per bladder collect (Depth 6: 5)
 }
 
 // ── Per-depth config ──────────────────────────────────────────────────────
@@ -95,6 +102,7 @@ export interface DepthConfig {
   icePatches?:  IcePatchConfig;
   toxicBarrel?: ToxicBarrelConfig;
   neutralFish?: NeutralFishConfig;
+  seagrass?:    SeagrassConfig;
   kelp?:        KelpConfig;
 
   tilePalette:  TilePalette; // background tile palette
@@ -137,15 +145,12 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       babyPenalty:    5,  // points lost when the baby shark is eaten by an enemy
       centerSafeZone: 10, // eggs won't spawn in the center 10×10 area — keeps the middle accessible
     },
-    kelp: {
-      strandCount:    26,
-      minHeight:      5,
-      bladderPoints:  0,
-      maxHeight:      7,
-      swayPeriod:     4000,
-      bladeEnabled:   false,
-      bladderEnabled: false,
-      colorMode:      "seaweed",
+    seagrass: {
+      strandCount:        17,
+      minHeight:          9,
+      maxHeight:          13,
+      swayPeriod:         4000,
+      stipeWidthFraction: 0.38,
     },
     tilePalette:  "nursery",
     canvasBase:   "#0a4a5e",
@@ -230,7 +235,6 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       bladeEnabled:   true,
       bladderEnabled: true,
       bladderPoints:  5,
-      colorMode:      "kelp",
     },
     tilePalette:  "pacific",
     canvasBase:   "#0c4a5a",
