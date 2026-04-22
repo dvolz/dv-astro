@@ -223,6 +223,7 @@ export function seedNeutralFish(): void {
       if (attempts <= 1000) {
         gs.neutralFish.push({
           type, x: fx, y: fy, sizeX: spec.sizeX, sizeY: spec.sizeY, moveAccum: 0, dir: "right",
+          visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0,
         });
       }
     }
@@ -249,7 +250,7 @@ export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "grouper
     gs.pickups[fy]?.[fx] ||
     gs.coral[fy]?.[fx]
   );
-  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right" });
+  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right", visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
 }
 
 // ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────

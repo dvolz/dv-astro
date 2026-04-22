@@ -67,6 +67,11 @@ export function startEnemyAnimLoop(): void {
   for (const be of gs.bigEnemies) {
     be.animFromX = be.visualX; be.animFromY = be.visualY; be.animStartTime = now;
   }
+  for (const fish of gs.neutralFish) {
+    fish.animFromX    = fish.visualX;
+    fish.animFromY    = fish.visualY;
+    fish.animStartTime = now;
+  }
   if (gs.enemyAnimRafId) cancelAnimationFrame(gs.enemyAnimRafId);
   gs.enemyAnimRafId = requestAnimationFrame(tickEnemyAnims);
 }
@@ -90,6 +95,15 @@ function tickEnemyAnims(now: number): void {
     be.visualY = be.animFromY + (be.y - be.animFromY) * ease;
     if (t < 1) anyRunning = true;
     else be.animStartTime = 0;
+  }
+  for (const fish of gs.neutralFish) {
+    if (fish.animStartTime === 0) continue;
+    const t = Math.min(1, (now - fish.animStartTime) / ANIM_DURATION);
+    const ease = 1 - (1 - t) * (1 - t);
+    fish.visualX = fish.animFromX + (fish.x - fish.animFromX) * ease;
+    fish.visualY = fish.animFromY + (fish.y - fish.animFromY) * ease;
+    if (t >= 1) fish.animStartTime = 0;
+    else anyRunning = true;
   }
   draw();
   if (anyRunning) {

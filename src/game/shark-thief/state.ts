@@ -26,6 +26,11 @@ export interface NeutralFish {
   sizeY:     number;  // grid cells tall
   moveAccum: number;      // counts player moves; fish moves when moveAccum >= speedDivisor
   dir:       "right" | "left" | "up" | "down";  // current facing, for sprite flip
+  visualX:      number;
+  visualY:      number;
+  animFromX:    number;
+  animFromY:    number;
+  animStartTime: number;
 }
 
 export interface KelpCell {

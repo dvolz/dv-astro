@@ -200,8 +200,8 @@ export function drawNeutralFish(
   const destH = fish.sizeY * CELL;
   const canvas = getCanvas(name, sprite, destW, destH);
 
-  const px = fish.x * CELL;
-  const py = fish.y * CELL;
+  const px = fish.visualX * CELL;
+  const py = fish.visualY * CELL;
   const cx = px + destW / 2;
   const cy = py + destH / 2;
 
