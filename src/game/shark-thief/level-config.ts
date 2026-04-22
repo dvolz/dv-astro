@@ -105,13 +105,13 @@ export interface DepthConfig {
   seagrass?:    SeagrassConfig;
   kelp?:        KelpConfig;
 
-  tilePalette:  TilePalette; // background tile palette
-  canvasBase:   string;      // canvas fill colour drawn behind the tile grid
-  enemyKeep:    number;      // normal enemies carried over from the previous depth on transition
-  coinRate:     number;      // probability per cell per player move of a coin spawning
-  coinInit:     number;      // fraction of cells pre-filled with coins at start
-  descendScore: number;      // points to earn in this depth before descending
-  minEnemyDist: number;      // min Manhattan distance from shark for enemy spawn
+  tilePalette:     TilePalette; // background tile palette
+  canvasBase:      string;      // canvas fill colour drawn behind the tile grid
+  enemyKeep:       number;      // normal enemies carried over from the previous depth on transition
+  coinRate:        number;      // probability per cell per player move of a coin spawning
+  startingYellows: number;      // fixed number of yellow coins placed at depth start
+  descendScore:    number;      // points to earn in this depth before descending
+  minEnemyDist:    number;      // min Manhattan distance from shark for enemy spawn
 }
 
 // ── Level definitions ─────────────────────────────────────────────────────
@@ -127,13 +127,13 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       interval:  25,  // a new shell spawns 25 moves after the last is collected
       points:    10,
     },
-    tilePalette:  "ocean",
-    canvasBase:   "#0f5262",
-    enemyKeep:    5,  // enemies carried in from depth 1 start (depth 1 always spawns fresh)
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "ocean",
+    canvasBase:      "#0f5262",
+    enemyKeep:       5,  // enemies carried in from depth 1 start (depth 1 always spawns fresh)
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 
   2: {
@@ -150,15 +150,15 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       minHeight:          9,
       maxHeight:          13,
       swayPeriod:         4000,
-      stipeWidthFraction: 0.38,
+      stipeWidthFraction: 0.27,
     },
-    tilePalette:  "nursery",
-    canvasBase:   "#0a4a5e",
-    enemyKeep:    5,  // enemies carried over from depth 1
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "nursery",
+    canvasBase:      "#0a4a5e",
+    enemyKeep:       5,  // enemies carried over from depth 1
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 
   3: {
@@ -172,13 +172,13 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       cloudBuffer:     2,
       cloudSize:       4,
     },
-    tilePalette:  "toxic",
-    canvasBase:   "#0a1f0a",
-    enemyKeep:    8,
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 6,
+    tilePalette:     "toxic",
+    canvasBase:      "#0a1f0a",
+    enemyKeep:       8,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    6,
   },
 
   4: {
@@ -192,13 +192,13 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     icePatches: {
       initialCount: 8, // number of ice patch shapes seeded at the start of this depth
     },
-    tilePalette:  "arctic",
-    canvasBase:   "#0a1a2e",
-    enemyKeep:    10, // enemies carried over from depth 3
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "arctic",
+    canvasBase:      "#0a1a2e",
+    enemyKeep:       10, // enemies carried over from depth 3
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 
   5: {
@@ -211,13 +211,13 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
       barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
     },
-    tilePalette:  "tropical",
-    canvasBase:   "#0f5262",
-    enemyKeep:    12, // enemies carried over from depth 4
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "tropical",
+    canvasBase:      "#0f5262",
+    enemyKeep:       12, // enemies carried over from depth 4
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 
   6: {
@@ -236,23 +236,23 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       bladderEnabled: true,
       bladderPoints:  5,
     },
-    tilePalette:  "pacific",
-    canvasBase:   "#0c4a5a",
-    enemyKeep:    14,
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "pacific",
+    canvasBase:      "#0c4a5a",
+    enemyKeep:       14,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 
   7: {
-    tilePalette:  "ocean",
-    canvasBase:   "#0f5262",
-    enemyKeep:    5,
-    coinRate:     0.00025,
-    coinInit:     0.05,
-    descendScore: 100,
-    minEnemyDist: 5,
+    tilePalette:     "ocean",
+    canvasBase:      "#0f5262",
+    enemyKeep:       5,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
   },
 };
 

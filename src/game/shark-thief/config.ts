@@ -3,6 +3,7 @@
 
 export const ANIM_DURATION  = 80;  // ms — ease-out quad shark slide
 export const DYING_DURATION = 450; // ms per dying-enemy dissolve animation
+export const RISING_DURATION = 350; // ms per rising-pickup pop-in animation
 export const ARCTIC_TILE_COLORS = [
   "#8ab8cc", "#7aafc4", "#8cbfd4", "#82b4c8", "#90c0d0",
   "#7ab0c4", "#88bcd0", "#7cb2c8", "#86bace", "#7aaecc",

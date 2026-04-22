@@ -1,7 +1,7 @@
 // ===== Pixel-art draw functions =====  →  GameScene.swift / SharkNode.swift
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
-import { GRID, DYING_DURATION } from "./config";
+import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
 import { LEVEL_CONFIG, PACIFIC_DEPTH } from "./level-config";
 import { gs, type NeutralFish } from "./state";
 import { drawNeutralFish } from "./sprites";
@@ -848,13 +848,59 @@ export function draw(): void {
 
   // Coin pickups
   const pad = CELL * 0.2;
+  // Build set of still-animating (rising) coins to skip in the base draw loop
+  const risingSet = new Set(gs.risingPickups.map(rp => `${rp.x},${rp.y}`));
   for (let r = 0; r < GRID; r++)
     for (let c = 0; c < GRID; c++) {
       if (!gs.pickups[r][c]) continue;
+      if (risingSet.has(`${c},${r}`)) continue; // handled by rising animation block below
       const px = c * CELL + pad, py = r * CELL + pad, ps = CELL - pad * 2;
       ctx.fillStyle = "#7a5500"; ctx.fillRect(px - 1, py - 1, ps + 2, ps + 2);
       ctx.fillStyle = "#ffd166"; ctx.fillRect(px, py, ps, ps);
     }
+
+  // Dissolving yellows
+  {
+    const nowDying = performance.now();
+    for (const dp of gs.dyingPickups) {
+      const elapsed = nowDying - dp.startTime;
+      if (elapsed < 0 || elapsed >= DYING_DURATION) continue;
+      const t = elapsed / DYING_DURATION;
+      const ease = 1 - t * t; // ease out
+      const px = dp.x * CELL;
+      const py = dp.y * CELL;
+      const shrink = Math.round(CELL * 0.1 * (1 - t));
+      ctx.globalAlpha = ease * 0.9;
+      ctx.fillStyle = "#ffd166";
+      ctx.fillRect(px + shrink, py + shrink, CELL - shrink * 2, CELL - shrink * 2);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Rising yellows (pop-in)
+  {
+    const nowRising = performance.now();
+    for (const rp of gs.risingPickups) {
+      const elapsed = nowRising - rp.startTime;
+      if (elapsed < 0) continue; // not yet
+      if (elapsed >= RISING_DURATION) continue; // base loop handles it now
+      const t = Math.min(1, elapsed / RISING_DURATION);
+      const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease in-out
+      const px = rp.x * CELL;
+      const py = rp.y * CELL;
+      const half = CELL / 2;
+      const size = CELL * ease;
+      ctx.globalAlpha = ease * 0.9;
+      ctx.fillStyle = "#ffd166";
+      ctx.fillRect(
+        Math.round(px + half - size / 2),
+        Math.round(py + half - size / 2),
+        Math.round(size),
+        Math.round(size),
+      );
+      ctx.globalAlpha = 1;
+    }
+  }
 
   // Ammonite super pickups
   for (let r = 0; r < GRID; r++)

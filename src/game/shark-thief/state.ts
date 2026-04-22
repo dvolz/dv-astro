@@ -40,6 +40,11 @@ export interface DyingEnemy {
   startTime: number;   // performance.now() when dissolve begins
 }
 
+export interface DyingPickup {
+  x: number; y: number;
+  startTime: number;
+}
+
 // Single mutable state object — imported by all modules as a singleton.
 // Mutating gs.foo in any module is visible everywhere (ES modules are singletons).
 export const gs = {
@@ -123,8 +128,10 @@ export const gs = {
   startedFromDepth1: true, // false when dev depth-jump is used
 
   // ── Dying-enemy dissolve animation ───────────────────────────────────
-  dyingEnemies: [] as DyingEnemy[],
-  dyingRafId:   null as number | null,
+  dyingEnemies:  [] as DyingEnemy[],
+  dyingPickups:  [] as DyingPickup[],
+  risingPickups: [] as DyingPickup[],
+  dyingRafId:    null as number | null,
 
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,

@@ -1,9 +1,9 @@
 // ===== GameEngine =====  →  GameEngine.swift
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
-import { GRID, DYING_DURATION } from "./config";
+import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
 import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
-import { gs } from "./state";
+import { gs, type DyingPickup } from "./state";
 import { leviathanCollision } from "./collision";
 import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish } from "./spawn";
 import { resolveSlide } from "./slide";
@@ -23,9 +23,11 @@ export function startDyingLoop(): void {
   if (gs.dyingRafId) return;
   function tick() {
     const now = performance.now();
-    gs.dyingEnemies = gs.dyingEnemies.filter(de => now - de.startTime < DYING_DURATION);
+    gs.dyingEnemies  = gs.dyingEnemies.filter(de => now - de.startTime < DYING_DURATION);
+    gs.dyingPickups  = gs.dyingPickups.filter(dp => now - dp.startTime < DYING_DURATION);
+    gs.risingPickups = gs.risingPickups.filter(rp => now - rp.startTime < RISING_DURATION);
     draw();
-    if (gs.dyingEnemies.length > 0) {
+    if (gs.dyingEnemies.length > 0 || gs.dyingPickups.length > 0 || gs.risingPickups.length > 0) {
       gs.dyingRafId = requestAnimationFrame(tick);
     } else {
       gs.dyingRafId = null;
@@ -221,6 +223,59 @@ function spreadToxicContamination(): void {
   }
 }
 
+// ── Pickup dissolve / seed animations ────────────────────────────────────
+
+function dissolvePickups(): void {
+  const now = performance.now();
+  const collected: Array<{ x: number; y: number; dist: number }> = [];
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
+      if (gs.pickups[r][c]) {
+        const dist = Math.abs(c - gs.shark.x) + Math.abs(r - gs.shark.y);
+        collected.push({ x: c, y: r, dist });
+        gs.pickups[r][c] = false;
+      }
+    }
+  }
+  // Sort so coins closest to shark dissolve first (ascending dist)
+  collected.sort((a, b) => a.dist - b.dist);
+  const maxDist = collected.length > 0 ? (collected[collected.length - 1].dist || 1) : 1;
+  // Stagger over half the dying duration so they're gone well before DYING_DURATION
+  const staggerWindow = DYING_DURATION * 0.5;
+  gs.dyingPickups = collected.map(({ x, y, dist }) => ({
+    x, y,
+    startTime: now + (dist / maxDist) * staggerWindow,
+  }));
+}
+
+function seedStartingYellows(): void {
+  const count = LEVEL_CONFIG[gs.currentDepth].startingYellows;
+  const now = performance.now();
+  // Coins pop in after dissolve finishes + small buffer
+  const popInStart = now + DYING_DURATION + 50;
+  const popInWindow = RISING_DURATION * 1.5;
+  gs.risingPickups = [];
+  let placed = 0, attempts = 0;
+  while (placed < count && attempts < 2000) {
+    attempts++;
+    const x = Math.floor(Math.random() * GRID);
+    const y = Math.floor(Math.random() * GRID);
+    if (
+      gs.pickups[y][x] ||
+      gs.superPickups[y][x] ||
+      gs.coralPickups[y][x] ||
+      gs.coral[y][x] ||
+      (x === gs.shark.x && y === gs.shark.y) ||
+      gs.enemies.some(e => e.x === x && e.y === y) ||
+      gs.neutralFish.some(f => x >= f.x && x < f.x + f.sizeX && y >= f.y && y < f.y + f.sizeY)
+    ) continue;
+    gs.pickups[y][x] = true;
+    // Stagger pop-in: random delay within window for a scattered appear effect
+    gs.risingPickups.push({ x, y, startTime: popInStart + Math.random() * popInWindow });
+    placed++;
+  }
+}
+
 // ── Depth transition ──────────────────────────────────────────────────────
 
 export function checkDepthTransition(): void {
@@ -246,6 +301,9 @@ export function checkDepthTransition(): void {
   // Tear down the mechanic from the depth we're leaving
   teardownMechanic(LEVEL_CONFIG[prevDepth]);
 
+  // Dissolve existing coins before transitioning
+  dissolvePickups();
+
   gs.currentDepth++;
   updateHudDepth(gs.currentDepth);
 
@@ -264,6 +322,10 @@ export function checkDepthTransition(): void {
   while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[gs.currentDepth].enemyKeep) gs.enemies.push(spawnEnemy());
 
   setupMechanic(LEVEL_CONFIG[gs.currentDepth]);
+
+  // Seed new coins for this depth with pop-in animation
+  seedStartingYellows();
+  startDyingLoop();
 
   // Depth 7 always spawns the leviathan
   if (gs.currentDepth === 7) spawnLeviathan();
@@ -303,9 +365,7 @@ export function init(): void {
   gs.colors = Array.from({ length: GRID }, () =>
     Array.from({ length: GRID }, () => randomColorFromPalette(LEVEL_CONFIG[gs.currentDepth].tilePalette)),
   );
-  gs.pickups = Array.from({ length: GRID }, () =>
-    Array.from({ length: GRID }, () => Math.random() < LEVEL_CONFIG[gs.currentDepth].coinInit),
-  );
+  gs.pickups       = Array.from({ length: GRID }, () => Array(GRID).fill(false));
   gs.superPickups  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
   gs.coralPickups  = Array.from({ length: GRID }, () => Array(GRID).fill(false));
   gs.coral         = Array.from({ length: GRID }, () => Array(GRID).fill(false));
@@ -334,7 +394,6 @@ export function init(): void {
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
   gs.shark.y = Math.floor(Math.random() * GRID);
-  gs.pickups[gs.shark.y][gs.shark.x]      = false;
   gs.superPickups[gs.shark.y][gs.shark.x] = false;
   gs.sharkPrevX = gs.shark.x;
   gs.sharkPrevY = gs.shark.y;
@@ -343,13 +402,17 @@ export function init(): void {
   const initAmmonites = LEVEL_CONFIG[gs.currentDepth].ammonite?.initCount ?? 0;
   for (let i = 0; i < initAmmonites; i++) spawnAmmoniteIfNeeded();
 
+  seedStartingYellows();
+
   gs.sharkVisualX = gs.shark.x;
   gs.sharkVisualY = gs.shark.y;
 
   gs.highScore = getHighScore();
 
   // Reset dying-enemy animation
-  gs.dyingEnemies = [];
+  gs.dyingEnemies  = [];
+  gs.dyingPickups  = [];
+  gs.risingPickups = [];
   if (gs.dyingRafId) { cancelAnimationFrame(gs.dyingRafId); gs.dyingRafId = null; }
   if (gs.enemyAnimRafId) { cancelAnimationFrame(gs.enemyAnimRafId); gs.enemyAnimRafId = null; }
 
@@ -863,7 +926,9 @@ export function loadGame(save: any): void {
   );
   document.getElementById("gameDepthWrapper")!.className = `game-depth-wrapper depth-${gs.currentDepth}`;
 
-  gs.dyingEnemies = [];
+  gs.dyingEnemies  = [];
+  gs.dyingPickups  = [];
+  gs.risingPickups = [];
   if (gs.dyingRafId) { cancelAnimationFrame(gs.dyingRafId); gs.dyingRafId = null; }
   if (gs.enemyAnimRafId) { cancelAnimationFrame(gs.enemyAnimRafId); gs.enemyAnimRafId = null; }
 
@@ -913,6 +978,10 @@ export function initAtDepth(targetDepth: number): void {
   init();
   if (targetDepth > 1) gs.startedFromDepth1 = false;
 
+  // Clear any stale animation state from init()'s seedStartingYellows call
+  gs.dyingPickups  = [];
+  gs.risingPickups = [];
+
   const wrapper = document.getElementById("gameDepthWrapper")!;
   for (let d = 2; d <= targetDepth; d++) {
     if (d > 2) teardownMechanic(LEVEL_CONFIG[d - 1]);
@@ -937,6 +1006,12 @@ export function initAtDepth(targetDepth: number): void {
   gs.enemies    = [];
   gs.bigEnemies = [];
   while (gs.enemies.length < finalKeep) gs.enemies.push(spawnEnemy());
+
+  // Re-seed coins for the target depth (no dissolve animation on dev jump)
+  gs.pickups = Array.from({ length: GRID }, () => Array(GRID).fill(false));
+  seedStartingYellows();
+  // Immediately place all coins without pop-in for dev jump
+  gs.risingPickups = [];
 
   draw();
 }
