@@ -5,7 +5,7 @@ import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
 import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
 import { gs, type DyingPickup } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish, spawnAlgaeBallIfNeeded } from "./spawn";
 import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
@@ -113,6 +113,10 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.kelpBladders    = [];
     gs.kelpBladdersSet = new Set();
   }
+  if (cfg.algaeBall) {
+    gs.algaeBalls = [];
+    gs.algaeBallRespawnTimers = [];
+  }
 }
 
 function setupMechanic(cfg: DepthConfig): void {
@@ -161,6 +165,11 @@ function setupMechanic(cfg: DepthConfig): void {
   if (cfg.neutralFish) seedNeutralFish();
   if (cfg.seagrass)    seedSeagrass();
   if (cfg.kelp)        seedKelp();
+  if (cfg.algaeBall) {
+    gs.algaeBalls = [];
+    gs.algaeBallRespawnTimers = [];
+    for (let i = 0; i < cfg.algaeBall.count; i++) spawnAlgaeBallIfNeeded();
+  }
 }
 
 // ── Toxic contamination spread ────────────────────────────────────────────
@@ -385,11 +394,13 @@ export function init(): void {
   gs.toxicBarrels             = [];
   gs.toxicBarrelMovesCounter  = 0;
   gs.toxicContamination       = [];
-  gs.neutralFish   = [];
-  gs.seagrassCells = [];
-  gs.seagrassSet   = new Set();
-  gs.kelpCells     = [];
-  gs.kelpSet       = new Set();
+  gs.neutralFish              = [];
+  gs.algaeBalls               = [];
+  gs.algaeBallRespawnTimers   = [];
+  gs.seagrassCells            = [];
+  gs.seagrassSet              = new Set();
+  gs.kelpCells                = [];
+  gs.kelpSet                  = new Set();
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -640,6 +651,76 @@ export function moveShark(dx: number, dy: number): void {
     spawnSingleNeutralFish(fishTypes[Math.floor(Math.random() * fishTypes.length)]);
     gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
     checkDepthTransition();
+  }
+
+  // Algae balls (Depth 6 — Busy Pacific)
+  const algaeCfg = LEVEL_CONFIG[gs.currentDepth].algaeBall;
+  if (algaeCfg) {
+    // Drift each ball one cell to the right when accumulator reaches 1
+    for (const ball of gs.algaeBalls) {
+      ball.driftAccum += algaeCfg.driftSpeed;
+      if (ball.driftAccum >= 1) {
+        ball.driftAccum -= 1;
+        ball.trail.unshift({ x: ball.x, y: ball.y });
+        if (ball.trail.length > 5) ball.trail.length = 5;
+        ball.x++;
+      }
+    }
+
+    // Balls that drifted off the right edge: queue a respawn timer
+    const escaped = gs.algaeBalls.filter(b => b.x >= GRID);
+    for (let i = 0; i < escaped.length; i++) {
+      gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
+    }
+    gs.algaeBalls = gs.algaeBalls.filter(b => b.x < GRID);
+
+    // Decrement respawn timers; spawn a new ball when one hits 0
+    gs.algaeBallRespawnTimers = gs.algaeBallRespawnTimers
+      .map(t => t - 1)
+      .filter(t => {
+        if (t <= 0) { spawnAlgaeBallIfNeeded(); return false; }
+        return true;
+      });
+
+    // Check if shark collected any algae ball
+    const collectedIdx = gs.algaeBalls.findIndex(b => b.x === gs.shark.x && b.y === gs.shark.y);
+    if (collectedIdx !== -1) {
+      gs.algaeBalls.splice(collectedIdx, 1);
+      gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
+      gs.score += algaeCfg.points;
+      gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+      updateHudScore(gs.score, "special");
+      const fishTypes: Array<"mackerel" | "garibaldi" | "grouper"> = ["mackerel", "garibaldi", "grouper"];
+      const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
+      if (fishCfg) {
+        let spawnX = 0, spawnY = 0, fAttempts = 0;
+        const fType = fishTypes[Math.floor(Math.random() * fishTypes.length)];
+        const fSpec = fishCfg[fType];
+        do {
+          spawnX = Math.floor(Math.random() * (GRID - fSpec.sizeX + 1));
+          spawnY = Math.floor(Math.random() * (GRID - fSpec.sizeY + 1));
+          fAttempts++;
+          if (fAttempts > 500) break;
+        } while (
+          Math.abs(spawnX - gs.shark.x) + Math.abs(spawnY - gs.shark.y) < algaeCfg.fishSpawnBuffer ||
+          gs.neutralFish.some(f =>
+            spawnX < f.x + f.sizeX && spawnX + fSpec.sizeX > f.x &&
+            spawnY < f.y + f.sizeY && spawnY + fSpec.sizeY > f.y
+          ) ||
+          gs.pickups[spawnY]?.[spawnX] ||
+          gs.coral[spawnY]?.[spawnX]
+        );
+        if (fAttempts <= 500) {
+          gs.neutralFish.push({
+            type: fType, x: spawnX, y: spawnY, sizeX: fSpec.sizeX, sizeY: fSpec.sizeY,
+            moveAccum: 0, dir: "right",
+            visualX: spawnX, visualY: spawnY, animFromX: spawnX, animFromY: spawnY, animStartTime: 0,
+          });
+          gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
+        }
+      }
+      checkDepthTransition();
+    }
   }
 
   // Super pickup (ammonite → big enemy)
@@ -948,8 +1029,10 @@ export function loadGame(save: any): void {
     gs.toxicContamination = [];
   }
 
-  gs.neutralFish     = [];
-  gs.seagrassCells   = [];
+  gs.neutralFish              = [];
+  gs.algaeBalls               = [];
+  gs.algaeBallRespawnTimers   = [];
+  gs.seagrassCells            = [];
   gs.seagrassSet     = new Set();
   gs.kelpCells       = [];
   gs.kelpSet         = new Set();
@@ -963,6 +1046,9 @@ export function loadGame(save: any): void {
     gs.kelpBladders    = [];
     gs.kelpBladdersSet = new Set();
     seedKelp();
+  }
+  if (retryCfg.algaeBall) {
+    for (let i = 0; i < retryCfg.algaeBall.count; i++) spawnAlgaeBallIfNeeded();
   }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");

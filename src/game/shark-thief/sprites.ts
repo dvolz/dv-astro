@@ -3,7 +3,7 @@
 // Mackerel: 32×16. Garibaldi/Grouper: 16×16. Rendered right-facing; left/up/down via canvas transform.
 // Offscreen canvases are built once and cached by (name + destW).
 
-import type { NeutralFish } from "./state";
+import type { NeutralFish, AlgaeBall } from "./state";
 
 export interface SpriteData {
   width:   number;
@@ -246,5 +246,76 @@ export function drawNeutralFish(
   }
 
   ctx.drawImage(canvas, -destW / 2, -destH / 2);
+  ctx.restore();
+}
+
+// ── Algae ball — drifting green organic pickup (Depth 6 — Busy Pacific) ──────
+
+export function drawAlgaeBall(
+  ctx:  CanvasRenderingContext2D,
+  ball: AlgaeBall,
+  CELL: number,
+): void {
+  const now = Date.now();
+  const cx = ball.x * CELL + CELL / 2;
+  const cy = ball.y * CELL + CELL / 2;
+  const r  = CELL * 0.36;
+
+  ctx.save();
+
+  // Slow gentle bob
+  const bob = Math.sin(now / 900 + ball.x * 1.3 + ball.y * 0.7) * CELL * 0.05;
+
+  ctx.translate(cx, cy + bob);
+
+  // Outer dark outline
+  ctx.fillStyle = "#0a2208";
+  ctx.beginPath();
+  ctx.arc(0, 0, r + 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Base green body
+  ctx.fillStyle = "#2a7a18";
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mid green layer
+  ctx.fillStyle = "#3ea024";
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.82, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Fluffy bumps around the perimeter — 6 small lobes
+  ctx.fillStyle = "#2a7a18";
+  const lobeCount = 6;
+  const lobeR = r * 0.28;
+  for (let i = 0; i < lobeCount; i++) {
+    const angle = (i / lobeCount) * Math.PI * 2 + now / 3000;
+    const lx = Math.cos(angle) * r * 0.72;
+    const ly = Math.sin(angle) * r * 0.72;
+    ctx.beginPath();
+    ctx.arc(lx, ly, lobeR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Bright inner highlight
+  ctx.fillStyle = "#66cc40";
+  ctx.beginPath();
+  ctx.arc(-r * 0.18, -r * 0.20, r * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Specular highlight
+  ctx.fillStyle = "#aaee80";
+  ctx.beginPath();
+  ctx.arc(-r * 0.22, -r * 0.25, r * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tiny white glint
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(-r * 0.28, -r * 0.30, Math.max(1, r * 0.065), 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }

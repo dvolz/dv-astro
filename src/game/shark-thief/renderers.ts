@@ -4,7 +4,7 @@
 import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
 import { LEVEL_CONFIG, PACIFIC_DEPTH } from "./level-config";
 import { gs, type NeutralFish } from "./state";
-import { drawNeutralFish } from "./sprites";
+import { drawNeutralFish, drawAlgaeBall } from "./sprites";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -938,6 +938,28 @@ export function draw(): void {
     const bp = CELL * 0.06;
     for (const barrel of gs.toxicBarrels) {
       drawToxicBarrel(ctx, barrel.x * CELL + bp, barrel.y * CELL + bp, CELL - bp * 2);
+    }
+  }
+
+  // Algae ball trails (Depth 6 — Busy Pacific) — drawn before balls so balls render on top
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
+    const trailAlphas = [0.46, 0.31, 0.21, 0.14, 0.10];
+    for (const ball of gs.algaeBalls) {
+      for (let i = 0; i < ball.trail.length; i++) {
+        const cell = ball.trail[i];
+        ctx.save();
+        ctx.globalAlpha = trailAlphas[i] ?? 0.08;
+        ctx.fillStyle = "rgba(80, 160, 120, 1)";
+        ctx.fillRect(cell.x * CELL, cell.y * CELL, CELL, CELL);
+        ctx.restore();
+      }
+    }
+  }
+
+  // Algae balls (Depth 6 — Busy Pacific)
+  if (!!LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
+    for (const ball of gs.algaeBalls) {
+      drawAlgaeBall(ctx, ball, CELL);
     }
   }
 

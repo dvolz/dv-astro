@@ -59,6 +59,14 @@ export interface ToxicBarrelConfig {
 
 export type NeutralFishType = "mackerel" | "grouper" | "garibaldi";
 
+export interface AlgaeBallConfig {
+  count:            number;  // max algae balls active at once
+  points:           number;  // points per ball collected
+  driftSpeed:       number;  // grid cells per player turn (fractional ok)
+  fishSpawnBuffer:  number;  // min Manhattan distance from shark for the spawned fish
+  respawnInterval:  number;  // player moves to wait before respawning a ball that drifted off
+}
+
 export interface NeutralFishSpecConfig {
   count:          number;  // how many of this species spawn at depth start
   speedDivisor:   number;  // fish moves once per N player moves (1 = every move, 2 = every 2 moves, etc.)
@@ -102,6 +110,7 @@ export interface DepthConfig {
   icePatches?:  IcePatchConfig;
   toxicBarrel?: ToxicBarrelConfig;
   neutralFish?: NeutralFishConfig;
+  algaeBall?:   AlgaeBallConfig;
   seagrass?:    SeagrassConfig;
   kelp?:        KelpConfig;
 
@@ -227,11 +236,12 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       grouper:   { count: 2, speedDivisor: 3, sizeX: 2, sizeY: 2 },
       garibaldi: { count: 4, speedDivisor: 1, sizeX: 1, sizeY: 1 },
     },
-    ammonite: {
-      initCount: 1,   // ammonites placed at game start
-      max:       4,   // up to 4 purple shells on the board at once
-      interval:  25,  // a new shell spawns 25 moves after the last is collected
-      points:    10,
+    algaeBall: {
+      count:            3,
+      points:           5,
+      driftSpeed:       0.5,
+      fishSpawnBuffer:  3,
+      respawnInterval:  20,
     },
     // kelp: {
     //   strandCount:    10,

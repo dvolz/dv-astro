@@ -2,7 +2,7 @@
 
 import { GRID } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
-import { gs, type Enemy, type BigEnemy, type NeutralFish } from "./state";
+import { gs, type Enemy, type BigEnemy, type NeutralFish, type AlgaeBall } from "./state";
 import { bigEnemyOverlaps } from "./collision";
 
 // ── Center safe zone ─────────────────────────────────────────────────────
@@ -317,6 +317,31 @@ export function seedKelp(): void {
       strandIdx++;
     }
   }
+}
+
+// ── Algae balls (Depth 6 — Busy Pacific) ────────────────────────────────
+
+export function spawnAlgaeBallIfNeeded(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].algaeBall;
+  if (!cfg || gs.algaeBalls.length >= cfg.count) return;
+  const maxX = Math.floor(GRID * 0.7);
+  let ax: number, ay: number, attempts = 0;
+  do {
+    ax = Math.floor(Math.random() * maxX);
+    ay = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    gs.algaeBalls.some(b => b.x === ax && b.y === ay) ||
+    gs.pickups[ay]?.[ax]        ||
+    gs.superPickups[ay]?.[ax]   ||
+    gs.coral[ay]?.[ax]          ||
+    gs.neutralFish.some(f =>
+      ax >= f.x && ax < f.x + f.sizeX && ay >= f.y && ay < f.y + f.sizeY
+    ) ||
+    (gs.shark.x === ax && gs.shark.y === ay)
+  );
+  gs.algaeBalls.push({ x: ax, y: ay, driftAccum: 0, trail: [] });
 }
 
 // ── Seagrass terrain (Depth 2 — Nursery) ────────────────────────────────

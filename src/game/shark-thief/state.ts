@@ -34,6 +34,13 @@ export interface NeutralFish {
   spawnTime?:   number;  // Date.now() when spawned from bladder; drives 2s spawn flash
 }
 
+export interface AlgaeBall {
+  x:          number;
+  y:          number;
+  driftAccum: number;  // fractional drift accumulator; moves right when >= 1
+  trail:      Array<{ x: number; y: number }>;  // up to 5 past grid positions, most recent first
+}
+
 export interface KelpCell {
   x:      number;
   y:      number;
@@ -116,7 +123,9 @@ export const gs = {
   seagrassSet:   new Set<string>(),
 
   // ── Depth 6 — Busy Pacific ───────────────────────────────────────────────
-  neutralFish:       [] as NeutralFish[],
+  neutralFish:              [] as NeutralFish[],
+  algaeBalls:               [] as AlgaeBall[],
+  algaeBallRespawnTimers:   [] as number[],  // each entry = moves remaining before a new ball spawns
   kelpCells:         [] as KelpCell[],  // static for the run; seeded at depth start
   kelpSet:           new Set<string>(), // "x,y" fast lookup — rebuilt when kelpCells changes
   kelpBladders:      [] as { x: number; y: number }[],

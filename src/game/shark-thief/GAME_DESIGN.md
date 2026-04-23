@@ -1,7 +1,7 @@
 # Shark Thief — Game Design Document
 
 > **Living document.** Updated by Zak as design decisions are made.
-> Last updated: 2026-04-23 (Leaderboard redesign decisions recorded)
+> Last updated: 2026-04-23 (Algae Ball mechanic approved for Depth 6)
 
 ---
 
@@ -81,10 +81,11 @@ Every depth is a fresh 100-point challenge. When a player earns 100 points withi
   - **Garibaldi** (vivid orange, 1×1): 4 on board, moves every player turn. Fastest fish; always reliably blocks movement.
   - **Grouper** (earth-toned, 2×2): 2 on board, moves every 3 player turns. Slow and large — creates significant impassable zones.
 - **Kelp:** Columns of seaweed grow from the bottom of the board upward, reaching ~85% of canvas height with slight per-column height variation. Controlled by `strandCount` in `level-config.ts` — columns are distributed evenly across the grid width with a small jitter so they feel organic but never cluster or leave huge gaps. The shark can stand inside kelp cells; kelp is drawn on top of the player to create an occlusion effect.
-- **Signature piece:** Neutral fish + kelp — both exclusive to this depth and cleared on descent.
+- **Algae ball:** A drifting green organic pickup. Spawns in the left 70% of the board and drifts one cell right each turn. If it exits the right edge it disappears permanently — it does not reappear at the left. Worth 5 points on collection. Collecting one spawns a new neutral fish somewhere on the board (fish type is random and unknown to the player — this is intentional). The spawn is not spatially immediate to the collection point; the randomness is part of the mechanic. Two config values govern this: the starting count of neutral fish on the board at depth entry (`neutralFish.initialCount` or equivalent per-species `count` fields), and a shark-proximity buffer (`algaeBall.fishSpawnBuffer`) — a minimum distance in cells (Manhattan or Chebyshev) from the shark's current position where a newly spawned fish cannot appear. This prevents instant-death spawns while preserving the unpredictability of where the fish lands. All algae ball tuning — point value, drift behavior, fish spawn buffer — lives in `level-config.ts`. Starting fish counts per species are already controlled by the per-species `count` fields in `neutralFish`.
+- **Signature piece:** Neutral fish + kelp + algae ball — all exclusive to this depth and cleared on descent.
 - **Visual design:** `drawPacificLighting()` runs every frame after the tile grid. It applies a depth gradient (light cyan at the surface fading to deep navy at the bottom) plus 7 animated sun ray wedges that converge from a focal point above the top-center. Rays carry a pale gold color near the surface transitioning to cool blue-white lower down, simulating sunlight filtering through water. The shimmer effect layers on top of this and still functions normally.
 - **On entry:** 14 enemies present.
-- **Design intent:** The fish are environmental obstacles you cannot collect — they move around, creating a board that shifts shape every turn. The kelp adds visual density and a hiding mechanic. Together they make the Pacific feel alive and crowded without adding a traditional "collect this, spawn that" loop.
+- **Design intent:** The fish are environmental obstacles you cannot collect — they move around, creating a board that shifts shape every turn. The kelp adds visual density and a hiding mechanic. The algae ball adds a "collect this, spawn that" loop, but the cost (a new fish) is spatially unpredictable — the board gets harder in a way you can't precisely anticipate. Together they make the Pacific feel alive and crowded.
 
 ### Depth 7 — The Abyss _(stub)_
 
@@ -206,10 +207,17 @@ All `interval` values are in **player moves, not seconds**. On a fast-moving pla
 
 **`neutralFish`** (Depth 6 — ambient fish species)
 - Contains three sub-objects: `mackerel`, `garibaldi`, `grouper`. Each has:
-  - `count` — how many of this species spawn at depth start
+  - `count` — how many of this species spawn at depth start. This is the primary board-saturation lever: raise it to make the Pacific feel crowded from the first move, lower it to give the player more room before algae ball collections start adding to the count.
   - `speedDivisor` — fish moves once per N player moves (1 = every move, 2 = every 2 moves, etc.)
   - `size` — 1 (1×1 tile) or 2 (2×2 tiles, grouper only)
 - Fish are impassable and cannot walk onto the shark's cell. No pickup, no enemy spawn — pure obstacle.
+
+**`algaeBall`** (Depth 6 — drifting pickup)
+- `points` — points awarded on collection. Currently 5.
+- `driftSpeed` — cells the ball moves right per player turn. Currently 1.
+- `fishSpawnBuffer` — minimum distance (cells) from the shark's current position where a newly spawned fish cannot appear after an algae ball is collected. Works like `minEnemyDist` but applies to the fish spawn triggered by collection, not to enemy spawns. Prevents the collected fish from appearing directly on top of or immediately adjacent to the shark. Tune this to set how much warning the player effectively gets — a smaller buffer makes collection feel more dangerous.
+- Spawn count on collection is always 1 fish. The fish type is random. There is no config for this — randomness is intentional.
+- A hard cap on total neutral fish count should be derived from the per-species `count` fields plus expected algae ball collections. If the board becomes unnavigable, lower the starting `count` values rather than capping fish spawns mid-run.
 
 **`kelp`** (Depth 6 — seaweed terrain)
 - `strandCount` — number of kelp columns placed on the board. Columns are distributed evenly across the grid width with ±30% zone-width jitter, so strands feel organic but never cluster or leave large gaps. Tune this number to change how dense the kelp forest feels.
@@ -250,7 +258,8 @@ The leaderboard screen has three tabs: **HIGH SCORE**, **DEPTH TIMES**, and **SH
 - **Leviathan move rate:** Currently moves every player move — is this too punishing given its 3×3 footprint?
 - **Baby shark chain length:** Currently unbounded (you can hatch many babies). Should there be a cap?
 - **Ammonite vs big enemy balance:** Does the 10 pt reward justify the 2×2 enemy risk at Depth 1? Players may skip it entirely.
-- **Busy Pacific — does the Grouper need a pickup?** The depth currently has no collectible mechanic — fish are pure obstacles. This is intentional for now but may feel incomplete compared to other depths.
-- **Busy Pacific — kelp density:** `strandCount: 10` is a starting point. Needs playtesting to find the right balance between atmosphere and navigability.
+- **Busy Pacific — algae ball "disappears at the right edge" legibility:** The ball drifting off the right edge and not returning is a permanent loss of a pickup opportunity. This rule is invisible without some signal to the player — a pulsing outline or color shift as it nears the edge, or a faint trail. Needs a visual solution before the mechanic reads correctly.
+- **Busy Pacific — fish spawn legibility after algae ball collection:** Spawning a random fish type in a random location is intentionally unpredictable, but the player needs to know it happened. A brief visual callout on the newly spawned fish (flash, pop-in animation) is required so the player can locate the new threat. Without it, the board just gets harder and the cause is invisible.
+- **Busy Pacific — does kelp density still need tuning?** `strandCount: 10` is a starting point. Needs playtesting to find the right balance between atmosphere and navigability, especially now that algae balls also compete for navigation space.
 - **Mobile feel:** D-pad repeat delay (200ms initial, 100ms interval) — does this feel right for iOS?
 - **Depth progress HUD format:** Progress bar vs. numeric counter (e.g., "46/100")? Needs playtesting.
