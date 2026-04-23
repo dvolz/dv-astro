@@ -5,7 +5,7 @@ import { GRID } from "./config";
 import { DEPTH_META } from "./config";
 import { getHighScore, getSave, getMaxDepth, clearSave, saveGame } from "./persistence";
 import { initRenderer } from "./renderers";
-import { fetchLeaderboard } from "./leaderboard";
+import { fetchLeaderboard, showDepthTimePanel, hideDepthTimePanel } from "./leaderboard";
 import { init, loadGame, initAtDepth, setShowGameScreen } from "./engine";
 import { openDepthInfo } from "./depth-info/scenes";
 
@@ -180,10 +180,15 @@ export function initNavigation(): void {
 
   document.getElementById("lbBackBtn")!.addEventListener("click", () => showScreen("main-menu"));
 
-  document.querySelectorAll<HTMLButtonElement>(".lb-tab:not(:disabled)").forEach(btn => {
+  document.querySelectorAll<HTMLButtonElement>(".lb-tab").forEach(btn => {
     btn.addEventListener("click", () => {
       const cat = btn.dataset.category;
-      if (cat) fetchLeaderboard(cat);
+      if (cat === "depth_times") {
+        showDepthTimePanel();
+      } else if (cat) {
+        hideDepthTimePanel();
+        fetchLeaderboard(cat);
+      }
     });
     btn.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); btn.click(); }

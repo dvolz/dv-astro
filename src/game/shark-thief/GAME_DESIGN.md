@@ -1,7 +1,7 @@
 # Shark Thief — Game Design Document
 
 > **Living document.** Updated by Zak as design decisions are made.
-> Last updated: 2026-04-21 (Busy Pacific depth documented; depth order corrected)
+> Last updated: 2026-04-23 (Leaderboard redesign decisions recorded)
 
 ---
 
@@ -225,6 +225,22 @@ Start with two questions: **What is the opening feel?** (set `enemyKeep` and `co
 Then think about pacing: `descendScore` is how long the player spends in this depth. 100 pts is the current standard — all depths use it. That's a deliberate choice for predictability, but it's tunable if a depth needs to be a sprint or a slog.
 
 The visual identity (`tilePalette`, `canvasBase`) should reinforce the mechanical mood. Arctic is cold and commitment-heavy, so the palette is pale and the canvas base is near-black. The Nursery is open and slightly warmer. These aren't decorative — they prime the player for what kind of play the depth demands.
+
+---
+
+## Leaderboard
+
+The leaderboard screen has three tabs: **HIGH SCORE**, **DEPTH TIMES**, and **SHARK SCORE**.
+
+**HIGH SCORE** — Global best single-run total points, sorted descending. Shows score, run time, and date.
+
+**DEPTH TIMES** — Per-depth best completion times. Selecting this tab reveals an inline depth selector using the same colored depth buttons as the main menu depth select. Only depths the player has reached are unlocked; deeper depths are shown dimmed so players can see what exists beyond their current progress. Tapping a depth fetches and displays the time leaderboard for that depth. Auto-selects the player's highest reached depth on first open. All 7 depths have time categories (`d1_time` through `d7_time`).
+
+**SHARK SCORE** — Ranked by the SCORE² ÷ TIME formula. Depth 1 starts only. Has an inline [?] help button explaining the formula.
+
+**Medals** — The top 3 ranks display pixel art medal sprites drawn on canvas elements (16×20px logical, 2× rendered). Gold, silver, bronze. Chunky hand-crafted aesthetic matching the game's pixel-art language. No CSS gradient medals.
+
+**Tab label language:** "DEPTH TIMES" — uses the game's own vocabulary. Not "Split Times" or "Stage Times."
 
 ---
 

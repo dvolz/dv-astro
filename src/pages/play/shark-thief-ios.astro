@@ -83,8 +83,8 @@ export const blogData = {
     }
   }
 
-  /* scanline overlay for menu screens */
-  .screen-menu::after {
+  /* scanline overlay — all non-game screens */
+  .screen:not(.game-screen)::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -1192,7 +1192,7 @@ export const blogData = {
     table-layout: fixed;
 
     /* Percentage-based columns */
-    col.col-rank  { width: 8%; }
+    col.col-rank  { width: 12%; }
     col.col-name  { width: 36%; }
     col.col-score { width: 18%; }
     col.col-date  { width: 38%; }
@@ -1362,18 +1362,6 @@ export const blogData = {
     padding: 2rem 1rem;
   }
 
-  .medal {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
-    font-family: var(--font-pixel);
-    font-size: 0.55rem;
-    box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
-  }
-
   /* ── Leaderboard Tab Bar ── */
   .lb-tab-bar {
     display: flex;
@@ -1437,6 +1425,36 @@ export const blogData = {
     }
   }
 
+  /* ── Leaderboard Depth Time Panel ── */
+  .lb-depth-panel {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .lb-depth-panel[hidden] {
+    display: none !important;
+  }
+
+  /* Active state for selected depth button inside the panel */
+  .lb-depth-panel :global(button.active) {
+    background: var(--cyan);
+    color: var(--ocean-abyss);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  .lb-depth-panel :global(.ds-d2.active) { background: #e06fa0; }
+  .lb-depth-panel :global(.ds-d3.active) { background: #6abf3a; }
+  .lb-depth-panel :global(.ds-d4.active) { background: #7fd8f0; }
+  .lb-depth-panel :global(.ds-d5.active) { background: #daa070; }
+  .lb-depth-panel :global(.ds-d6.active) { background: #48d4b8; }
+  .lb-depth-panel :global(.ds-d7.active) { background: #9d6fe0; }
+
+  /* Locked depth — not yet reached by the player */
+  .lb-depth-panel :global(.lb-depth-locked) {
+    opacity: 0.3;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
   /* Shark Score [?] inline help button */
   .lb-shark-help {
     background: none;
@@ -1497,22 +1515,6 @@ export const blogData = {
     font-size: 1.65rem;
     color: var(--text-primary);
     line-height: 1.4;
-  }
-
-  .medal-gold {
-    background: linear-gradient(145deg, #f7dc6f, #d4a017);
-    color: #5c4300;
-    border: 2px solid #c9960c;
-  }
-  .medal-silver {
-    background: linear-gradient(145deg, #d5d5d5, #a0a0a0);
-    color: #4a4a4a;
-    border: 2px solid #909090;
-  }
-  .medal-bronze {
-    background: linear-gradient(145deg, #dea06e, #b87333);
-    color: #5a3510;
-    border: 2px solid #a0612a;
   }
 
   .lb-empty {
@@ -1872,11 +1874,12 @@ export const blogData = {
         <!-- Tab bar -->
         <div class="lb-tab-bar" role="tablist" aria-label="Leaderboard categories">
           <button class="lb-tab active" role="tab" aria-selected="true"  data-category="high_score">HIGH SCORE</button>
-          <button class="lb-tab"        role="tab" aria-selected="false" data-category="d1_time">D1 TIME</button>
-          <button class="lb-tab"        role="tab" aria-selected="false" data-category="d2_time">D2 TIME</button>
-          <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d3_time" disabled>D3 TIME</button>
-          <button class="lb-tab lb-tab-disabled" role="tab" aria-selected="false" aria-disabled="true" data-category="d4_time" disabled>D4 TIME</button>
+          <button class="lb-tab"        role="tab" aria-selected="false" data-category="depth_times">DEPTH TIMES</button>
           <button class="lb-tab"        role="tab" aria-selected="false" data-category="shark_score">SHARK SCORE</button>
+        </div>
+        <!-- Depth time selector panel — shown when DEPTH TIMES tab is active -->
+        <div id="lbDepthPanel" class="lb-depth-panel" hidden>
+          <div id="lbDepthBtns" class="depth-select-btns"></div>
         </div>
         <div class="lb-table-wrap">
           <table class="lb-table">
