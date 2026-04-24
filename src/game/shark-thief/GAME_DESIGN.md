@@ -1,7 +1,7 @@
 # Shark Thief — Game Design Document
 
 > **Living document.** Updated by Zak as design decisions are made.
-> Last updated: 2026-04-23 (Algae Ball mechanic approved for Depth 6)
+> Last updated: 2026-04-24 (Fish movement rules finalized: no-backtrack + no-idle-when-moves-exist)
 
 ---
 
@@ -80,6 +80,7 @@ Every depth is a fresh 100-point challenge. When a player earns 100 points withi
   - **Mackerel** (silver-blue, 1×1): 4 on board, moves every 2 player turns. Sleek torpedo silhouette — rendered at 55% cell height so it reads as a fast, narrow fish.
   - **Garibaldi** (vivid orange, 1×1): 4 on board, moves every player turn. Fastest fish; always reliably blocks movement.
   - **Grouper** (earth-toned, 2×2): 2 on board, moves every 3 player turns. Slow and large — creates significant impassable zones.
+- **Fish movement rules:** Fish choose from valid cardinal moves each turn. Two constraints apply: (1) a fish cannot move into the cell it occupied on its previous turn — this prevents oscillation and makes fish drift across the board rather than ping-pong; (2) a fish stays put only when every adjacent non-diagonal cell is blocked by a wall, barrier, another entity, or the shark. Fish always move if any valid cell is available. For the 2×2 grouper, "last position" is tracked via the top-left anchor cell, consistent with how the grouper's position is handled everywhere else. On first spawn, a fish has no movement history and may move freely in any valid direction.
 - **Kelp:** Columns of seaweed grow from the bottom of the board upward, reaching ~85% of canvas height with slight per-column height variation. Controlled by `strandCount` in `level-config.ts` — columns are distributed evenly across the grid width with a small jitter so they feel organic but never cluster or leave huge gaps. The shark can stand inside kelp cells; kelp is drawn on top of the player to create an occlusion effect.
 - **Algae ball:** A drifting green organic pickup. Spawns in the left 70% of the board and drifts one cell right each turn. If it exits the right edge it disappears permanently — it does not reappear at the left. Worth 5 points on collection. Collecting one spawns a new neutral fish somewhere on the board (fish type is random and unknown to the player — this is intentional). The spawn is not spatially immediate to the collection point; the randomness is part of the mechanic. Two config values govern this: the starting count of neutral fish on the board at depth entry (`neutralFish.initialCount` or equivalent per-species `count` fields), and a shark-proximity buffer (`algaeBall.fishSpawnBuffer`) — a minimum distance in cells (Manhattan or Chebyshev) from the shark's current position where a newly spawned fish cannot appear. This prevents instant-death spawns while preserving the unpredictability of where the fish lands. All algae ball tuning — point value, drift behavior, fish spawn buffer — lives in `level-config.ts`. Starting fish counts per species are already controlled by the per-species `count` fields in `neutralFish`.
 - **Signature piece:** Neutral fish + kelp + algae ball — all exclusive to this depth and cleared on descent.

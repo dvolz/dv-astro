@@ -194,7 +194,7 @@ export function seedNeutralFish(): void {
 
   const specs: Array<{ type: NeutralFish["type"]; spec: typeof cfg.mackerel }> = [
     { type: "mackerel",  spec: cfg.mackerel  },
-    { type: "grouper",   spec: cfg.grouper   },
+    { type: "oarfish",   spec: cfg.oarfish   },
     { type: "garibaldi", spec: cfg.garibaldi },
   ];
 
@@ -223,6 +223,7 @@ export function seedNeutralFish(): void {
       if (attempts <= 1000) {
         gs.neutralFish.push({
           type, x: fx, y: fy, sizeX: spec.sizeX, sizeY: spec.sizeY, moveAccum: 0, dir: "right",
+          lastX: fx, lastY: fy,
           visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0,
         });
       }
@@ -230,7 +231,7 @@ export function seedNeutralFish(): void {
   }
 }
 
-export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "grouper"): void {
+export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "oarfish"): void {
   const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
   if (!fishCfg) return;
   const spec = fishCfg[type];
@@ -250,7 +251,7 @@ export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "grouper
     gs.pickups[fy]?.[fx] ||
     gs.coral[fy]?.[fx]
   );
-  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right", visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
+  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right", lastX: fx, lastY: fy, visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
 }
 
 // ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────

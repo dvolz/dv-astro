@@ -895,12 +895,18 @@ export const blogData = {
     padding: 0;
   }
 
-  #gameCanvas {
-    display: block;
+  .canvas-and-overlays {
+    position: relative;
+    width: 100%;
     max-width: 600px;
     aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+
+  #gameCanvas {
+    display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
     image-rendering: pixelated;
   }
 
@@ -1794,6 +1800,7 @@ export const blogData = {
 
         <!-- Canvas area -->
         <div class="game-canvas-area">
+          <div class="canvas-and-overlays">
           <canvas id="gameCanvas" width="600" height="600"></canvas>
           <div class="depth-flash" id="depthFlash"></div>
 
@@ -1828,6 +1835,7 @@ export const blogData = {
                 >SURFACE</button
               >
             </div>
+          </div>
           </div>
         </div>
 

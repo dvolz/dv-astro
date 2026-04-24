@@ -57,7 +57,7 @@ export interface ToxicBarrelConfig {
   cloudSize:       number;  // full width/height of each cloud (corners are always removed)
 }
 
-export type NeutralFishType = "mackerel" | "grouper" | "garibaldi";
+export type NeutralFishType = "mackerel" | "oarfish" | "garibaldi";
 
 export interface AlgaeBallConfig {
   count:            number;  // max algae balls active at once
@@ -76,7 +76,7 @@ export interface NeutralFishSpecConfig {
 
 export interface NeutralFishConfig {
   mackerel:   NeutralFishSpecConfig;
-  grouper:    NeutralFishSpecConfig;
+  oarfish:    NeutralFishSpecConfig;
   garibaldi:  NeutralFishSpecConfig;
 }
 
@@ -233,7 +233,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     // The Busy Pacific
     neutralFish: {
       mackerel:  { count: 4, speedDivisor: 2, sizeX: 2, sizeY: 1 },
-      grouper:   { count: 2, speedDivisor: 3, sizeX: 2, sizeY: 2 },
+      oarfish:   { count: 2, speedDivisor: 3, sizeX: 2, sizeY: 2 },
       garibaldi: { count: 4, speedDivisor: 1, sizeX: 1, sizeY: 1 },
     },
     algaeBall: {

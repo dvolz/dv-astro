@@ -40,7 +40,7 @@ A turn-based grid game where the player pilots a shark collecting treasure while
 | 3 | Toxic | Toxic barrels → expanding gas clouds | Complete |
 | 4 | The Arctic | Ice patches + frozen fish (collect = slide) | Complete |
 | 5 | The Reef | Coral shells → permanent barrier walls | Complete |
-| 6 | The Busy Pacific | Neutral fish (mackerel/garibaldi/grouper) + kelp | In Progress |
+| 6 | The Busy Pacific | Neutral fish (mackerel/garibaldi/oarfish) + kelp | In Progress |
 | 7 | The Abyss | Leviathan (3×3 mega enemy) | Stub |
 
 ### Terminology
@@ -53,10 +53,10 @@ A turn-based grid game where the player pilots a shark collecting treasure while
 - **Ice patch** — slippery tile; shark and enemies slide until hitting a wall or non-ice tile.
 - **Toxic barrel** — Depth 3 pickup. Collecting it spawns an enemy and expands a toxic cloud.
 - **Toxic cloud** — gas cells that cover the grid. Enemies and player cannot be seen inside. Enemies cannot spawn inside or within `cloudBuffer` tiles.
-- **Neutral fish** — Depth 6 ambient creatures (mackerel, garibaldi, grouper). Impassable — moving into one cancels the move. Fish cannot walk onto the shark's cell.
+- **Neutral fish** — Depth 6 ambient creatures (mackerel, garibaldi, oarfish). Impassable — moving into one cancels the move. Fish cannot walk onto the shark's cell.
 - **Mackerel** — silver-blue, size 1×1, moves every 2 player turns. Rendered at 55% cell height for a sleek torpedo silhouette.
 - **Garibaldi** — vivid orange, size 1×1, moves every player turn (fastest). Always reliably blocks movement.
-- **Grouper** — earth-toned, size 2×2, moves every 3 player turns.
+- **Oarfish** — disc-shaped sunfish (Mola mola), size 2×2, moves every 3 player turns.
 - **Kelp** — Depth 6 terrain. Columns grow from the bottom upward (~85% canvas height). Distributed evenly across the board via `strandCount`; player can stand inside kelp (drawn on top to occlude the shark).
 - **Leviathan** — 3×3 mega enemy. Moves every player move. Depth 7 (stub).
 - **Big enemy** — 2×2 enemy. Depth 1 only. Spawned by ammonites.

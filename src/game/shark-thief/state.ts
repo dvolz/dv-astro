@@ -19,13 +19,15 @@ export interface BabyShark { x: number; y: number; }
 export interface BloodCell { x: number; y: number; movesRemaining: number; }
 
 export interface NeutralFish {
-  type:      "mackerel" | "grouper" | "garibaldi";
+  type:      "mackerel" | "oarfish" | "garibaldi";
   x:         number;
   y:         number;
   sizeX:     number;  // grid cells wide
   sizeY:     number;  // grid cells tall
   moveAccum: number;      // counts player moves; fish moves when moveAccum >= speedDivisor
   dir:       "right" | "left" | "up" | "down";  // current facing, for sprite flip
+  lastX:     number;
+  lastY:     number;
   visualX:      number;
   visualY:      number;
   animFromX:    number;

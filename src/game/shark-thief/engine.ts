@@ -495,6 +495,7 @@ function moveNeutralFish(): void {
 
       // Bounds check — fish never leave the board
       if (nx < 0 || ny < 0 || nx + fish.sizeX > GRID || ny + fish.sizeY > GRID) continue;
+      if (nx === fish.lastX && ny === fish.lastY) continue;
 
       // Coral barriers block fish
       let coralBlocked = false;
@@ -509,6 +510,8 @@ function moveNeutralFish(): void {
       if (sharkBlocked) continue;
 
       // Fish can move — apply
+      fish.lastX = fish.x;
+      fish.lastY = fish.y;
       fish.x = nx;
       fish.y = ny;
       if (dx === 1)  fish.dir = "right";
@@ -647,7 +650,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     updateHudScore(gs.score, "special");
     gs.enemies.push(spawnEnemy());
-    const fishTypes: Array<"mackerel" | "garibaldi" | "grouper"> = ["mackerel", "garibaldi", "grouper"];
+    const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
     spawnSingleNeutralFish(fishTypes[Math.floor(Math.random() * fishTypes.length)]);
     gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
     checkDepthTransition();
@@ -656,33 +659,8 @@ export function moveShark(dx: number, dy: number): void {
   // Algae balls (Depth 6 — Busy Pacific)
   const algaeCfg = LEVEL_CONFIG[gs.currentDepth].algaeBall;
   if (algaeCfg) {
-    // Drift each ball one cell to the right when accumulator reaches 1
-    for (const ball of gs.algaeBalls) {
-      ball.driftAccum += algaeCfg.driftSpeed;
-      if (ball.driftAccum >= 1) {
-        ball.driftAccum -= 1;
-        ball.trail.unshift({ x: ball.x, y: ball.y });
-        if (ball.trail.length > 5) ball.trail.length = 5;
-        ball.x++;
-      }
-    }
-
-    // Balls that drifted off the right edge: queue a respawn timer
-    const escaped = gs.algaeBalls.filter(b => b.x >= GRID);
-    for (let i = 0; i < escaped.length; i++) {
-      gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
-    }
-    gs.algaeBalls = gs.algaeBalls.filter(b => b.x < GRID);
-
-    // Decrement respawn timers; spawn a new ball when one hits 0
-    gs.algaeBallRespawnTimers = gs.algaeBallRespawnTimers
-      .map(t => t - 1)
-      .filter(t => {
-        if (t <= 0) { spawnAlgaeBallIfNeeded(); return false; }
-        return true;
-      });
-
-    // Check if shark collected any algae ball
+    // Check collection before drifting — catches the swap case where shark moves
+    // onto a ball that would drift away in the same turn.
     const collectedIdx = gs.algaeBalls.findIndex(b => b.x === gs.shark.x && b.y === gs.shark.y);
     if (collectedIdx !== -1) {
       gs.algaeBalls.splice(collectedIdx, 1);
@@ -690,7 +668,7 @@ export function moveShark(dx: number, dy: number): void {
       gs.score += algaeCfg.points;
       gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
       updateHudScore(gs.score, "special");
-      const fishTypes: Array<"mackerel" | "garibaldi" | "grouper"> = ["mackerel", "garibaldi", "grouper"];
+      const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
       const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
       if (fishCfg) {
         let spawnX = 0, spawnY = 0, fAttempts = 0;
@@ -713,7 +691,7 @@ export function moveShark(dx: number, dy: number): void {
         if (fAttempts <= 500) {
           gs.neutralFish.push({
             type: fType, x: spawnX, y: spawnY, sizeX: fSpec.sizeX, sizeY: fSpec.sizeY,
-            moveAccum: 0, dir: "right",
+            moveAccum: 0, dir: "right", lastX: spawnX, lastY: spawnY,
             visualX: spawnX, visualY: spawnY, animFromX: spawnX, animFromY: spawnY, animStartTime: 0,
           });
           gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
@@ -721,6 +699,72 @@ export function moveShark(dx: number, dy: number): void {
       }
       checkDepthTransition();
     }
+
+    // Drift each ball one cell to the right when accumulator reaches 1
+    for (const ball of gs.algaeBalls) {
+      ball.driftAccum += algaeCfg.driftSpeed;
+      if (ball.driftAccum >= 1) {
+        ball.driftAccum -= 1;
+        ball.trail.unshift({ x: ball.x, y: ball.y });
+        if (ball.trail.length > 5) ball.trail.length = 5;
+        ball.x++;
+      }
+    }
+
+    // Check again after drifting — catches the case where a ball drifts into the shark's cell.
+    const driftCollectedIdx = gs.algaeBalls.findIndex(b => b.x === gs.shark.x && b.y === gs.shark.y);
+    if (driftCollectedIdx !== -1) {
+      gs.algaeBalls.splice(driftCollectedIdx, 1);
+      gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
+      gs.score += algaeCfg.points;
+      gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+      updateHudScore(gs.score, "special");
+      const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
+      const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
+      if (fishCfg) {
+        let spawnX = 0, spawnY = 0, fAttempts = 0;
+        const fType = fishTypes[Math.floor(Math.random() * fishTypes.length)];
+        const fSpec = fishCfg[fType];
+        do {
+          spawnX = Math.floor(Math.random() * (GRID - fSpec.sizeX + 1));
+          spawnY = Math.floor(Math.random() * (GRID - fSpec.sizeY + 1));
+          fAttempts++;
+          if (fAttempts > 500) break;
+        } while (
+          Math.abs(spawnX - gs.shark.x) + Math.abs(spawnY - gs.shark.y) < algaeCfg.fishSpawnBuffer ||
+          gs.neutralFish.some(f =>
+            spawnX < f.x + f.sizeX && spawnX + fSpec.sizeX > f.x &&
+            spawnY < f.y + f.sizeY && spawnY + fSpec.sizeY > f.y
+          ) ||
+          gs.pickups[spawnY]?.[spawnX] ||
+          gs.coral[spawnY]?.[spawnX]
+        );
+        if (fAttempts <= 500) {
+          gs.neutralFish.push({
+            type: fType, x: spawnX, y: spawnY, sizeX: fSpec.sizeX, sizeY: fSpec.sizeY,
+            moveAccum: 0, dir: "right", lastX: spawnX, lastY: spawnY,
+            visualX: spawnX, visualY: spawnY, animFromX: spawnX, animFromY: spawnY, animStartTime: 0,
+          });
+          gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
+        }
+      }
+      checkDepthTransition();
+    }
+
+    // Balls that drifted off the right edge: queue a respawn timer
+    const escaped = gs.algaeBalls.filter(b => b.x >= GRID);
+    for (let i = 0; i < escaped.length; i++) {
+      gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
+    }
+    gs.algaeBalls = gs.algaeBalls.filter(b => b.x < GRID);
+
+    // Decrement respawn timers; spawn a new ball when one hits 0
+    gs.algaeBallRespawnTimers = gs.algaeBallRespawnTimers
+      .map(t => t - 1)
+      .filter(t => {
+        if (t <= 0) { spawnAlgaeBallIfNeeded(); return false; }
+        return true;
+      });
   }
 
   // Super pickup (ammonite → big enemy)
