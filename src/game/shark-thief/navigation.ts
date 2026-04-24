@@ -229,7 +229,8 @@ export function initNavigation(): void {
   });
 
   // ── Game Over buttons ─────────────────────────────────────────────────────
-  document.getElementById("playAgainBtn")!.addEventListener("click", () => init());
+  document.getElementById("diveAgainBtn")!.addEventListener("click", () => initAtDepth(gs.currentDepth));
+  document.getElementById("startOverBtn")!.addEventListener("click", () => init());
   document.getElementById("gameOverMenuBtn")!.addEventListener("click", () => {
     const label = document.getElementById("menuDepthLabel")!;
     label.textContent = gs.currentDepth > 1 ? `REACHED DEPTH ${gs.currentDepth}` : "";

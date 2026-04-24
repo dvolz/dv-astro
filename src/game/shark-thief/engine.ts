@@ -13,7 +13,7 @@ import {
   calcSharkScore, saveGame, clearSave, updateMaxDepth,
 } from "./persistence";
 import { draw, initRenderer } from "./renderers";
-import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse } from "./animation";
+import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse, startEnemyAnimLoop } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
 import { randomColorFromPalette } from "./config";
 
@@ -629,6 +629,7 @@ export function moveShark(dx: number, dy: number): void {
   // Neutral fish movement (Depth 6 — Busy Pacific)
   if (LEVEL_CONFIG[gs.currentDepth].neutralFish) {
     moveNeutralFish();
+    startEnemyAnimLoop();
   }
 
   // Coin pickup
@@ -990,6 +991,9 @@ export function endGame(): void {
   (document.getElementById("playerName") as HTMLInputElement).value =
     localStorage.getItem("sharkPlayerName") || "";
   document.getElementById("gameOverOverlay")!.classList.add("visible");
+  const diveAgainBtn = document.getElementById("diveAgainBtn")!;
+  diveAgainBtn.className = diveAgainBtn.className.replace(/\bds-d\d\b/g, "").trim();
+  if (gs.currentDepth > 1) diveAgainBtn.classList.add(`ds-d${gs.currentDepth}`);
 }
 
 // ── Load saved game ───────────────────────────────────────────────────────
