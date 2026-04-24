@@ -196,7 +196,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       initCount: 1, // fish placed on entering this depth
       max:       3, // max frozen fish on the board at once
       interval:  20, // moves after collecting a fish before the next one spawns
-      points:    5, // points per frozen fish collected
+      points:    8, // points per frozen fish collected
     },
     icePatches: {
       initialCount: 8, // number of ice patch shapes seeded at the start of this depth
@@ -241,7 +241,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       points:           5,
       driftSpeed:       0.5,
       fishSpawnBuffer:  3,
-      respawnInterval:  20,
+      respawnInterval:  16,
     },
     // kelp: {
     //   strandCount:    10,
