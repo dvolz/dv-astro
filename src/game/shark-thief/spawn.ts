@@ -209,8 +209,8 @@ export function seedNeutralFish(): void {
       } while (
         Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
         gs.neutralFish.some(f =>
-          fx < f.x + f.sizeX && fx + spec.sizeX > f.x &&
-          fy < f.y + f.sizeY && fy + spec.sizeY > f.y
+          fx < f.x + f.effSizeX && fx + spec.sizeX > f.x &&
+          fy < f.y + f.effSizeY && fy + spec.sizeY > f.y
         ) ||
         gs.pickups[fy]?.[fx] ||
         (function() {
@@ -222,7 +222,9 @@ export function seedNeutralFish(): void {
       );
       if (attempts <= 1000) {
         gs.neutralFish.push({
-          type, x: fx, y: fy, sizeX: spec.sizeX, sizeY: spec.sizeY, moveAccum: 0, dir: "right",
+          type, x: fx, y: fy, sizeX: spec.sizeX, sizeY: spec.sizeY,
+          effSizeX: spec.sizeX, effSizeY: spec.sizeY,
+          moveAccum: 0, dir: "right",
           lastX: fx, lastY: fy,
           visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0,
         });
@@ -245,13 +247,13 @@ export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "oarfish
   } while (
     Math.abs(fx - gs.shark.x) + Math.abs(fy - gs.shark.y) < 5 ||
     gs.neutralFish.some(f =>
-      fx < f.x + f.sizeX && fx + sizeX > f.x &&
-      fy < f.y + f.sizeY && fy + sizeY > f.y
+      fx < f.x + f.effSizeX && fx + sizeX > f.x &&
+      fy < f.y + f.effSizeY && fy + sizeY > f.y
     ) ||
     gs.pickups[fy]?.[fx] ||
     gs.coral[fy]?.[fx]
   );
-  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, moveAccum: 0, dir: "right", lastX: fx, lastY: fy, visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
+  gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, effSizeX: sizeX, effSizeY: sizeY, moveAccum: 0, dir: "right", lastX: fx, lastY: fy, visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
 }
 
 // ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
@@ -338,7 +340,7 @@ export function spawnAlgaeBallIfNeeded(): void {
     gs.superPickups[ay]?.[ax]   ||
     gs.coral[ay]?.[ax]          ||
     gs.neutralFish.some(f =>
-      ax >= f.x && ax < f.x + f.sizeX && ay >= f.y && ay < f.y + f.sizeY
+      ax >= f.x && ax < f.x + f.effSizeX && ay >= f.y && ay < f.y + f.effSizeY
     ) ||
     (gs.shark.x === ax && gs.shark.y === ay)
   );
@@ -391,7 +393,7 @@ export function spawnEnemy(): Enemy {
     gs.coralPickups[ey]?.[ex]    ||
     gs.frozenFish.some(f => f.x === ex && f.y === ey) ||
     gs.neutralFish.some(f =>
-      ex >= f.x && ex < f.x + f.sizeX && ey >= f.y && ey < f.y + f.sizeY
+      ex >= f.x && ex < f.x + f.effSizeX && ey >= f.y && ey < f.y + f.effSizeY
     ) ||
     gs.kelpBladdersSet.has(`${ex},${ey}`) ||
     (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&

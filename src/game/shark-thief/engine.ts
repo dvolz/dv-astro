@@ -276,7 +276,7 @@ function seedStartingYellows(): void {
       gs.coral[y][x] ||
       (x === gs.shark.x && y === gs.shark.y) ||
       gs.enemies.some(e => e.x === x && e.y === y) ||
-      gs.neutralFish.some(f => x >= f.x && x < f.x + f.sizeX && y >= f.y && y < f.y + f.sizeY)
+      gs.neutralFish.some(f => x >= f.x && x < f.x + f.effSizeX && y >= f.y && y < f.y + f.effSizeY)
     ) continue;
     gs.pickups[y][x] = true;
     // Stagger pop-in: random delay within window for a scattered appear effect
@@ -475,6 +475,10 @@ function collectFishMidSlide(cx: number, cy: number): void {
 
 // ── Neutral fish movement (Depth 6 — Busy Pacific) ───────────────────────
 
+function candidateEffSize(fish: { sizeX: number; sizeY: number }, dx: number, dy: number): [number, number] {
+  return dy !== 0 ? [fish.sizeY, fish.sizeX] : [fish.sizeX, fish.sizeY];
+}
+
 function moveNeutralFish(): void {
   const cfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
   if (!cfg) return;
@@ -493,20 +497,22 @@ function moveNeutralFish(): void {
       const nx = fish.x + dx;
       const ny = fish.y + dy;
 
+      const [csX, csY] = candidateEffSize(fish, dx, dy);
+
       // Bounds check — fish never leave the board
-      if (nx < 0 || ny < 0 || nx + fish.sizeX > GRID || ny + fish.sizeY > GRID) continue;
+      if (nx < 0 || ny < 0 || nx + csX > GRID || ny + csY > GRID) continue;
       if (nx === fish.lastX && ny === fish.lastY) continue;
 
       // Coral barriers block fish
       let coralBlocked = false;
-      for (let fdy = 0; fdy < fish.sizeY && !coralBlocked; fdy++)
-        for (let fdx = 0; fdx < fish.sizeX && !coralBlocked; fdx++)
+      for (let fdy = 0; fdy < csY && !coralBlocked; fdy++)
+        for (let fdx = 0; fdx < csX && !coralBlocked; fdx++)
           if (gs.coral[ny + fdy]?.[nx + fdx]) coralBlocked = true;
       if (coralBlocked) continue;
 
       // Fish cannot move onto the shark
-      const sharkBlocked = gs.shark.x >= nx && gs.shark.x < nx + fish.sizeX &&
-                           gs.shark.y >= ny && gs.shark.y < ny + fish.sizeY;
+      const sharkBlocked = gs.shark.x >= nx && gs.shark.x < nx + csX &&
+                           gs.shark.y >= ny && gs.shark.y < ny + csY;
       if (sharkBlocked) continue;
 
       // Fish can move — apply
@@ -518,10 +524,12 @@ function moveNeutralFish(): void {
       if (dx === -1) fish.dir = "left";
       if (dy === 1)  fish.dir = "down";
       if (dy === -1) fish.dir = "up";
+      fish.effSizeX = csX;
+      fish.effSizeY = csY;
 
       // Fish eats coin — no enemy spawn, no score
-      for (let fdy = 0; fdy < fish.sizeY; fdy++) {
-        for (let fdx = 0; fdx < fish.sizeX; fdx++) {
+      for (let fdy = 0; fdy < fish.effSizeY; fdy++) {
+        for (let fdx = 0; fdx < fish.effSizeX; fdx++) {
           const cx = fish.x + fdx, cy = fish.y + fdy;
           if (gs.pickups[cy]?.[cx]) gs.pickups[cy][cx] = false;
         }
@@ -565,7 +573,7 @@ export function moveShark(dx: number, dy: number): void {
   // Neutral fish: impassable (same rule as coral — move blocked)
   if (gs.neutralFish.length > 0) {
     const blocked = gs.neutralFish.some(f =>
-      nx >= f.x && nx < f.x + f.sizeX && ny >= f.y && ny < f.y + f.sizeY
+      nx >= f.x && nx < f.x + f.effSizeX && ny >= f.y && ny < f.y + f.effSizeY
     );
     if (blocked) {
       // Update facing direction so the shark looks toward the fish
@@ -683,8 +691,8 @@ export function moveShark(dx: number, dy: number): void {
         } while (
           Math.abs(spawnX - gs.shark.x) + Math.abs(spawnY - gs.shark.y) < algaeCfg.fishSpawnBuffer ||
           gs.neutralFish.some(f =>
-            spawnX < f.x + f.sizeX && spawnX + fSpec.sizeX > f.x &&
-            spawnY < f.y + f.sizeY && spawnY + fSpec.sizeY > f.y
+            spawnX < f.x + f.effSizeX && spawnX + fSpec.sizeX > f.x &&
+            spawnY < f.y + f.effSizeY && spawnY + fSpec.sizeY > f.y
           ) ||
           gs.pickups[spawnY]?.[spawnX] ||
           gs.coral[spawnY]?.[spawnX]
@@ -692,6 +700,7 @@ export function moveShark(dx: number, dy: number): void {
         if (fAttempts <= 500) {
           gs.neutralFish.push({
             type: fType, x: spawnX, y: spawnY, sizeX: fSpec.sizeX, sizeY: fSpec.sizeY,
+            effSizeX: fSpec.sizeX, effSizeY: fSpec.sizeY,
             moveAccum: 0, dir: "right", lastX: spawnX, lastY: spawnY,
             visualX: spawnX, visualY: spawnY, animFromX: spawnX, animFromY: spawnY, animStartTime: 0,
           });
@@ -734,8 +743,8 @@ export function moveShark(dx: number, dy: number): void {
         } while (
           Math.abs(spawnX - gs.shark.x) + Math.abs(spawnY - gs.shark.y) < algaeCfg.fishSpawnBuffer ||
           gs.neutralFish.some(f =>
-            spawnX < f.x + f.sizeX && spawnX + fSpec.sizeX > f.x &&
-            spawnY < f.y + f.sizeY && spawnY + fSpec.sizeY > f.y
+            spawnX < f.x + f.effSizeX && spawnX + fSpec.sizeX > f.x &&
+            spawnY < f.y + f.effSizeY && spawnY + fSpec.sizeY > f.y
           ) ||
           gs.pickups[spawnY]?.[spawnX] ||
           gs.coral[spawnY]?.[spawnX]
@@ -743,6 +752,7 @@ export function moveShark(dx: number, dy: number): void {
         if (fAttempts <= 500) {
           gs.neutralFish.push({
             type: fType, x: spawnX, y: spawnY, sizeX: fSpec.sizeX, sizeY: fSpec.sizeY,
+            effSizeX: fSpec.sizeX, effSizeY: fSpec.sizeY,
             moveAccum: 0, dir: "right", lastX: spawnX, lastY: spawnY,
             visualX: spawnX, visualY: spawnY, animFromX: spawnX, animFromY: spawnY, animStartTime: 0,
           });

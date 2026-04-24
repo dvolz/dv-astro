@@ -8,8 +8,13 @@ export function drawNeutralFish(
   fish:  NeutralFish,
   CELL:  number,
 ): void {
-  const destW = fish.sizeX * CELL;
-  const destH = fish.sizeY * CELL;
+  // Natural dimensions for the rotated sprite draw
+  const drawW = fish.sizeX * CELL;
+  const drawH = fish.sizeY * CELL;
+
+  // Effective dimensions for center-point placement (swapped when vertical)
+  const destW = fish.effSizeX * CELL;
+  const destH = fish.effSizeY * CELL;
 
   const px = fish.visualX * CELL;
   const py = fish.visualY * CELL;
@@ -54,9 +59,9 @@ export function drawNeutralFish(
   }
 
   switch (fish.type) {
-    case 'mackerel':  drawMackerelV1 (ctx, -destW / 2, -destH / 2, destW, destH); break;
-    case 'garibaldi': drawGaribaldiV2(ctx, -destW / 2, -destH / 2, destW, destH); break;
-    case 'oarfish':   drawOarfishV1  (ctx, -destW / 2, -destH / 2, destW, destH); break;
+    case 'mackerel':  drawMackerelV1 (ctx, -drawW / 2, -drawH / 2, drawW, drawH); break;
+    case 'garibaldi': drawGaribaldiV2(ctx, -drawW / 2, -drawH / 2, drawW, drawH); break;
+    case 'oarfish':   drawOarfishV1  (ctx, -drawW / 2, -drawH / 2, drawW, drawH); break;
   }
   ctx.restore();
 }
