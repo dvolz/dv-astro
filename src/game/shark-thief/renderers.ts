@@ -818,7 +818,7 @@ export function draw(): void {
     }
 
   // Ice patches (Arctic depth)
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.icePatches) {
+  if (LEVEL_CONFIG[gs.currentDepth]?.icePatches) {
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (!gs.iceCells[r][c]) continue;
@@ -925,7 +925,7 @@ export function draw(): void {
   }
 
   // Coral shell pickups (Reef depth)
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.coral)
+  if (LEVEL_CONFIG[gs.currentDepth]?.coral)
     for (let r = 0; r < GRID; r++)
       for (let c = 0; c < GRID; c++) {
         if (!gs.coralPickups[r][c]) continue;
@@ -934,7 +934,7 @@ export function draw(): void {
       }
 
   // Toxic barrels (Toxic depth)
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicBarrels.length > 0) {
+  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicBarrels.length > 0) {
     const bp = CELL * 0.06;
     for (const barrel of gs.toxicBarrels) {
       drawToxicBarrel(ctx, barrel.x * CELL + bp, barrel.y * CELL + bp, CELL - bp * 2);
@@ -942,7 +942,7 @@ export function draw(): void {
   }
 
   // Algae ball trails (Depth 6 — Busy Pacific) — drawn before balls so balls render on top
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
+  if (LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
     const trailAlphas = [0.46, 0.31, 0.21, 0.14, 0.10];
     for (const ball of gs.algaeBalls) {
       for (let i = 0; i < ball.trail.length; i++) {
@@ -957,7 +957,7 @@ export function draw(): void {
   }
 
   // Algae balls (Depth 6 — Busy Pacific)
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
+  if (LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
     for (const ball of gs.algaeBalls) {
       drawAlgaeBall(ctx, ball, CELL);
     }
@@ -1037,7 +1037,7 @@ export function draw(): void {
   }
 
   // Toxic clouds (Toxic depth) — drawn last so they naturally cover everything underneath
-  if (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0) {
+  if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0) {
     for (const cell of gs.toxicClouds) {
       drawToxicCloud(ctx, cell.x, cell.y, CELL, gs.cloudPulse[cell.y * GRID + cell.x]);
     }

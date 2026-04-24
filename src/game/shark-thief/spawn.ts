@@ -256,42 +256,51 @@ export function spawnSingleNeutralFish(type: "mackerel" | "garibaldi" | "oarfish
   gs.neutralFish.push({ type, x: fx, y: fy, sizeX, sizeY, effSizeX: sizeX, effSizeY: sizeY, moveAccum: 0, dir: "right", lastX: fx, lastY: fy, visualX: fx, visualY: fy, animFromX: fx, animFromY: fy, animStartTime: 0 });
 }
 
-// ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
+// ── Shared strand-generation logic ──────────────────────────────────────
 
-export function seedKelp(): void {
-  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp;
-  if (!cfg) return;
-  gs.kelpCells = [];
-
-  // Divide the grid width into strandCount equal zones. Each strand gets one
-  // zone and picks a column near the zone's centre with a small random jitter
-  // (±30% of zone width) so strands feel natural but don't clump or leave gaps.
-  const zoneWidth = GRID / cfg.strandCount;
+function generateStrands(
+  strandCount: number,
+  minH: number,
+  maxH: number,
+  bladeEnabled: boolean = false,
+): Array<{ x: number; y: number; height: number }> {
+  const cells: Array<{ x: number; y: number; height: number }> = [];
+  const zoneWidth = GRID / strandCount;
   const baseRow = GRID - 1;
 
-  for (let i = 0; i < cfg.strandCount; i++) {
+  for (let i = 0; i < strandCount; i++) {
     const idealCol = i * zoneWidth + zoneWidth / 2;
     const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
     let col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
     // Blades extend ~58% of cell width each side — enforce 2-cell gap to prevent overlap.
     // Stipe-only (no blades) strands are 2–3px wide so no separation needed.
-    if (cfg.bladeEnabled) {
+    if (bladeEnabled) {
       let attempts = 0;
-      while (gs.kelpCells.some(k => Math.abs(k.x - col) <= 1) && attempts < 10) {
+      while (cells.some(k => Math.abs(k.x - col) <= 1) && attempts < 10) {
         col = Math.min(GRID - 1, col + 1);
         attempts++;
       }
     }
-    const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
+    const height = minH + Math.floor(Math.random() * (maxH - minH + 1));
 
     for (let h = 0; h < height && baseRow - h >= 0; h++) {
       const ky = baseRow - h;
-      if (!gs.kelpCells.some(k => k.x === col && k.y === ky)) {
-        gs.kelpCells.push({ x: col, y: ky, height: h + 1 });
+      if (!cells.some(k => k.x === col && k.y === ky)) {
+        cells.push({ x: col, y: ky, height: h + 1 });
       }
     }
   }
 
+  return cells;
+}
+
+// ── Kelp terrain (Depth 6 — Busy Pacific) ───────────────────────────────
+
+export function seedKelp(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].kelp;
+  if (!cfg) return;
+
+  gs.kelpCells = generateStrands(cfg.strandCount, cfg.minHeight, cfg.maxHeight, cfg.bladeEnabled);
   gs.kelpSet = new Set(gs.kelpCells.map(k => `${k.x},${k.y}`));
 
   // Seed one bladder per strand if bladderEnabled
@@ -352,25 +361,8 @@ export function spawnAlgaeBallIfNeeded(): void {
 export function seedSeagrass(): void {
   const cfg = LEVEL_CONFIG[gs.currentDepth].seagrass;
   if (!cfg) return;
-  gs.seagrassCells = [];
 
-  const zoneWidth = GRID / cfg.strandCount;
-  const baseRow = GRID - 1;
-
-  for (let i = 0; i < cfg.strandCount; i++) {
-    const idealCol = i * zoneWidth + zoneWidth / 2;
-    const jitter = (Math.random() - 0.5) * zoneWidth * 0.6;
-    const col = Math.max(0, Math.min(GRID - 1, Math.round(idealCol + jitter)));
-    const height = cfg.minHeight + Math.floor(Math.random() * (cfg.maxHeight - cfg.minHeight + 1));
-
-    for (let h = 0; h < height && baseRow - h >= 0; h++) {
-      const ky = baseRow - h;
-      if (!gs.seagrassCells.some(k => k.x === col && k.y === ky)) {
-        gs.seagrassCells.push({ x: col, y: ky, height: h + 1 });
-      }
-    }
-  }
-
+  gs.seagrassCells = generateStrands(cfg.strandCount, cfg.minHeight, cfg.maxHeight);
   gs.seagrassSet = new Set(gs.seagrassCells.map(k => `${k.x},${k.y}`));
 }
 
@@ -396,7 +388,7 @@ export function spawnEnemy(): Enemy {
       ex >= f.x && ex < f.x + f.effSizeX && ey >= f.y && ey < f.y + f.effSizeY
     ) ||
     gs.kelpBladdersSet.has(`${ex},${ey}`) ||
-    (!!LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
+    (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0 &&
       isInCloudBuffer(ex, ey, LEVEL_CONFIG[gs.currentDepth].toxicBarrel?.cloudBuffer ?? 2))
   );
   return { x: ex, y: ey, visualX: ex, visualY: ey, animFromX: ex, animFromY: ey, animStartTime: 0 };
