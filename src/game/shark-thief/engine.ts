@@ -677,6 +677,7 @@ export function moveShark(dx: number, dy: number): void {
       gs.score += algaeCfg.points;
       gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
       updateHudScore(gs.score, "special");
+      spawnEnemy();
       const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
       const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
       if (fishCfg) {
@@ -729,6 +730,7 @@ export function moveShark(dx: number, dy: number): void {
       gs.score += algaeCfg.points;
       gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
       updateHudScore(gs.score, "special");
+      spawnEnemy();
       const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
       const fishCfg = LEVEL_CONFIG[gs.currentDepth].neutralFish;
       if (fishCfg) {

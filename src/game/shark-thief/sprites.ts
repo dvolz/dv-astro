@@ -83,7 +83,7 @@ export function drawAlgaeBall(
   const bob = Math.sin(now / 900 + ball.x * 1.3 + ball.y * 0.7) * CELL * 0.05;
   ctx.translate(cx, cy + bob);
 
-  ctx.fillStyle = "#0a2208";
+  ctx.fillStyle = "#546452";
   ctx.beginPath();
   ctx.arc(0, 0, r + 1, 0, Math.PI * 2);
   ctx.fill();
