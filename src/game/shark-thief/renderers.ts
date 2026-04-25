@@ -679,47 +679,89 @@ export function drawSharkOnCtx(
 
   // 1. Outline pass
   ctx.fillStyle = OUTLINE;
-  R(0.06, 0.27, 0.82, 0.46);
-  R(0.0,  0.12 - tailWag * 0.07, 0.14, 0.22);
-  R(0.0,  0.62 + tailWag * 0.07, 0.14, 0.22);
+  R(0.02, 0.18, 0.92, 0.64);
+  // tail fin outlines (right scalene triangles, expanded ~0.02 outward)
   ctx.beginPath();
-  ctx.moveTo(Math.round(x + 0.34 * w), Math.round(y + 0.27 * h));
-  ctx.lineTo(Math.round(x + 0.5  * w), Math.round(y + 0.01 * h));
-  ctx.lineTo(Math.round(x + 0.67 * w), Math.round(y + 0.27 * h));
+  ctx.moveTo(Math.round(x + 0.02 * w), Math.round(y + 0.52 * h));
+  ctx.lineTo(Math.round(x + 0.02 * w), Math.round(y + 0.18 * h));
+  ctx.lineTo(Math.round(x - 0.32 * w), Math.round(y + (0.18 - tailWag * 0.10) * h));
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.02 * w), Math.round(y + 0.48 * h));
+  ctx.lineTo(Math.round(x + 0.02 * w), Math.round(y + 0.82 * h));
+  ctx.lineTo(Math.round(x - 0.32 * w), Math.round(y + (0.82 + tailWag * 0.10) * h));
+  ctx.closePath(); ctx.fill();
+  // dorsal fin outline
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.30 * w), Math.round(y + 0.20 * h));
+  ctx.lineTo(Math.round(x + 0.5  * w), Math.round(y - 0.30 * h));
+  ctx.lineTo(Math.round(x + 0.70 * w), Math.round(y + 0.20 * h));
   ctx.closePath(); ctx.fill();
 
   // 2. Body
-  ctx.fillStyle = BODY; R(0.08, 0.29, 0.78, 0.42);
+  ctx.fillStyle = BODY; R(0.04, 0.20, 0.88, 0.60);
 
   // 3. Dorsal fin
   ctx.fillStyle = DARK_FIN;
   ctx.beginPath();
-  ctx.moveTo(Math.round(x + 0.36 * w), Math.round(y + 0.29 * h));
-  ctx.lineTo(Math.round(x + 0.5  * w), Math.round(y + 0.05 * h));
-  ctx.lineTo(Math.round(x + 0.65 * w), Math.round(y + 0.29 * h));
+  ctx.moveTo(Math.round(x + 0.32 * w), Math.round(y + 0.22 * h));
+  ctx.lineTo(Math.round(x + 0.5  * w), Math.round(y - 0.28 * h));
+  ctx.lineTo(Math.round(x + 0.68 * w), Math.round(y + 0.22 * h));
   ctx.closePath(); ctx.fill();
 
-  // 4. Tail fins
+  // 4. Tail fins (right scalene triangles, tip pointing up/down)
   ctx.fillStyle = DARK_FIN;
-  R(0.01, 0.14 - tailWag * 0.07, 0.11, 0.16);
-  R(0.01, 0.64 + tailWag * 0.07, 0.11, 0.16);
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04 * w), Math.round(y + 0.50 * h));
+  ctx.lineTo(Math.round(x + 0.04 * w), Math.round(y + 0.20 * h));
+  ctx.lineTo(Math.round(x - 0.30 * w), Math.round(y + (0.20 - tailWag * 0.10) * h));
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04 * w), Math.round(y + 0.50 * h));
+  ctx.lineTo(Math.round(x + 0.04 * w), Math.round(y + 0.80 * h));
+  ctx.lineTo(Math.round(x - 0.30 * w), Math.round(y + (0.80 + tailWag * 0.10) * h));
+  ctx.closePath(); ctx.fill();
 
   // 5. Top highlight
-  ctx.fillStyle = HIGHLIGHT; R(0.14, 0.29, 0.36, 0.09);
+  ctx.fillStyle = HIGHLIGHT; R(0.14, 0.28, 0.36, 0.09);
 
   // 6. Belly
-  ctx.fillStyle = BELLY; R(0.18, 0.52, 0.5, 0.14);
+  ctx.fillStyle = BELLY; R(0.18, 0.56, 0.5, 0.14);
 
   // 7. Pectoral fin
-  ctx.fillStyle = DARK_FIN; R(0.36, 0.62, 0.2, 0.09);
+  ctx.fillStyle = DARK_FIN; R(0.36, 0.66, 0.2, 0.09);
 
   // 8. Eye
-  ctx.fillStyle = "#d8eef4"; R(0.69, 0.33, 0.10, 0.14);
-  ctx.fillStyle = "#08181f"; R(0.71, 0.35, 0.06, 0.09);
-  ctx.fillStyle = "#ffffff"; R(0.70, 0.34, 0.02, 0.03);
+  ctx.fillStyle = "#d8eef4"; R(0.69, 0.28, 0.10, 0.14);
+  ctx.fillStyle = "#08181f"; R(0.71, 0.30, 0.06, 0.09);
+  ctx.fillStyle = "#ffffff"; R(0.70, 0.29, 0.02, 0.03);
 
   // 9. Mouth notch
-  ctx.fillStyle = OUTLINE; R(0.84, 0.56, 0.08, 0.08);
+  ctx.fillStyle = OUTLINE; R(0.84, 0.60, 0.08, 0.08);
+
+  // 10. Pink outline pass
+  const PINK_OUTLINE = "#ff88b0";
+  ctx.strokeStyle = PINK_OUTLINE;
+  ctx.lineWidth = Math.max(1, Math.round(cellSize * 0.025));
+  ctx.strokeRect(
+    Math.round(x + 0.04 * w), Math.round(y + 0.20 * h),
+    Math.round(0.88 * w), Math.round(0.60 * h),
+  );
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.32 * w), Math.round(y + 0.22 * h));
+  ctx.lineTo(Math.round(x + 0.5  * w), Math.round(y - 0.28 * h));
+  ctx.lineTo(Math.round(x + 0.68 * w), Math.round(y + 0.22 * h));
+  ctx.closePath(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04 * w), Math.round(y + 0.50 * h));
+  ctx.lineTo(Math.round(x + 0.04 * w), Math.round(y + 0.20 * h));
+  ctx.lineTo(Math.round(x - 0.30 * w), Math.round(y + (0.20 - tailWag * 0.10) * h));
+  ctx.closePath(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04 * w), Math.round(y + 0.50 * h));
+  ctx.lineTo(Math.round(x + 0.04 * w), Math.round(y + 0.80 * h));
+  ctx.lineTo(Math.round(x - 0.30 * w), Math.round(y + (0.80 + tailWag * 0.10) * h));
+  ctx.closePath(); ctx.stroke();
 
   ctx.restore();
 }

@@ -1765,14 +1765,14 @@ export const blogData = {
   <div class="shark-ios-app" id="sharkIosApp">
     <!-- ── Screen 1: Splash ── LaunchView.swift -->
     <div id="screen-splash" class="screen splash-screen active">
-      <canvas id="splashSharkCanvas" width="160" height="160"></canvas>
+      <canvas id="splashSharkCanvas" width="208" height="208"></canvas>
       <h1 class="pixel-title splash-title">SHARK<br />THIEF</h1>
       <p class="splash-sub">LOADING...</p>
     </div>
 
     <!-- ── Screen 2: Main Menu ── MainMenuView.swift -->
     <div id="screen-main-menu" class="screen screen-menu">
-      <canvas id="menuSharkCanvas" width="120" height="120"></canvas>
+      <canvas id="menuSharkCanvas" width="156" height="156"></canvas>
       <h2 class="pixel-title main-menu-title">SHARK THIEF</h2>
       <p class="main-menu-sub">OCEAN ARCADE</p>
       <div class="main-menu-best">
@@ -2356,24 +2356,28 @@ export const blogData = {
 
   // ── Startup — splash & menu shark ────────────────────────────────────────
   const splashCanvas = document.getElementById("splashSharkCanvas") as HTMLCanvasElement;
-  if (splashCanvas) drawSharkOnCtx(splashCanvas.getContext("2d")!, 0, 0, splashCanvas.width, "right");
+  if (splashCanvas) drawSharkOnCtx(splashCanvas.getContext("2d")!, 0.30, 0.30, 160, "right");
 
   const menuSharkCanvas = document.getElementById("menuSharkCanvas") as HTMLCanvasElement;
   if (menuSharkCanvas) {
     const menuCtx = menuSharkCanvas.getContext("2d")!;
     const mw = menuSharkCanvas.width, mh = menuSharkCanvas.height;
+    const mcs = 120; // shark cell size
+    const mpad = Math.round(mcs * 0.30); // 36px — room for fin overflow
+    const bodyCx = mpad + mcs / 2; // breathe pivot = body center
+    const bodyCy = mpad + mcs / 2;
     let mt = 0;
     function menuSharkFrame() {
       mt += 0.032;
       menuCtx.clearRect(0, 0, mw, mh);
       menuCtx.save();
       const breathe = 1 + 0.028 * Math.sin(mt * 1.3);
-      menuCtx.translate(mw / 2, mh / 2);
+      menuCtx.translate(bodyCx, bodyCy);
       menuCtx.scale(breathe, breathe);
-      menuCtx.translate(-mw / 2, -mh / 2);
+      menuCtx.translate(-bodyCx, -bodyCy);
       menuCtx.translate(0, Math.sin(mt * 0.75) * 3);
       const tailWag = Math.sin(mt * 2.4) * 0.85;
-      drawSharkOnCtx(menuCtx, 0, 0, mw, "right", tailWag);
+      drawSharkOnCtx(menuCtx, mpad / mcs, mpad / mcs, mcs, "right", tailWag);
       menuCtx.restore();
       requestAnimationFrame(menuSharkFrame);
     }
