@@ -442,6 +442,112 @@ export function drawGaribaldiV3(
   ctx.restore();
 }
 
+// ── Electric eel palettes ─────────────────────────────────────────────────────
+const E_OUTLINE = "#0a0e0c";
+const E_DARK    = "#1e2218";  // very dark olive-grey top
+const E_BODY    = "#3a3828";  // mid olive-brown body
+const E_BELLY   = "#5a5040";  // lighter olive belly
+const E_JAW     = "#b06828";  // orange-brown jaw accent (from reference photos)
+const E_LIP     = "#cc8038";  // brighter lip highlight
+const E_EYE_S   = "#8aac98";  // grey-green sclera
+const E_EYE_P   = "#0a1010";  // dark pupil
+
+// ── Electric eel head V3 — mid-width, orange lip/jaw accent, face character ───
+// 1×1 hitbox. Body faces right; caller handles flip/rotation.
+// Intermediate body width — neither as slim as a mackerel nor as round as garibaldi.
+// Orange-tinted lower jaw is the signature detail from the reference photos.
+
+export function drawEelHeadV3(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+): void {
+  ctx.save();
+  const bx = x, by = y, bw = w, bh = h;
+
+  // Tapered head polygon: narrow neck (matches body width) flaring to a wider head
+  // dTop/dBot = neck dorsal/belly y; hTop/hBot = head dorsal/belly y; snR = snout arc radius
+  const buildHead = (dTop: number, dBot: number, hTop: number, hBot: number, snR: number) => {
+    const snCX = Math.round(bx + bw * 0.88);
+    const snCY = Math.round(by + bh * 0.54);
+    ctx.beginPath();
+    ctx.moveTo(Math.round(bx + bw * 0.04), Math.round(by + bh * dTop)); // neck top
+    ctx.lineTo(Math.round(bx + bw * 0.20), Math.round(by + bh * hTop)); // flare top
+    ctx.lineTo(Math.round(bx + bw * 0.82), Math.round(by + bh * hTop)); // pre-snout top
+    ctx.arc(snCX, snCY, Math.round(bw * snR), -Math.PI / 2, Math.PI / 2); // snout tip
+    ctx.lineTo(Math.round(bx + bw * 0.82), Math.round(by + bh * hBot)); // pre-snout bottom
+    ctx.lineTo(Math.round(bx + bw * 0.20), Math.round(by + bh * hBot)); // flare bottom
+    ctx.lineTo(Math.round(bx + bw * 0.04), Math.round(by + bh * dBot)); // neck bottom
+    ctx.closePath();
+  };
+
+  // Outer dark outline — neck at body width, head flares wider
+  ctx.fillStyle = E_OUTLINE;
+  buildHead(0.33, 0.76, 0.24, 0.82, 0.13);
+  ctx.fill();
+
+  // Clip all internal fills to the head interior
+  buildHead(0.35, 0.74, 0.26, 0.80, 0.11);
+  ctx.save();
+  ctx.clip();
+
+  // Base body fill
+  ctx.fillStyle = E_BODY;
+  R(ctx, 0.0, 0.26, 1.0, 0.54, bx, by, bw, bh);
+
+  // Dark dorsal zone — straight flat back
+  ctx.fillStyle = E_DARK;
+  R(ctx, 0.0, 0.26, 1.0, 0.14, bx, by, bw, bh);
+
+  // Belly — lighter ventral zone
+  ctx.fillStyle = E_BELLY;
+  R(ctx, 0.0, 0.61, 1.0, 0.19, bx, by, bw, bh);
+
+  // Snout fill
+  ctx.fillStyle = E_BODY;
+  ctx.beginPath();
+  ctx.arc(
+    Math.round(bx + bw * 0.88), Math.round(by + bh * 0.54),
+    Math.round(bw * 0.09), 0, Math.PI * 2,
+  );
+  ctx.fill();
+
+  // Jaw — orange-brown lower front
+  ctx.fillStyle = E_JAW;
+  R(ctx, 0.62, 0.61, 0.30, 0.19, bx, by, bw, bh);
+  ctx.beginPath();
+  ctx.arc(
+    Math.round(bx + bw * 0.88), Math.round(by + bh * 0.68),
+    Math.round(bw * 0.09), 0, Math.PI * 2,
+  );
+  ctx.fill();
+
+  // Lip highlight
+  ctx.fillStyle = E_LIP;
+  R(ctx, 0.76, 0.64, 0.14, 0.06, bx, by, bw, bh);
+
+  // Eye sclera
+  ctx.fillStyle = E_EYE_S;
+  R(ctx, 0.70, 0.28, 0.12, 0.13, bx, by, bw, bh);
+  // Pupil
+  ctx.fillStyle = E_EYE_P;
+  R(ctx, 0.72, 0.29, 0.08, 0.10, bx, by, bw, bh);
+  // Shine
+  ctx.fillStyle = "#c8e0d0";
+  R(ctx, 0.72, 0.29, 0.02, 0.02, bx, by, bw, bh);
+
+  // Nostrils
+  ctx.fillStyle = E_OUTLINE;
+  R(ctx, 0.84, 0.37, 0.03, 0.03, bx, by, bw, bh);
+  R(ctx, 0.84, 0.44, 0.03, 0.03, bx, by, bw, bh);
+
+  // Mouth line
+  ctx.fillStyle = E_OUTLINE;
+  R(ctx, 0.78, 0.54, 0.12, 0.02, bx, by, bw, bh);
+
+  ctx.restore(); // release clip
+  ctx.restore(); // initial save
+}
+
 // ── Oarfish / Sunfish (Mola mola) palettes ────────────────────────────────────
 const O_OUTLINE    = "#0c1018";
 const O_DARK_GREY  = "#2a3038";

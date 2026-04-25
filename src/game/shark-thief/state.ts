@@ -51,6 +51,11 @@ export interface KelpCell {
   height: number;  // how many cells tall this kelp strand is (1 = root/bottom, maxHeight = tip/top)
 }
 
+export interface ElectricEel {
+  segments: Array<{ x: number; y: number }>;  // [0] = head
+  dir: "right" | "left" | "up" | "down";
+}
+
 export interface DyingEnemy {
   x: number; y: number;
   isBig: boolean;      // 2×2 block if true
@@ -125,6 +130,15 @@ export const gs = {
   // ── Depth 2 — Nursery ────────────────────────────────────────────────────
   seagrassCells: [] as KelpCell[],
   seagrassSet:   new Set<string>(),
+
+  // ── Depth 7 — Electric ───────────────────────────────────────────────────
+  electricEels:   [] as ElectricEel[],
+  shrimp:         [] as Array<{ x: number; y: number; spawnTime?: number }>,
+  sharkShocked:   false,
+  shockStartTime: 0 as number,
+  shockRafId:     null as number | null,
+  shockVibrateX:  0 as number,
+  shockVibrateY:  0 as number,
 
   // ── Depth 6 — Busy Pacific ───────────────────────────────────────────────
   neutralFish:              [] as NeutralFish[],

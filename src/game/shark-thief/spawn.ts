@@ -2,7 +2,7 @@
 
 import { GRID } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
-import { gs, type Enemy, type BigEnemy, type NeutralFish, type AlgaeBall } from "./state";
+import { gs, type Enemy, type BigEnemy, type NeutralFish, type AlgaeBall, type ElectricEel } from "./state";
 import { bigEnemyOverlaps } from "./collision";
 
 // ── Center safe zone ─────────────────────────────────────────────────────
@@ -364,6 +364,119 @@ export function seedSeagrass(): void {
 
   gs.seagrassCells = generateStrands(cfg.strandCount, cfg.minHeight, cfg.maxHeight);
   gs.seagrassSet = new Set(gs.seagrassCells.map(k => `${k.x},${k.y}`));
+}
+
+// ── Electric eels (Depth 7) ──────────────────────────────────────────────
+
+export function seedElectricEels(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].electricEel;
+  if (!cfg) return;
+  gs.electricEels = [];
+
+  const dirMap: Record<string, [number, number]> = {
+    right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1],
+  };
+  const oppMap: Record<string, [number, number]> = {
+    right: [-1, 0], left: [1, 0], down: [0, -1], up: [0, 1],
+  };
+  const allDirs = ["right", "left", "down", "up"] as const;
+
+  for (let i = 0; i < cfg.count; i++) {
+    let hx: number, hy: number, attempts = 0;
+    do {
+      hx = Math.floor(Math.random() * GRID);
+      hy = Math.floor(Math.random() * GRID);
+      attempts++;
+      if (attempts > 1000) break;
+    } while (
+      Math.abs(hx - gs.shark.x) + Math.abs(hy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+      gs.electricEels.some(e => e.segments.some(s => s.x === hx && s.y === hy))
+    );
+
+    // Pick a start direction so the full body fits in bounds (no wrapping)
+    const validDirs = allDirs.filter(d => {
+      const [bdx, bdy] = oppMap[d];
+      const tailX = hx + bdx * (cfg.segmentLength - 1);
+      const tailY = hy + bdy * (cfg.segmentLength - 1);
+      return tailX >= 0 && tailX < GRID && tailY >= 0 && tailY < GRID;
+    });
+    const startDir = (validDirs.length > 0 ? validDirs : allDirs)[
+      Math.floor(Math.random() * Math.max(validDirs.length, 1))
+    ];
+    const [bodydx, bodydy] = oppMap[startDir];
+    const segments: Array<{ x: number; y: number }> = [];
+    for (let s = 0; s < cfg.segmentLength; s++) {
+      segments.push({
+        x: hx + bodydx * s,
+        y: hy + bodydy * s,
+      });
+    }
+    gs.electricEels.push({ segments, dir: startDir });
+  }
+}
+
+// ── Shrimp (Depth 7) ────────────────────────────────────────────────────
+
+export function spawnShrimpIfNeeded(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].shrimp;
+  if (!cfg || gs.shrimp.length >= cfg.count) return;
+  let px: number, py: number, attempts = 0;
+  do {
+    px = Math.floor(Math.random() * GRID);
+    py = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    Math.abs(px - gs.shark.x) + Math.abs(py - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+    gs.pickups[py][px]                                   ||
+    gs.shrimp.some(p => p.x === px && p.y === py)       ||
+    gs.electricEels.some(e => e.segments.some(s => s.x === px && s.y === py)) ||
+    (gs.shark.x === px && gs.shark.y === py)
+  );
+  gs.shrimp.push({ x: px, y: py });
+  gs.shrimp[gs.shrimp.length - 1].spawnTime = Date.now();
+}
+
+export function spawnOneEel(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].electricEel;
+  if (!cfg) return;
+
+  const oppMap: Record<string, [number, number]> = {
+    right: [-1, 0], left: [1, 0], down: [0, -1], up: [0, 1],
+  };
+  const allDirs = ["right", "left", "down", "up"] as const;
+
+  let hx: number, hy: number, attempts = 0;
+  do {
+    hx = Math.floor(Math.random() * GRID);
+    hy = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    Math.abs(hx - gs.shark.x) + Math.abs(hy - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+    gs.electricEels.some(e =>
+      Math.abs(hx - e.segments[0].x) + Math.abs(hy - e.segments[0].y) < cfg.avoidRadius
+    ) ||
+    gs.electricEels.some(e => e.segments.some(s => s.x === hx && s.y === hy))
+  );
+
+  const validDirs = allDirs.filter(d => {
+    const [bdx, bdy] = oppMap[d];
+    const tailX = hx + bdx * (cfg.segmentLength - 1);
+    const tailY = hy + bdy * (cfg.segmentLength - 1);
+    return tailX >= 0 && tailX < GRID && tailY >= 0 && tailY < GRID;
+  });
+  const startDir = (validDirs.length > 0 ? validDirs : allDirs)[
+    Math.floor(Math.random() * Math.max(validDirs.length, 1))
+  ];
+  const [bodydx, bodydy] = oppMap[startDir];
+  const segments: Array<{ x: number; y: number }> = [];
+  for (let s = 0; s < cfg.segmentLength; s++) {
+    const seg = { x: hx + bodydx * s, y: hy + bodydy * s };
+    if (gs.electricEels.some(e => e.segments.some(ex => ex.x === seg.x && ex.y === seg.y))) return;
+    segments.push(seg);
+  }
+  gs.electricEels.push({ segments, dir: startDir });
 }
 
 // ── Enemies ──────────────────────────────────────────────────────────────

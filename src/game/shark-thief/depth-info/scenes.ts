@@ -11,7 +11,7 @@ import { buildRulesHTML } from "./data";
 
 export const MINI_CS = 40; // cell size — 5×5 grid = 200×200 canvas
 export const MINI_N  = 5;
-const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5400, 3: 999, 4: 5000, 5: 5200, 6: 999 };
+const MINI_TOTAL: Record<number, number> = { 1: 4800, 2: 5400, 3: 999, 4: 5000, 5: 5200, 6: 999, 7: 999 };
 
 const MINI_OPEN_CAPTIONS: Record<number, string> = {
   1: "FIND THE PURPLE AMMONITE",
@@ -20,6 +20,7 @@ const MINI_OPEN_CAPTIONS: Record<number, string> = {
   4: "ICE MAKES YOU SLIDE...",
   5: "THE CORAL SHELL BLOCKS THE PATH...",
   6: "DEPTH 6 IS UNCHARTED TERRITORY...",
+  7: "ELECTRIC EELS PATROL THE DEPTHS...",
 };
 
 // Pre-seeded tile grids (deterministic — no flicker)
@@ -517,6 +518,24 @@ function renderD6Stub(ctx: CanvasRenderingContext2D, _e: number): void {
   updateMovePips(0);
 }
 
+function renderD7Stub(ctx: CanvasRenderingContext2D, _e: number): void {
+  ctx.fillStyle = "#0a1430"; ctx.fillRect(0, 0, 200, 200);
+  for (let r = 0; r < MINI_N; r++)
+    for (let c = 0; c < MINI_N; c++) {
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = MINI_TILE_COLORS_D1[r * MINI_N + c];
+      ctx.fillRect(c * MINI_CS, r * MINI_CS, MINI_CS, MINI_CS);
+    }
+  ctx.globalAlpha = 1;
+  ctx.save();
+  ctx.font = "bold 48px monospace"; ctx.fillStyle = "rgba(255,224,48,0.5)";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("⚡", 100, 100);
+  ctx.restore();
+  setMiniCaption("ELECTRIC EELS PATROL THE DEPTHS...");
+  updateMovePips(0);
+}
+
 function renderMiniScene(depth: number, elapsed: number): void {
   const canvas = document.getElementById("depthSceneCanvas") as HTMLCanvasElement;
   if (!canvas) return;
@@ -527,7 +546,8 @@ function renderMiniScene(depth: number, elapsed: number): void {
   else if (depth === 3) renderD3Stub(ctx, elapsed);    // Toxic — stub
   else if (depth === 4) renderD4(ctx, elapsed);        // Arctic — ice/fish
   else if (depth === 5) renderD2(ctx, elapsed);        // Reef — coral shell (was D2 scene)
-  else                  renderD6Stub(ctx, elapsed);    // Abyss — stub
+  else if (depth === 6) renderD6Stub(ctx, elapsed);    // Pacific — stub
+  else                  renderD7Stub(ctx, elapsed);    // Electric — stub
 }
 
 function syncMiniControls(): void {

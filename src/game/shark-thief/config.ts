@@ -46,8 +46,16 @@ export const PACIFIC_TILE_COLORS = [
   "#1a86a2", "#2890a8", "#228ca6", "#2e96ae", "#2084a0",
 ];
 
+// Electric eel depth palette — reef-like base shifted to blue-indigo (Depth 7)
+// Hue ~210-225°: blue water with purple undertones, distinct from Pacific (~195°).
+// Yellow eel glow pops against this cooler, darker base.
+export const ELECTRIC_TILE_COLORS = [
+  "#2a60b4", "#3268bc", "#2258a8", "#3870c0", "#2c62b0",
+  "#4060b0", "#2a58aa", "#3464b8", "#3c70be", "#2e5eb2",
+];
+
 // Available background palettes — add new entries here to create more options.
-export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic" | "pacific";
+export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic" | "pacific" | "electric";
 
 export const TILE_PALETTES: Record<TilePalette, string[]> = {
   ocean:    TILE_COLORS,
@@ -56,6 +64,7 @@ export const TILE_PALETTES: Record<TilePalette, string[]> = {
   nursery:  NURSERY_TILE_COLORS,
   toxic:    TOXIC_TILE_COLORS,
   pacific:  PACIFIC_TILE_COLORS,
+  electric: ELECTRIC_TILE_COLORS,
 };
 
 export function randomColorFromPalette(palette: TilePalette): string {
@@ -71,5 +80,6 @@ export const DEPTH_META: Record<number, { color: string; glow: string; name: str
   4: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
   5: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
   6: { color: "#48d4b8", glow: "rgba(72,212,184,0.5)",   name: "BUSY PACIFIC" },
-  7: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
+  7: { color: "#ffe030", glow: "rgba(255,224,48,0.5)",   name: "ELECTRIC" },
+  8: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
 };

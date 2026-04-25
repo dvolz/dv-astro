@@ -2,9 +2,10 @@
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
 import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
-import { LEVEL_CONFIG, PACIFIC_DEPTH } from "./level-config";
-import { gs, type NeutralFish } from "./state";
+import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH } from "./level-config";
+import { gs, type NeutralFish, type ElectricEel } from "./state";
 import { drawNeutralFish, drawAlgaeBall } from "./sprites";
+import { drawEelHeadV3 } from "./sprites-v2";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -370,6 +371,212 @@ export function drawToxicCloud(
   ctx.shadowBlur = 0;
   ctx.shadowColor = "transparent";
 
+  ctx.restore();
+}
+
+// ── Shrimp — red-orange pixel-art crustacean pickup (Depth 7 — Electric) ──
+
+export function drawShrimp(
+  ctx: CanvasRenderingContext2D,
+  px: number, py: number, size: number,
+): void {
+  ctx.save();
+
+  const s = size;
+  // Body segments — 4 horizontal rects, head at left, tail at right
+  // Drawn with slight height taper toward the tail
+  const segColors = ["#cc3010", "#ff6030", "#ff6030", "#ff8050"];
+  const segW = [s * 0.28, s * 0.24, s * 0.20, s * 0.16];
+  const segH = [s * 0.38, s * 0.32, s * 0.28, s * 0.22];
+  let segX = px + s * 0.08;
+  const bodyY = py + s * 0.38;
+
+  for (let i = 0; i < 4; i++) {
+    ctx.fillStyle = segColors[i];
+    ctx.fillRect(
+      Math.round(segX),
+      Math.round(bodyY - segH[i] / 2),
+      Math.round(segW[i]),
+      Math.round(segH[i]),
+    );
+    segX += segW[i];
+  }
+
+  // Highlight stripe on top of body
+  ctx.fillStyle = "#ff8050";
+  ctx.fillRect(
+    Math.round(px + s * 0.08),
+    Math.round(bodyY - s * 0.38 / 2),
+    Math.round(s * 0.68),
+    Math.round(s * 0.06),
+  );
+
+  // Shadow underside
+  ctx.fillStyle = "#cc3010";
+  ctx.fillRect(
+    Math.round(px + s * 0.08),
+    Math.round(bodyY + s * 0.10),
+    Math.round(s * 0.68),
+    Math.round(s * 0.05),
+  );
+
+  // Fanned tail — 3 small rects fanning right
+  const tailX = Math.round(px + s * 0.78);
+  ctx.fillStyle = "#ff6030";
+  ctx.fillRect(tailX, Math.round(bodyY - s * 0.18), Math.round(s * 0.10), Math.round(s * 0.08));
+  ctx.fillRect(tailX, Math.round(bodyY - s * 0.06), Math.round(s * 0.12), Math.round(s * 0.08));
+  ctx.fillRect(tailX, Math.round(bodyY + s * 0.06), Math.round(s * 0.10), Math.round(s * 0.08));
+  ctx.fillStyle = "#ff8050";
+  ctx.fillRect(tailX + Math.round(s * 0.02), Math.round(bodyY - s * 0.17), Math.round(s * 0.04), Math.round(s * 0.04));
+
+  // Claw suggestion — small rect at head end
+  ctx.fillStyle = "#cc3010";
+  ctx.fillRect(
+    Math.round(px + s * 0.02),
+    Math.round(bodyY - s * 0.20),
+    Math.round(s * 0.08),
+    Math.round(s * 0.10),
+  );
+  ctx.fillStyle = "#ff6030";
+  ctx.fillRect(
+    Math.round(px + s * 0.02),
+    Math.round(bodyY + s * 0.12),
+    Math.round(s * 0.08),
+    Math.round(s * 0.08),
+  );
+
+  // Antennae — 2 thin lines extending from head
+  ctx.strokeStyle = "#ffaa60";
+  ctx.lineWidth = Math.max(1, s * 0.04);
+  ctx.beginPath();
+  ctx.moveTo(Math.round(px + s * 0.08), Math.round(bodyY - s * 0.16));
+  ctx.lineTo(Math.round(px - s * 0.10), Math.round(bodyY - s * 0.42));
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(px + s * 0.08), Math.round(bodyY - s * 0.12));
+  ctx.lineTo(Math.round(px - s * 0.04), Math.round(bodyY - s * 0.44));
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ── Electric eel — snake body + pixel-art head (Depth 7 — Electric) ───────
+
+function drawEelHead(
+  ctx: CanvasRenderingContext2D,
+  seg: { x: number; y: number },
+  dir: "right" | "left" | "up" | "down",
+  CELL: number,
+): void {
+  const px = seg.x * CELL, py = seg.y * CELL;
+  const midX = px + CELL / 2, midY = py + CELL / 2;
+  ctx.save();
+  ctx.translate(midX, midY);
+  if      (dir === "left")  ctx.scale(-1, 1);
+  else if (dir === "down")  ctx.rotate(Math.PI / 2);
+  else if (dir === "up")    ctx.rotate(-Math.PI / 2);
+  ctx.translate(-midX, -midY);
+  drawEelHeadV3(ctx, px, py, CELL, CELL);
+  ctx.restore();
+}
+
+export function drawElectricEel(
+  ctx: CanvasRenderingContext2D,
+  eel: ElectricEel,
+  CELL: number,
+): void {
+  if (eel.segments.length === 0) return;
+
+  const now = Date.now();
+  // Clipped sine: fully electric for half the cycle, completely dark for the other half
+  const pulse = Math.max(0, Math.sin(now / 400 * Math.PI * 2));
+
+  const pts = eel.segments.slice().reverse().map(s => ({
+    x: s.x * CELL + CELL / 2,
+    y: s.y * CELL + CELL / 2,
+  }));
+
+  if (pts.length < 2) {
+    ctx.save();
+    drawEelHead(ctx, eel.segments[0], eel.dir, CELL);
+    ctx.restore();
+    return;
+  }
+
+  // Right-perpendicular at each point — dorsal side consistent with travel direction
+  // Uses averaged tangent at corners for smooth bends
+  const perps = pts.map((_, i) => {
+    let dx: number, dy: number;
+    if (i === 0) {
+      dx = pts[1].x - pts[0].x; dy = pts[1].y - pts[0].y;
+    } else if (i === pts.length - 1) {
+      dx = pts[i].x - pts[i - 1].x; dy = pts[i].y - pts[i - 1].y;
+    } else {
+      dx = pts[i + 1].x - pts[i - 1].x; dy = pts[i + 1].y - pts[i - 1].y;
+    }
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 0.001) return { x: 0, y: -1 };
+    return { x: dy / len, y: -dx / len };
+  });
+
+  const dorsalW = CELL * 0.15; // narrow — straight flat back
+  const bellyW  = CELL * 0.23; // wider — gently curved ventral side
+
+  // Pointed tail tip
+  const tdx = pts[0].x - pts[1].x, tdy = pts[0].y - pts[1].y;
+  const tlen = Math.sqrt(tdx * tdx + tdy * tdy);
+  const tipX = pts[0].x + (tdx / tlen) * CELL * 0.40;
+  const tipY = pts[0].y + (tdy / tlen) * CELL * 0.40;
+
+  // Filled blade polygon: tip → dorsal edge (tail→head) → belly edge (head→tail) → close
+  const buildPoly = (pArr: typeof pts, dw: number, bw: number) => {
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    for (let i = 0; i < pArr.length; i++) {
+      ctx.lineTo(pArr[i].x + perps[i].x * dw, pArr[i].y + perps[i].y * dw);
+    }
+    for (let i = pArr.length - 1; i >= 0; i--) {
+      ctx.lineTo(pArr[i].x - perps[i].x * bw, pArr[i].y - perps[i].y * bw);
+    }
+    ctx.closePath();
+  };
+
+  // Glow polygon stops before head segment to keep head clean
+  const glowPts = pts.slice(0, -1);
+
+  ctx.save();
+
+  // Electric glow — only active when pulse > 0, dead dark when pulse = 0
+  if (pulse > 0.01) {
+    ctx.shadowColor = "#ffee00";
+    ctx.shadowBlur  = pulse * 22;
+    ctx.fillStyle   = "#0a0e0c";
+    buildPoly(glowPts, dorsalW + 3, bellyW + 3);
+    ctx.fill();
+    ctx.shadowBlur  = 0;
+  }
+
+  // Dark outline shell (full body, flows into head)
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = "#0a0e0c";
+  buildPoly(pts, dorsalW + 2, bellyW + 2);
+  ctx.fill();
+
+  // Dark dorsal fill — covers back half, flat straight edge appearance
+  ctx.fillStyle = "#1e2218";
+  buildPoly(pts, dorsalW, bellyW * 0.15);
+  ctx.fill();
+
+  // Lighter belly fill — wider ventral side, suggests curved belly profile
+  ctx.fillStyle = "#5a5040";
+  buildPoly(pts, dorsalW * 0.15, bellyW);
+  ctx.fill();
+
+  ctx.restore();
+
+  // Head sprite drawn on top — no shadow to avoid neck glow ring
+  ctx.save();
+  drawEelHead(ctx, eel.segments[0], eel.dir, CELL);
   ctx.restore();
 }
 
@@ -941,6 +1148,42 @@ export function draw(): void {
     }
   }
 
+  // Shrimp (Electric depth)
+  if (LEVEL_CONFIG[gs.currentDepth]?.shrimp && gs.shrimp.length > 0) {
+    for (const s of gs.shrimp) {
+      const pp = CELL * 0.08;
+      const cx = s.x * CELL + CELL / 2;
+      const cy = s.y * CELL + CELL / 2;
+      ctx.save();
+      ctx.translate(cx, cy);
+      if (s.spawnTime !== undefined) {
+        const elapsed = Date.now() - s.spawnTime;
+        if (elapsed < 2000) {
+          const growT = Math.min(1, elapsed / 500);
+          const c1 = 1.70158, c3 = c1 + 1;
+          const spawnScale = growT < 1
+            ? 1 + c3 * Math.pow(growT - 1, 3) + c1 * Math.pow(growT - 1, 2)
+            : 1;
+          ctx.scale(spawnScale, spawnScale);
+          const fade = Math.pow(1 - elapsed / 2000, 1.5);
+          const pulse = 0.5 + 0.5 * Math.sin((elapsed / 120) * Math.PI);
+          const pad = Math.round(CELL * 0.2);
+          ctx.save();
+          ctx.globalAlpha = fade * (0.35 + 0.55 * pulse);
+          ctx.fillStyle = "#ff8040";
+          ctx.fillRect(-CELL / 2 - pad, -CELL / 2 - pad, CELL + pad * 2, CELL + pad * 2);
+          ctx.globalAlpha = fade;
+          ctx.strokeStyle = "#ffcc80";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-CELL / 2 - pad, -CELL / 2 - pad, CELL + pad * 2, CELL + pad * 2);
+          ctx.restore();
+        }
+      }
+      drawShrimp(ctx, -CELL / 2 + pp, -CELL / 2 + pp, CELL - pp * 2);
+      ctx.restore();
+    }
+  }
+
   // Algae ball trails (Depth 6 — Busy Pacific) — drawn before balls so balls render on top
   if (LEVEL_CONFIG[gs.currentDepth]?.algaeBall && gs.algaeBalls.length > 0) {
     const trailAlphas = [0.46, 0.31, 0.21, 0.14, 0.10];
@@ -1004,6 +1247,13 @@ export function draw(): void {
     ctx.fillStyle = "#2d1a4a"; ctx.fillRect(bx, by, bw, bw);
   }
 
+  // Electric eels (Depth 7 — Electric) — drawn before neutral fish and player
+  if (gs.currentDepth === ELECTRIC_DEPTH && gs.electricEels.length > 0) {
+    for (const eel of gs.electricEels) {
+      drawElectricEel(ctx, eel, CELL);
+    }
+  }
+
   // Neutral fish (Depth 6 — Busy Pacific)
   if (gs.currentDepth === PACIFIC_DEPTH && gs.neutralFish.length > 0) {
     for (const fish of gs.neutralFish) {
@@ -1025,8 +1275,30 @@ export function draw(): void {
   for (const b of gs.babySharks)
     drawBabyShark(ctx, b.x, b.y, CELL, gs.sharkDir);
 
-  // Player shark
-  drawSharkOnCtx(ctx, gs.sharkVisualX, gs.sharkVisualY, CELL, gs.sharkDir);
+  // Player shark — with electric shock visual when stunned
+  {
+    const renderX = gs.sharkVisualX + gs.shockVibrateX;
+    const renderY = gs.sharkVisualY + gs.shockVibrateY;
+    if (gs.sharkShocked) {
+      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 55 * Math.PI * 2);
+      ctx.save();
+      ctx.shadowColor = "#ffee44";
+      ctx.shadowBlur  = 8 + pulse * 14;
+      drawSharkOnCtx(ctx, renderX, renderY, CELL, gs.sharkDir);
+      ctx.restore();
+      // Yellow tint overlay
+      ctx.save();
+      ctx.globalAlpha = 0.28 + pulse * 0.18;
+      ctx.fillStyle = "#ffee44";
+      ctx.fillRect(
+        Math.round(renderX * CELL), Math.round(renderY * CELL), CELL, CELL,
+      );
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    } else {
+      drawSharkOnCtx(ctx, renderX, renderY, CELL, gs.sharkDir);
+    }
+  }
 
   // Kelp/seagrass drawn AFTER player so it occludes the shark when standing inside
   if (LEVEL_CONFIG[gs.currentDepth].seagrass && gs.seagrassCells.length > 0) {

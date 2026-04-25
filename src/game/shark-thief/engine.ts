@@ -2,10 +2,10 @@
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
 import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
-import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, type DepthConfig } from "./level-config";
+import { LEVEL_CONFIG, ICE_DEPTH, PACIFIC_DEPTH, ELECTRIC_DEPTH, ABYSS_DEPTH, type DepthConfig } from "./level-config";
 import { gs, type DyingPickup } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish, spawnAlgaeBallIfNeeded } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish, spawnAlgaeBallIfNeeded, seedElectricEels, spawnShrimpIfNeeded, spawnOneEel } from "./spawn";
 import { resolveSlide } from "./slide";
 import { moveEnemiesAI, moveLeviathanAI } from "./ai";
 import {
@@ -117,6 +117,14 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.algaeBalls = [];
     gs.algaeBallRespawnTimers = [];
   }
+  if (cfg.electricEel || cfg.shrimp) {
+    gs.electricEels  = [];
+    gs.shrimp        = [];
+    gs.sharkShocked  = false;
+    gs.shockVibrateX = 0;
+    gs.shockVibrateY = 0;
+    if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
+  }
 }
 
 function setupMechanic(cfg: DepthConfig): void {
@@ -169,6 +177,17 @@ function setupMechanic(cfg: DepthConfig): void {
     gs.algaeBalls = [];
     gs.algaeBallRespawnTimers = [];
     for (let i = 0; i < cfg.algaeBall.count; i++) spawnAlgaeBallIfNeeded();
+  }
+  if (cfg.electricEel) {
+    gs.electricEels  = [];
+    gs.shrimp        = [];
+    gs.sharkShocked  = false;
+    gs.shockVibrateX = 0;
+    gs.shockVibrateY = 0;
+    seedElectricEels();
+  }
+  if (cfg.shrimp) {
+    for (let i = 0; i < cfg.shrimp.count; i++) spawnShrimpIfNeeded();
   }
 }
 
@@ -288,7 +307,7 @@ function seedStartingYellows(): void {
 // ── Depth transition ──────────────────────────────────────────────────────
 
 export function checkDepthTransition(): void {
-  if (gs.currentDepth >= 7) return;
+  if (gs.currentDepth >= ABYSS_DEPTH) return;
   if (gs.score < gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore) return;
 
   gs.levelTimes.push(performance.now() - gs.levelStartTime);
@@ -336,8 +355,8 @@ export function checkDepthTransition(): void {
   seedStartingYellows();
   startDyingLoop();
 
-  // Depth 7 always spawns the leviathan
-  if (gs.currentDepth === 7) spawnLeviathan();
+  // Abyss always spawns the leviathan
+  if (gs.currentDepth === ABYSS_DEPTH) spawnLeviathan();
 }
 
 // ── Init (fresh game from depth 1) ───────────────────────────────────────
@@ -401,6 +420,12 @@ export function init(): void {
   gs.seagrassSet              = new Set();
   gs.kelpCells                = [];
   gs.kelpSet                  = new Set();
+  gs.electricEels             = [];
+  gs.shrimp                   = [];
+  gs.sharkShocked             = false;
+  gs.shockVibrateX            = 0;
+  gs.shockVibrateY            = 0;
+  if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -541,6 +566,138 @@ function moveNeutralFish(): void {
   }
 }
 
+// ── Electric eel movement (Depth 7) ──────────────────────────────────────
+
+function moveEels(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].electricEel;
+  if (!cfg) return;
+
+  const dirMap: Record<string, [number, number]> = {
+    right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1],
+  };
+  const allDirs = ["right", "left", "down", "up"] as const;
+
+  for (const eel of gs.electricEels) {
+    const head = eel.segments[0];
+
+    const inBounds = (d: string): boolean => {
+      const [dx, dy] = dirMap[d];
+      const nx = head.x + dx, ny = head.y + dy;
+      return nx >= 0 && nx < GRID && ny >= 0 && ny < GRID;
+    };
+
+    const tooClose = (d: string): boolean => {
+      const [dx, dy] = dirMap[d];
+      const nx = head.x + dx, ny = head.y + dy;
+      return gs.electricEels.some(other => {
+        if (other === eel) return false;
+        return Math.abs(nx - other.segments[0].x) + Math.abs(ny - other.segments[0].y) < cfg.avoidRadius;
+      });
+    };
+
+    let chosenDir = eel.dir;
+
+    if (!inBounds(eel.dir) || tooClose(eel.dir)) {
+      const others = allDirs.filter(d => d !== eel.dir).sort(() => Math.random() - 0.5);
+
+      // First pass: in-bounds AND not too close
+      let found = false;
+      for (const d of others) {
+        if (inBounds(d) && !tooClose(d)) { chosenDir = d; found = true; break; }
+      }
+
+      // Second pass: just in-bounds (ignore avoidance if necessary)
+      if (!found) {
+        for (const d of [eel.dir, ...others]) {
+          if (inBounds(d)) { chosenDir = d; found = true; break; }
+        }
+      }
+
+      if (!found) continue; // cornered — skip this turn (shouldn't happen on 25×25)
+    }
+
+    const [dx, dy] = dirMap[chosenDir];
+    eel.dir = chosenDir;
+    eel.segments = [
+      { x: head.x + dx, y: head.y + dy },
+      ...eel.segments.slice(0, -1),
+    ];
+  }
+}
+
+// ── Shock loop — 2 s paralysis with enemies/eels ticking 1/s ─────────────
+
+function startShockLoop(): void {
+  if (gs.shockRafId) return;
+
+  let lastMoveTick = performance.now();
+
+  function tick(): void {
+    const now = performance.now();
+    const elapsed = now - gs.shockStartTime;
+    const shockDur = LEVEL_CONFIG[gs.currentDepth].electricEel?.shockDuration ?? 2000;
+
+    if (elapsed >= shockDur || gs.gameOver) {
+      gs.sharkShocked  = false;
+      gs.shockVibrateX = 0;
+      gs.shockVibrateY = 0;
+      gs.shockRafId    = null;
+      gs.sharkVisualX  = gs.shark.x;
+      gs.sharkVisualY  = gs.shark.y;
+      draw();
+      return;
+    }
+
+    // Move enemies + eels once per second during shock
+    if (now - lastMoveTick >= 1000) {
+      lastMoveTick = now;
+      moveEnemiesAI();
+      moveEels();
+      startEnemyAnimLoop();
+
+      // Death check — enemy stepped on shark during shock
+      for (const e of gs.enemies) {
+        if (e.x === gs.shark.x && e.y === gs.shark.y) {
+          gs.sharkShocked = false;
+          gs.shockVibrateX = 0;
+          gs.shockVibrateY = 0;
+          cancelAnimationFrame(gs.shockRafId!);
+          gs.shockRafId = null;
+          endGame(); return;
+        }
+      }
+      for (const be of gs.bigEnemies) {
+        if (gs.shark.x >= be.x && gs.shark.x <= be.x + 1 &&
+            gs.shark.y >= be.y && gs.shark.y <= be.y + 1) {
+          gs.sharkShocked = false;
+          gs.shockVibrateX = 0;
+          gs.shockVibrateY = 0;
+          cancelAnimationFrame(gs.shockRafId!);
+          gs.shockRafId = null;
+          endGame(); return;
+        }
+      }
+    }
+
+    // Vibrate shark visually
+    const freq = 22;
+    gs.shockVibrateX = Math.sin(now / 1000 * freq * Math.PI * 2) * 0.09;
+    gs.shockVibrateY = Math.cos(now / 1000 * freq * 1.3 * Math.PI * 2) * 0.055;
+
+    draw();
+    gs.shockRafId = requestAnimationFrame(tick);
+  }
+
+  gs.shockRafId = requestAnimationFrame(tick);
+}
+
+function triggerShock(): void {
+  if (gs.sharkShocked) return;
+  gs.sharkShocked  = true;
+  gs.shockStartTime = performance.now();
+  startShockLoop();
+}
+
 // ── Algae ball collection helper (Depth 6) ───────────────────────────────
 
 function collectAlgaeBall(idx: number): void {
@@ -588,6 +745,7 @@ function collectAlgaeBall(idx: number): void {
 
 export function moveShark(dx: number, dy: number): void {
   if (gs.gameOver) return;
+  if (gs.sharkShocked) return; // paralyzed during electric shock
 
   const setDir = () => {
     if (dx === 1) gs.sharkDir = "right";
@@ -681,6 +839,17 @@ export function moveShark(dx: number, dy: number): void {
     startEnemyAnimLoop();
   }
 
+  // Electric eel movement + shock check (Depth 7 — Electric)
+  if (LEVEL_CONFIG[gs.currentDepth].electricEel) {
+    moveEels();
+    if (!gs.sharkShocked) {
+      const shockHit = gs.electricEels.some(e =>
+        e.segments.some(s => s.x === gs.shark.x && s.y === gs.shark.y),
+      );
+      if (shockHit) triggerShock();
+    }
+  }
+
   // Coin pickup
   if (gs.pickups[ny][nx]) {
     gs.pickups[ny][nx] = false;
@@ -689,6 +858,20 @@ export function moveShark(dx: number, dy: number): void {
     updateHudScore(gs.score);
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
+  }
+
+  // Shrimp pickup (Depth 7 — Electric)
+  if (LEVEL_CONFIG[gs.currentDepth].shrimp) {
+    const shrimpIdx = gs.shrimp.findIndex(p => p.x === gs.shark.x && p.y === gs.shark.y);
+    if (shrimpIdx !== -1) {
+      gs.shrimp.splice(shrimpIdx, 1);
+      gs.score += LEVEL_CONFIG[gs.currentDepth].shrimp!.points;
+      gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+      updateHudScore(gs.score, "special");
+      spawnOneEel();
+      checkDepthTransition();
+      spawnShrimpIfNeeded();
+    }
   }
 
   // Gas bladder pickup (Depth 6)
@@ -1064,6 +1247,12 @@ export function loadGame(save: any): void {
   gs.kelpSet         = new Set();
   gs.kelpBladders    = [];
   gs.kelpBladdersSet = new Set();
+  gs.electricEels    = [];
+  gs.shrimp          = [];
+  gs.sharkShocked    = false;
+  gs.shockVibrateX   = 0;
+  gs.shockVibrateY   = 0;
+  if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
   // Re-seed at depth if applicable — same pattern as ice patch re-seeding
   const retryCfg = LEVEL_CONFIG[gs.currentDepth];
   if (retryCfg.neutralFish) seedNeutralFish();
@@ -1075,6 +1264,12 @@ export function loadGame(save: any): void {
   }
   if (retryCfg.algaeBall) {
     for (let i = 0; i < retryCfg.algaeBall.count; i++) spawnAlgaeBallIfNeeded();
+  }
+  if (retryCfg.electricEel) {
+    seedElectricEels();
+  }
+  if (retryCfg.shrimp) {
+    for (let i = 0; i < retryCfg.shrimp.count; i++) spawnShrimpIfNeeded();
   }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
@@ -1108,7 +1303,7 @@ export function initAtDepth(targetDepth: number): void {
     updateHudDepth(d);
     wrapper.className = `game-depth-wrapper depth-${d}`;
     setupMechanic(LEVEL_CONFIG[d]);
-    if (d === 7) spawnLeviathan();
+    if (d === ABYSS_DEPTH) spawnLeviathan();
     while (gs.enemies.length + gs.bigEnemies.length < LEVEL_CONFIG[d].enemyKeep) gs.enemies.push(spawnEnemy());
   }
 

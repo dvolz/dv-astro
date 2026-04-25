@@ -47,9 +47,22 @@ export const DEPTH_RULES: Record<number, Array<{ key: string; val: string; keyCo
     { key: "DESCEND",   val: "EARN 100 PTS IN THIS DEPTH" },
   ],
   6: [
-    { key: "STATUS",    val: "THIS DEPTH IS NOT YET CHARTED." },
-    { key: "LEVIATHAN", val: "A 3×3 MEGA ENEMY — MOVE RATE TBD", keyColor: "#9d6fe0" },
-    { key: "SHELL",     val: "PIECE AND PARAMETERS TBD" },
+    { key: "ENEMIES",      val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+    { key: "COINS",        val: "+1 PT — SPAWNS 1 ENEMY" },
+    { key: "NEUTRAL FISH", val: "MACKEREL, GARIBALDI & OARFISH — IMPASSABLE — THEY MOVE AROUND YOU", keyColor: "#48d4b8" },
+    { key: "KELP",         val: "COLUMNS GROW FROM THE SEA FLOOR — YOU CAN HIDE INSIDE THEM" },
+    { key: "GAS BLADDER",  val: "+5 PTS — COLLECT KELP FLOATS FOR BONUS POINTS", keyColor: "#48d4b8" },
+    { key: "ON ENTRY",     val: "ENEMIES RESET TO 14 FARTHEST FROM YOU" },
+    { key: "DESCEND",      val: "EARN 100 PTS IN THIS DEPTH" },
+  ],
+  7: [
+    { key: "ENEMIES",       val: "MOVE 1 STEP EVERY 2 PLAYER MOVES" },
+    { key: "COINS",         val: "+1 PT — SPAWNS 1 ENEMY" },
+    { key: "PURPLE PEARL",  val: "+5 PTS — SPAWNS 1 ENEMY — 4 PEARLS ON BOARD AT ALL TIMES", keyColor: "#ffe030" },
+    { key: "ELECTRIC EELS", val: "5 EELS PATROL THE DEPTHS — TOUCH ONE AND YOU'RE PARALYZED FOR 2 SECONDS", keyColor: "#ffe030" },
+    { key: "SHOCK",         val: "WHILE PARALYZED, ENEMIES AND EELS KEEP MOVING — ESCAPE OR DIE" },
+    { key: "ON ENTRY",      val: "ENEMIES RESET TO 16 FARTHEST FROM YOU" },
+    { key: "DESCEND",       val: "EARN 100 PTS IN THIS DEPTH" },
   ],
 };
 
@@ -105,7 +118,26 @@ export const DEPTH_PARAMS: Record<number, Array<{ key: string; val: string }>> =
     { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
     { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
   ],
-  6: [],
+  6: [
+    { key: "GRID",        val: "25 × 25 CELLS" },
+    { key: "COIN RATE",   val: "0.00025 per cell per move" },
+    { key: "COIN INIT",   val: "5% of cells on start" },
+    { key: "FISH",        val: "MACKEREL (1×1, every 2 turns) · GARIBALDI (1×1, every turn) · OARFISH (2×2, every 3 turns)" },
+    { key: "KELP",        val: "COLUMNS DISTRIBUTED ACROSS THE WIDTH — PLAYER CAN STAND INSIDE" },
+    { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
+    { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
+  ],
+  7: [
+    { key: "GRID",        val: "25 × 25 CELLS" },
+    { key: "COIN RATE",   val: "0.00025 per cell per move" },
+    { key: "COIN INIT",   val: "5% of cells on start" },
+    { key: "PEARLS",      val: "4 PURPLE PEARLS ON BOARD AT ALL TIMES — RESPAWN IMMEDIATELY ON COLLECT" },
+    { key: "EELS",        val: "5 ELECTRIC EELS — 5 SEGMENTS EACH — MOVE EVERY PLAYER TURN" },
+    { key: "SHOCK",       val: "TOUCH AN EEL HEAD OR BODY = 2 SECONDS PARALYSIS — ENEMIES TICK ONCE PER SECOND" },
+    { key: "EEL AVOID",   val: "EEL HEADS STAY ≥ 7 MANHATTAN TILES APART — THEY SPREAD ACROSS THE BOARD" },
+    { key: "ENEMY SPAWN", val: "≥ 5 CELLS FROM SHARK" },
+    { key: "ENEMY MOVE",  val: "1 STEP EVERY 2 PLAYER MOVES" },
+  ],
 };
 
 // ── Plain-text summaries ──────────────────────────────────────────────────
@@ -116,7 +148,8 @@ export const DEPTH_SUMMARY: Record<number, string> = {
   3: "Toxic waters. Barrels of hazardous waste drift through the deep — collect one for 8 pts, but it explodes into a cloud of toxic gas that covers the board. Enemies and the player are hidden inside the clouds. Earn 100 pts here to descend.",
   4: "The Arctic. Ice patches scattered across the board — step onto one and you slide until you hit a wall or normal floor. Collect the frozen fish for 5 pts, but it turns the tile to ice and spawns an enemy. The board gets icier as you play. Don't slide into anything that wants to kill you.",
   5: "The reef reshapes the board. A new coral shell appears every 15 moves (max 6 at once). Hitting one converts it to a permanent barrier and spawns an enemy. Earn 100 pts here to descend.",
-  6: "Uncharted territory. A 3×3 Leviathan enemy lurks somewhere in the deep. Proceed at your own risk.",
+  6: "The Busy Pacific. Neutral fish drift through open water — mackerel dart fast, garibaldi block every turn, and massive oarfish claim a 2×2 zone. Moving into one cancels your move. Kelp grows from the sea floor — slip inside to hide. Earn 100 pts to descend.",
+  7: "The Electric Depths. Five electric eels patrol the grid in sinuous chains — touch one anywhere and you're paralyzed for 2 seconds while enemies keep closing in. Collect the glowing purple pearls for 5 pts each, but every pickup spawns another enemy. Earn 100 pts to descend.",
 };
 
 // ── HTML builder ──────────────────────────────────────────────────────────

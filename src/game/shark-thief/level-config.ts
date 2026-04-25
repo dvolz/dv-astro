@@ -98,6 +98,19 @@ export interface KelpConfig {
   bladderPoints:  number;  // points awarded per bladder collect (Depth 6: 5)
 }
 
+export interface ShrimpConfig {
+  count:  number;  // max shrimp on board at once
+  points: number;  // points per shrimp collected
+}
+
+export interface ElectricEelConfig {
+  count:         number;  // eels spawned at depth start
+  segmentLength: number;  // grid cells per eel
+  speedDivisor:  number;  // eel moves once per N player moves (1 = every move)
+  avoidRadius:   number;  // min Manhattan distance eels try to maintain between heads
+  shockDuration: number;  // ms the shark is paralyzed after touching an eel
+}
+
 // ── Per-depth config ──────────────────────────────────────────────────────
 
 export interface DepthConfig {
@@ -113,6 +126,8 @@ export interface DepthConfig {
   algaeBall?:   AlgaeBallConfig;
   seagrass?:    SeagrassConfig;
   kelp?:        KelpConfig;
+  shrimp?: ShrimpConfig;
+  electricEel?: ElectricEelConfig;
 
   tilePalette:     TilePalette; // background tile palette
   canvasBase:      string;      // canvas fill colour drawn behind the tile grid
@@ -262,6 +277,29 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   7: {
+    // The Electric Depths
+    shrimp: {
+      count:  4,   // 4 shrimp on board at once
+      points: 10,  // 10 points per shrimp
+    },
+    electricEel: {
+      count:         5,     // eels at depth start
+      segmentLength: 5,     // cells per eel
+      speedDivisor:  1,     // moves every player turn
+      avoidRadius:   7,     // heads stay this many Manhattan tiles apart
+      shockDuration: 2000,  // 2 seconds paralysis
+    },
+    tilePalette:     "electric",
+    canvasBase:      "#0a1430",
+    enemyKeep:       16,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
+  },
+
+  8: {
+    // The Abyss (Leviathan)
     tilePalette:     "ocean",
     canvasBase:      "#0f5262",
     enemyKeep:       5,
@@ -276,8 +314,10 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
 // Derived from LEVEL_CONFIG — never hardcode depth numbers in the game logic.
 // If you move a mechanic to a different depth key above, these update automatically.
 
-export const TOXIC_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].toxicBarrel))!;
-export const CORAL_DEPTH   = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
-export const ICE_DEPTH     = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
-export const NURSERY_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
-export const PACIFIC_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].neutralFish))!;
+export const TOXIC_DEPTH    = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].toxicBarrel))!;
+export const CORAL_DEPTH    = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
+export const ICE_DEPTH      = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
+export const NURSERY_DEPTH  = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
+export const PACIFIC_DEPTH  = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].neutralFish))!;
+export const ELECTRIC_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].electricEel))!;
+export const ABYSS_DEPTH    = Math.max(...Object.keys(LEVEL_CONFIG).map(Number));
