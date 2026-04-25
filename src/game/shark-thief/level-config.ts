@@ -261,11 +261,11 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       garibaldi: { count: 4, speedDivisor: 1, sizeX: 1, sizeY: 1 },
     },
     algaeBall: {
-      count:            3,
+      count:            6,
       points:           5,
       driftSpeed:       0.5,
       fishSpawnBuffer:  3,
-      respawnInterval:  16,
+      respawnInterval:  12,
     },
     // kelp: {
     //   strandCount:    10,
