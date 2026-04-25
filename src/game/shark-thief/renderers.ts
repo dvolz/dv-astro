@@ -740,8 +740,8 @@ export function drawSharkOnCtx(
   ctx.fillStyle = OUTLINE; R(0.84, 0.60, 0.08, 0.08);
 
   // 10. Pink outline pass
-  const PINK_OUTLINE = "#ff88b0";
-  ctx.strokeStyle = PINK_OUTLINE;
+  const SHARK_OUTLINE = "#E3E9EB";
+  ctx.strokeStyle = SHARK_OUTLINE;
   ctx.lineWidth = Math.max(1, Math.round(cellSize * 0.025));
   ctx.strokeRect(
     Math.round(x + 0.04 * w), Math.round(y + 0.20 * h),
