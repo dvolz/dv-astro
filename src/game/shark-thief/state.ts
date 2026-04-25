@@ -54,6 +54,7 @@ export interface KelpCell {
 export interface ElectricEel {
   segments: Array<{ x: number; y: number }>;  // [0] = head
   dir: "right" | "left" | "up" | "down";
+  spawnTime?: number;  // Date.now() when spawned mid-run; drives spawn flash
 }
 
 export interface DyingEnemy {
@@ -132,8 +133,9 @@ export const gs = {
   seagrassSet:   new Set<string>(),
 
   // ── Depth 7 — Electric ───────────────────────────────────────────────────
-  electricEels:   [] as ElectricEel[],
-  shrimp:         [] as Array<{ x: number; y: number; spawnTime?: number }>,
+  electricEels:        [] as ElectricEel[],
+  shrimp:              [] as Array<{ x: number; y: number }>,
+  shrimpMovesCounter:  0,
   sharkShocked:   false,
   shockStartTime: 0 as number,
   shockRafId:     null as number | null,

@@ -1152,35 +1152,7 @@ export function draw(): void {
   if (LEVEL_CONFIG[gs.currentDepth]?.shrimp && gs.shrimp.length > 0) {
     for (const s of gs.shrimp) {
       const pp = CELL * 0.08;
-      const cx = s.x * CELL + CELL / 2;
-      const cy = s.y * CELL + CELL / 2;
-      ctx.save();
-      ctx.translate(cx, cy);
-      if (s.spawnTime !== undefined) {
-        const elapsed = Date.now() - s.spawnTime;
-        if (elapsed < 2000) {
-          const growT = Math.min(1, elapsed / 500);
-          const c1 = 1.70158, c3 = c1 + 1;
-          const spawnScale = growT < 1
-            ? 1 + c3 * Math.pow(growT - 1, 3) + c1 * Math.pow(growT - 1, 2)
-            : 1;
-          ctx.scale(spawnScale, spawnScale);
-          const fade = Math.pow(1 - elapsed / 2000, 1.5);
-          const pulse = 0.5 + 0.5 * Math.sin((elapsed / 120) * Math.PI);
-          const pad = Math.round(CELL * 0.2);
-          ctx.save();
-          ctx.globalAlpha = fade * (0.35 + 0.55 * pulse);
-          ctx.fillStyle = "#ff8040";
-          ctx.fillRect(-CELL / 2 - pad, -CELL / 2 - pad, CELL + pad * 2, CELL + pad * 2);
-          ctx.globalAlpha = fade;
-          ctx.strokeStyle = "#ffcc80";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(-CELL / 2 - pad, -CELL / 2 - pad, CELL + pad * 2, CELL + pad * 2);
-          ctx.restore();
-        }
-      }
-      drawShrimp(ctx, -CELL / 2 + pp, -CELL / 2 + pp, CELL - pp * 2);
-      ctx.restore();
+      drawShrimp(ctx, s.x * CELL + pp, s.y * CELL + pp, CELL - pp * 2);
     }
   }
 
@@ -1250,6 +1222,39 @@ export function draw(): void {
   // Electric eels (Depth 7 — Electric) — drawn before neutral fish and player
   if (gs.currentDepth === ELECTRIC_DEPTH && gs.electricEels.length > 0) {
     for (const eel of gs.electricEels) {
+      if (eel.spawnTime !== undefined) {
+        const elapsed = Date.now() - eel.spawnTime;
+        if (elapsed < 2000) {
+          const head = eel.segments[0];
+          const eelW = eel.dir === "left" || eel.dir === "right"
+            ? eel.segments.length * CELL : CELL;
+          const eelH = eel.dir === "up" || eel.dir === "down"
+            ? eel.segments.length * CELL : CELL;
+          const minX = Math.min(...eel.segments.map(s => s.x)) * CELL;
+          const minY = Math.min(...eel.segments.map(s => s.y)) * CELL;
+          const growT = Math.min(1, elapsed / 500);
+          const c1 = 1.70158, c3 = c1 + 1;
+          const spawnScale = growT < 1
+            ? 1 + c3 * Math.pow(growT - 1, 3) + c1 * Math.pow(growT - 1, 2)
+            : 1;
+          const fade = Math.pow(1 - elapsed / 2000, 1.5);
+          const pulse = 0.5 + 0.5 * Math.sin((elapsed / 120) * Math.PI);
+          const pad = Math.round(CELL * 0.25);
+          const cx = minX + eelW / 2;
+          const cy = minY + eelH / 2;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(spawnScale, spawnScale);
+          ctx.globalAlpha = fade * (0.35 + 0.55 * pulse);
+          ctx.fillStyle = "#ffe060";
+          ctx.fillRect(-eelW / 2 - pad, -eelH / 2 - pad, eelW + pad * 2, eelH + pad * 2);
+          ctx.globalAlpha = fade;
+          ctx.strokeStyle = "#fff8aa";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-eelW / 2 - pad, -eelH / 2 - pad, eelW + pad * 2, eelH + pad * 2);
+          ctx.restore();
+        }
+      }
       drawElectricEel(ctx, eel, CELL);
     }
   }

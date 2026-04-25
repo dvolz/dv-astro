@@ -99,8 +99,10 @@ export interface KelpConfig {
 }
 
 export interface ShrimpConfig {
-  count:  number;  // max shrimp on board at once
-  points: number;  // points per shrimp collected
+  initCount: number;  // shrimp placed at depth start
+  count:     number;  // max shrimp on board at once
+  interval:  number;  // player moves to wait after a collect before respawning
+  points:    number;  // points per shrimp collected
 }
 
 export interface ElectricEelConfig {
@@ -198,7 +200,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     },
     tilePalette:     "toxic",
     canvasBase:      "#0a1f0a",
-    enemyKeep:       8,
+    enemyKeep:       10,
     coinRate:        0.00025,
     startingYellows: 31,
     descendScore:    100,
@@ -237,7 +239,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     },
     tilePalette:     "tropical",
     canvasBase:      "#0f5262",
-    enemyKeep:       12, // enemies carried over from depth 4
+    enemyKeep:       10, // enemies carried over from depth 4
     coinRate:        0.00025,
     startingYellows: 31,
     descendScore:    100,
@@ -269,7 +271,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     // },
     tilePalette:     "pacific",
     canvasBase:      "#0c4a5a",
-    enemyKeep:       14,
+    enemyKeep:       10,
     coinRate:        0.00025,
     startingYellows: 31,
     descendScore:    100,
@@ -279,8 +281,10 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   7: {
     // The Electric Depths
     shrimp: {
-      count:  4,   // 4 shrimp on board at once
-      points: 10,  // 10 points per shrimp
+      initCount: 4,   // shrimp placed at depth start
+      count:     4,   // max shrimp on board at once
+      interval:  20,  // moves after collect before respawn
+      points:    10,  // points per shrimp
     },
     electricEel: {
       count:         5,     // eels at depth start
@@ -291,7 +295,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     },
     tilePalette:     "electric",
     canvasBase:      "#0a1430",
-    enemyKeep:       16,
+    enemyKeep:       10,
     coinRate:        0.00025,
     startingYellows: 31,
     descendScore:    100,

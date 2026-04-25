@@ -434,7 +434,6 @@ export function spawnShrimpIfNeeded(): void {
     (gs.shark.x === px && gs.shark.y === py)
   );
   gs.shrimp.push({ x: px, y: py });
-  gs.shrimp[gs.shrimp.length - 1].spawnTime = Date.now();
 }
 
 export function spawnOneEel(): void {
@@ -476,7 +475,7 @@ export function spawnOneEel(): void {
     if (gs.electricEels.some(e => e.segments.some(ex => ex.x === seg.x && ex.y === seg.y))) return;
     segments.push(seg);
   }
-  gs.electricEels.push({ segments, dir: startDir });
+  gs.electricEels.push({ segments, dir: startDir, spawnTime: Date.now() });
 }
 
 // ── Enemies ──────────────────────────────────────────────────────────────

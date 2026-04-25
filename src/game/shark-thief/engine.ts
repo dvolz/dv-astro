@@ -187,7 +187,8 @@ function setupMechanic(cfg: DepthConfig): void {
     seedElectricEels();
   }
   if (cfg.shrimp) {
-    for (let i = 0; i < cfg.shrimp.count; i++) spawnShrimpIfNeeded();
+    gs.shrimpMovesCounter = 0;
+    for (let i = 0; i < cfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
   }
 }
 
@@ -422,6 +423,7 @@ export function init(): void {
   gs.kelpSet                  = new Set();
   gs.electricEels             = [];
   gs.shrimp                   = [];
+  gs.shrimpMovesCounter       = 0;
   gs.sharkShocked             = false;
   gs.shockVibrateX            = 0;
   gs.shockVibrateY            = 0;
@@ -869,8 +871,8 @@ export function moveShark(dx: number, dy: number): void {
       gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
       updateHudScore(gs.score, "special");
       spawnOneEel();
+      gs.shrimpMovesCounter = 0;
       checkDepthTransition();
-      spawnShrimpIfNeeded();
     }
   }
 
@@ -1054,6 +1056,10 @@ export function moveShark(dx: number, dy: number): void {
   if (depthCfg.egg?.interval && gs.sharkEgg === null) {
     gs.eggMovesCounter++;
     if (gs.eggMovesCounter >= depthCfg.egg.interval) spawnSharkEgg();
+  }
+  if (depthCfg.shrimp && gs.shrimp.length < depthCfg.shrimp.count) {
+    gs.shrimpMovesCounter++;
+    if (gs.shrimpMovesCounter >= depthCfg.shrimp.interval) spawnShrimpIfNeeded();
   }
   if (depthCfg.frozenFish && gs.frozenFish.length < depthCfg.frozenFish.max) {
     gs.frozenFishMovesCounter++;
@@ -1269,7 +1275,8 @@ export function loadGame(save: any): void {
     seedElectricEels();
   }
   if (retryCfg.shrimp) {
-    for (let i = 0; i < retryCfg.shrimp.count; i++) spawnShrimpIfNeeded();
+    gs.shrimpMovesCounter = 0;
+    for (let i = 0; i < retryCfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
   }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");
