@@ -136,11 +136,12 @@ export const gs = {
   electricEels:        [] as ElectricEel[],
   shrimp:              [] as Array<{ x: number; y: number }>,
   shrimpMovesCounter:  0,
-  sharkShocked:   false,
-  shockStartTime: 0 as number,
-  shockRafId:     null as number | null,
-  shockVibrateX:  0 as number,
-  shockVibrateY:  0 as number,
+  sharkShocked:     false,
+  shockStartTime:   0 as number,
+  shockRafId:       null as number | null,
+  shockVibrateX:    0 as number,
+  shockVibrateY:    0 as number,
+  postShockGrace:   0 as number,
 
   // ── Depth 6 — Busy Pacific ───────────────────────────────────────────────
   neutralFish:              [] as NeutralFish[],
@@ -186,4 +187,5 @@ export const gs = {
   // ── Settings (read from localStorage at startup) ──────────────────────
   colorblindMode: false,
   shimmerMode:    false,
+  zenMode:        false,
 };

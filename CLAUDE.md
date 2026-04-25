@@ -38,10 +38,11 @@ A turn-based grid game where the player pilots a shark collecting treasure while
 | 1 | The Shallows | Ammonite (purple shell → big 2×2 enemy) | Complete |
 | 2 | The Nursery | Shark eggs → baby shark chain | Complete |
 | 3 | Toxic | Toxic barrels → expanding gas clouds | Complete |
-| 4 | The Arctic | Ice patches + frozen fish (collect = slide) | Complete |
-| 5 | The Reef | Coral shells → permanent barrier walls | Complete |
+| 4 | Electric | Electric eels + shrimp | Complete |
+| 5 | The Arctic | Ice patches + frozen fish (collect = slide) | Complete |
 | 6 | The Busy Pacific | Neutral fish (mackerel/garibaldi/oarfish) + kelp | In Progress |
-| 7 | The Abyss | Leviathan (3×3 mega enemy) | Stub |
+| 7 | The Reef | Coral shells → permanent barrier walls | Complete |
+| 8 | The Abyss | Leviathan (3×3 mega enemy) | Stub |
 
 ### Terminology
 
@@ -76,6 +77,8 @@ A turn-based grid game where the player pilots a shark collecting treasure while
 
 Typical flow: Zak designs → Ray outlines a plan → Bob builds it.
 
+**When the user requests a level reorder or new depth:** invoke the `/level-update` skill. It contains the full checklist of files to touch, what auto-derives vs. what's hardcoded, and the Ray → Bob workflow.
+
 ### Design Rules (don't violate these)
 
 1. `level-config.ts` is the only file a designer touches to tune a depth.
@@ -89,11 +92,12 @@ Typical flow: Zak designs → Ray outlines a plan → Bob builds it.
 
 | Key | Depth | Feel |
 |-----|-------|------|
-| `"ocean"` | 1, 7 | Blue-teal, ~190° hue |
+| `"ocean"` | 1, 8 | Blue-teal, ~190° hue |
 | `"nursery"` | 2 | Ocean shifted cooler (G−10, B+8) |
 | `"toxic"` | 3 | Ocean shifted slightly green (~185°), murky |
-| `"arctic"` | 4 | Icy light blue, ~200°, high lightness |
-| `"tropical"` | 5 | Bright turquoise, ~178° hue |
+| `"electric"` | 4 | Deep navy `#0a1430`. |
+| `"arctic"` | 5 | Icy light blue, ~200°, high lightness |
 | `"pacific"` | 6 | Mid blue `#2a8faa` range. `drawPacificLighting()` tints the top cyan-bright and the bottom deep navy at runtime — the palette is the base layer, the lighting is on top. |
+| `"tropical"` | 7 | Bright turquoise, ~178° hue |
 
 To add a palette: add the color array + key to `TILE_PALETTES` in `config.ts`, add `"yourkey"` to the `TilePalette` union type, then use the key in `level-config.ts`.

@@ -77,9 +77,9 @@ export const DEPTH_META: Record<number, { color: string; glow: string; name: str
   1: { color: "#48cae4", glow: "rgba(72,202,228,0.5)",   name: "THE SHALLOWS" },
   2: { color: "#e06fa0", glow: "rgba(224,111,160,0.5)",  name: "NURSERY" },
   3: { color: "#6abf3a", glow: "rgba(106,191,58,0.5)",   name: "TOXIC" },
-  4: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
-  5: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
+  4: { color: "#ffe030", glow: "rgba(255,224,48,0.5)",   name: "ELECTRIC" },
+  5: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
   6: { color: "#48d4b8", glow: "rgba(72,212,184,0.5)",   name: "BUSY PACIFIC" },
-  7: { color: "#ffe030", glow: "rgba(255,224,48,0.5)",   name: "ELECTRIC" },
+  7: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
   8: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
 };

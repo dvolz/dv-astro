@@ -110,7 +110,8 @@ export interface ElectricEelConfig {
   segmentLength: number;  // grid cells per eel
   speedDivisor:  number;  // eel moves once per N player moves (1 = every move)
   avoidRadius:   number;  // min Manhattan distance eels try to maintain between heads
-  shockDuration: number;  // ms the shark is paralyzed after touching an eel
+  shockDuration:    number;  // ms the shark is paralyzed after touching an eel
+  shockEnemySteps:  number;  // how many cells enemies move per tick during shock (default 1)
 }
 
 // ── Per-depth config ──────────────────────────────────────────────────────
@@ -208,7 +209,32 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   4: {
-    // The Arctic (same position, was depth 4)
+    // The Electric Depths
+    shrimp: {
+      initCount: 4,   // shrimp placed at depth start
+      count:     4,   // max shrimp on board at once
+      interval:  20,  // moves after collect before respawn
+      points:    10,  // points per shrimp
+    },
+    electricEel: {
+      count:         5,     // eels at depth start
+      segmentLength: 5,     // cells per eel
+      speedDivisor:  1,     // moves every player turn
+      avoidRadius:   7,     // heads stay this many Manhattan tiles apart
+      shockDuration:    2000,  // 2 seconds paralysis
+      shockEnemySteps:  2,     // enemies move 2 cells per tick while shark is shocked
+    },
+    tilePalette:     "electric",
+    canvasBase:      "#0a1430",
+    enemyKeep:       10,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
+  },
+
+  5: {
+    // The Arctic
     frozenFish: {
       initCount: 1, // fish placed on entering this depth
       max:       3, // max frozen fish on the board at once
@@ -220,25 +246,6 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     },
     tilePalette:     "arctic",
     canvasBase:      "#0a1a2e",
-    enemyKeep:       10, // enemies carried over from depth 3
-    coinRate:        0.00025,
-    startingYellows: 31,
-    descendScore:    100,
-    minEnemyDist:    5,
-  },
-
-  5: {
-    // The Reef (was depth 2)
-    coral: {
-      initCount:      4,   // pickup shells seeded on entering this depth
-      max:            6,   // max coral pickup shells on the board at once
-      interval:       15,  // a new shell spawns every 15 player moves
-      points:         5,
-      barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
-      barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
-    },
-    tilePalette:     "tropical",
-    canvasBase:      "#0f5262",
     enemyKeep:       10, // enemies carried over from depth 4
     coinRate:        0.00025,
     startingYellows: 31,
@@ -279,23 +286,18 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   7: {
-    // The Electric Depths
-    shrimp: {
-      initCount: 4,   // shrimp placed at depth start
-      count:     4,   // max shrimp on board at once
-      interval:  20,  // moves after collect before respawn
-      points:    10,  // points per shrimp
+    // The Reef
+    coral: {
+      initCount:      4,   // pickup shells seeded on entering this depth
+      max:            6,   // max coral pickup shells on the board at once
+      interval:       15,  // a new shell spawns every 15 player moves
+      points:         5,
+      barrierCount:   12,  // permanent coral barrier blocks placed at depth entry (~2% of grid)
+      barrierMinDist: 4,   // min Manhattan distance from shark when placing a barrier
     },
-    electricEel: {
-      count:         5,     // eels at depth start
-      segmentLength: 5,     // cells per eel
-      speedDivisor:  1,     // moves every player turn
-      avoidRadius:   7,     // heads stay this many Manhattan tiles apart
-      shockDuration: 2000,  // 2 seconds paralysis
-    },
-    tilePalette:     "electric",
-    canvasBase:      "#0a1430",
-    enemyKeep:       10,
+    tilePalette:     "tropical",
+    canvasBase:      "#0f5262",
+    enemyKeep:       10, // enemies carried over from depth 6
     coinRate:        0.00025,
     startingYellows: 31,
     descendScore:    100,
