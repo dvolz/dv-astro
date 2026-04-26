@@ -1,11 +1,12 @@
 // ===== Pixel-art draw functions =====  →  GameScene.swift / SharkNode.swift
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
-import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
+import { GRID, DYING_DURATION, RISING_DURATION, BUBBLE_POP_DURATION } from "./config";
 import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH } from "./level-config";
 import { gs, type NeutralFish, type ElectricEel } from "./state";
 import { drawNeutralFish, drawAlgaeBall } from "./sprites";
 import { drawEelHeadV3 } from "./sprites-v2";
+import { applySpawnAnim } from "./anim-utils";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -739,9 +740,8 @@ export function drawSharkOnCtx(
   // 9. Mouth notch
   ctx.fillStyle = OUTLINE; R(0.84, 0.60, 0.08, 0.08);
 
-  // 10. Pink outline pass
-  const SHARK_OUTLINE = "#a9acac";
-  ctx.strokeStyle = SHARK_OUTLINE;
+  // 10. Stroke outline
+  ctx.strokeStyle = "#0a1e28";
   ctx.lineWidth = Math.max(1, Math.round(cellSize * 0.025));
   ctx.strokeRect(
     Math.round(x + 0.04 * w), Math.round(y + 0.20 * h),
@@ -1256,46 +1256,30 @@ export function draw(): void {
 
   // Big enemies (2×2)
   for (const be of gs.bigEnemies) {
-    const bx = be.visualX * CELL, by = be.visualY * CELL, bw = CELL * 2;
-    ctx.fillStyle = "#120a1e"; ctx.fillRect(bx - 1, by - 1, bw + 2, bw + 2);
-    ctx.fillStyle = "#2d1a4a"; ctx.fillRect(bx, by, bw, bw);
+    const bw = CELL * 2;
+    const bx = be.visualX * CELL, by = be.visualY * CELL;
+    ctx.save();
+    ctx.translate(bx + bw / 2, by + bw / 2);
+    if (be.spawnTime !== undefined) applySpawnAnim(ctx, be.spawnTime, bw, bw, CELL);
+    ctx.fillStyle = "#120a1e"; ctx.fillRect(-bw / 2 - 1, -bw / 2 - 1, bw + 2, bw + 2);
+    ctx.fillStyle = "#2d1a4a"; ctx.fillRect(-bw / 2, -bw / 2, bw, bw);
+    ctx.restore();
   }
 
   // Electric eels (Depth 7 — Electric) — drawn before neutral fish and player
   if (gs.currentDepth === ELECTRIC_DEPTH && gs.electricEels.length > 0) {
     for (const eel of gs.electricEels) {
       if (eel.spawnTime !== undefined) {
-        const elapsed = Date.now() - eel.spawnTime;
-        if (elapsed < 2000) {
-          const head = eel.segments[0];
-          const eelW = eel.dir === "left" || eel.dir === "right"
-            ? eel.segments.length * CELL : CELL;
-          const eelH = eel.dir === "up" || eel.dir === "down"
-            ? eel.segments.length * CELL : CELL;
-          const minX = Math.min(...eel.segments.map(s => s.x)) * CELL;
-          const minY = Math.min(...eel.segments.map(s => s.y)) * CELL;
-          const growT = Math.min(1, elapsed / 500);
-          const c1 = 1.70158, c3 = c1 + 1;
-          const spawnScale = growT < 1
-            ? 1 + c3 * Math.pow(growT - 1, 3) + c1 * Math.pow(growT - 1, 2)
-            : 1;
-          const fade = Math.pow(1 - elapsed / 2000, 1.5);
-          const pulse = 0.5 + 0.5 * Math.sin((elapsed / 120) * Math.PI);
-          const pad = Math.round(CELL * 0.25);
-          const cx = minX + eelW / 2;
-          const cy = minY + eelH / 2;
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.scale(spawnScale, spawnScale);
-          ctx.globalAlpha = fade * (0.35 + 0.55 * pulse);
-          ctx.fillStyle = "#ffe060";
-          ctx.fillRect(-eelW / 2 - pad, -eelH / 2 - pad, eelW + pad * 2, eelH + pad * 2);
-          ctx.globalAlpha = fade;
-          ctx.strokeStyle = "#fff8aa";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(-eelW / 2 - pad, -eelH / 2 - pad, eelW + pad * 2, eelH + pad * 2);
-          ctx.restore();
-        }
+        const eelW = eel.dir === "left" || eel.dir === "right"
+          ? eel.segments.length * CELL : CELL;
+        const eelH = eel.dir === "up" || eel.dir === "down"
+          ? eel.segments.length * CELL : CELL;
+        const minX = Math.min(...eel.segments.map(s => s.x)) * CELL;
+        const minY = Math.min(...eel.segments.map(s => s.y)) * CELL;
+        ctx.save();
+        ctx.translate(minX + eelW / 2, minY + eelH / 2);
+        applySpawnAnim(ctx, eel.spawnTime, eelW, eelH, CELL);
+        ctx.restore();
       }
       drawElectricEel(ctx, eel, CELL);
     }
@@ -1359,6 +1343,45 @@ export function draw(): void {
   if (LEVEL_CONFIG[gs.currentDepth]?.toxicBarrel && gs.toxicClouds.length > 0) {
     for (const cell of gs.toxicClouds) {
       drawToxicCloud(ctx, cell.x, cell.y, CELL, gs.cloudPulse[cell.y * GRID + cell.x]);
+    }
+  }
+
+  // Bubble pop VFX — rendered last so always visible over all entities
+  if (gs.bubblePops.length > 0) {
+    const now = performance.now();
+    for (const pop of gs.bubblePops) {
+      const elapsed = now - pop.startTime;
+      if (elapsed < 0 || elapsed >= BUBBLE_POP_DURATION) continue;
+      const t = elapsed / BUBBLE_POP_DURATION;
+      const ease = 1 - t * t;
+
+      const cx = pop.x * CELL + CELL / 2;
+      const cy = pop.y * CELL + CELL / 2;
+
+      ctx.save();
+
+      // Ring: starts at cell perimeter and expands into surrounding tiles
+      const ringRadius = CELL * 0.5 + t * CELL * 0.55;
+      ctx.globalAlpha = ease * 0.85;
+      ctx.strokeStyle = pop.color;
+      ctx.lineWidth = Math.max(0.5, (1 - t) * 3);
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 8 dot particles: start outside shark cell (≥0.75×CELL), travel into neighboring tiles
+      const dotR = Math.max(1, CELL * 0.07);
+      ctx.fillStyle = pop.color;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist = CELL * 0.75 + t * CELL * 0.3;
+        ctx.globalAlpha = ease * 0.9;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, dotR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
     }
   }
 }

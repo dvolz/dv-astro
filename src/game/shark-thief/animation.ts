@@ -1,6 +1,6 @@
 // ===== Animation =====  →  SharkNode.swift / GameScene.swift animation loops
 
-import { ANIM_DURATION, GRID } from "./config";
+import { ANIM_DURATION, BUBBLE_POP_DURATION, GRID } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
 import { gs } from "./state";
 import { draw } from "./renderers";
@@ -152,4 +152,21 @@ export function tickShimmer(): void {
   }
   if (dirty) draw();
   gs.shimmerRafId = requestAnimationFrame(tickShimmer);
+}
+
+// ── Bubble pop VFX loop ───────────────────────────────────────────────────
+
+export function startBubblePopLoop(): void {
+  if (gs.bubblePopRafId) return;
+  function tick() {
+    const now = performance.now();
+    gs.bubblePops = gs.bubblePops.filter(p => now - p.startTime < BUBBLE_POP_DURATION);
+    draw();
+    if (gs.bubblePops.length > 0) {
+      gs.bubblePopRafId = requestAnimationFrame(tick);
+    } else {
+      gs.bubblePopRafId = null;
+    }
+  }
+  gs.bubblePopRafId = requestAnimationFrame(tick);
 }

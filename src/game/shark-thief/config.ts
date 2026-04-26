@@ -4,6 +4,17 @@
 export const ANIM_DURATION  = 80;  // ms — ease-out quad shark slide
 export const DYING_DURATION = 450; // ms per dying-enemy dissolve animation
 export const RISING_DURATION = 350; // ms per rising-pickup pop-in animation
+export const BUBBLE_POP_DURATION = 300; // ms per special-pickup bubble pop
+
+export const BUBBLE_POP_COLORS: Record<number, string> = {
+  1: "#9848d8", // Ammonite — purple
+  2: "#e06020", // Shark egg — red-orange
+  3: "#88e030", // Toxic barrel — toxic green
+  4: "#ff6030", // Shrimp — red-orange
+  5: "#c0e8f8", // Frozen fish — icy blue-white
+  6: "#90c840", // Kelp bladder — kelp green
+  7: "#c8906a", // Coral shell — sandy tan
+};
 export const ARCTIC_TILE_COLORS = [
   "#8ab8cc", "#7aafc4", "#8cbfd4", "#82b4c8", "#90c0d0",
   "#7ab0c4", "#88bcd0", "#7cb2c8", "#86bace", "#7aaecc",

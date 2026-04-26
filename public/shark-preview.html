@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shark Color Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a1f2e;
+    color: #e0f0f8;
+    font-family: monospace;
+    padding: 32px 24px;
+  }
+  h1 { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #4ac0d8; margin-bottom: 32px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 780px;
+  }
+  .grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 780px;
+  }
+  h2 {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #4ac0d8;
+    margin: 40px 0 20px;
+  }
+  .option { display: flex; flex-direction: column; gap: 12px; }
+  .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #48cae4;
+  }
+  .sublabel {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #4a8090;
+    margin-top: -8px;
+  }
+  .scene-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #2a6070;
+  }
+  canvas { display: block; }
+  .scene { display: flex; flex-direction: column; gap: 4px; }
+  hr { border: none; border-top: 1px solid #0d3545; margin: 8px 0; }
+</style>
+</head>
+<body>
+<h1>Shark Visibility Options</h1>
+<div class="grid">
+  <div class="option">
+    <div class="label">Option A</div>
+    <div class="sublabel">Light body · dark stroke</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Menu</div>
+      <canvas id="a-menu" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="a-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="a-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+  <div class="option">
+    <div class="label">Option B</div>
+    <div class="sublabel">Near-white + drop shadow</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Menu</div>
+      <canvas id="b-menu" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="b-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="b-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+  <div class="option">
+    <div class="label">Option C</div>
+    <div class="sublabel">Current + cyan glow ring</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Menu</div>
+      <canvas id="c-menu" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="c-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="c-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+  <div class="option">
+    <div class="label">Option D</div>
+    <div class="sublabel">C body · A dark outline</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Menu</div>
+      <canvas id="d-menu" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="d-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="d-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+</div>
+
+<h2>Option A — body contrast variations</h2>
+<div class="grid4">
+
+  <div class="option">
+    <div class="label">A·1</div>
+    <div class="sublabel">Soft fins</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="a1-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="a1-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+
+  <div class="option">
+    <div class="label">A·2</div>
+    <div class="sublabel">Dark fins</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="a2-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="a2-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+
+  <div class="option">
+    <div class="label">A·3</div>
+    <div class="sublabel">Near-black fins</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="a3-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="a3-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+
+  <div class="option">
+    <div class="label">A·4</div>
+    <div class="sublabel">Two-tone warm</div>
+    <hr>
+    <div class="scene">
+      <div class="scene-label">Level 1</div>
+      <canvas id="a4-game" width="180" height="180"></canvas>
+    </div>
+    <div class="scene">
+      <div class="scene-label">Actual size</div>
+      <canvas id="a4-tiny" width="180" height="96"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Tile colors (Level 1 ocean palette) ──────────────────────────────────
+const OCEAN_TILES = [
+  "#1d7e92","#228898","#1a7888","#268498","#1e8090",
+  "#248898","#1c7682","#247c8e","#1e7e8e","#207a8c",
+];
+const CELL = 36;
+const GAME_CELL = 24; // actual in-game cell size (600px / 25 tiles)
+
+function drawTileGrid(ctx, w, h, cellSize = CELL) {
+  for (let r = 0; r < Math.ceil(h / cellSize); r++) {
+    for (let c = 0; c < Math.ceil(w / cellSize); c++) {
+      ctx.fillStyle = OCEAN_TILES[(r * 7 + c * 3) % OCEAN_TILES.length];
+      ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+    }
+  }
+}
+
+// Draws a small patch of gameplay: tiled bg + gold pickups + shark at 24px
+function drawTinyScene(ctx, w, h, sharkCol, sharkRow, tailWag, colors) {
+  drawTileGrid(ctx, w, h, GAME_CELL);
+
+  // A few gold treasure pickups for context
+  const pickups = [[1,1],[3,0],[5,2],[0,3],[6,1],[2,3],[4,3]];
+  const ps = Math.round(GAME_CELL * 0.38);
+  const po = Math.round((GAME_CELL - ps) / 2);
+  ctx.fillStyle = "#f5c842";
+  for (const [pc, pr] of pickups) {
+    ctx.fillRect(pc * GAME_CELL + po, pr * GAME_CELL + po, ps, ps);
+  }
+
+  drawShark(ctx, sharkCol, sharkRow, GAME_CELL, "right", tailWag, colors);
+}
+
+function drawMenuBg(ctx, w, h) {
+  ctx.fillStyle = "#0a1f2e";
+  ctx.fillRect(0, 0, w, h);
+}
+
+// ── Core shark draw — accepts a colors object ─────────────────────────────
+function drawShark(ctx, cx, cy, cs, dir, tailWag = 0, colors) {
+  const {
+    OUTLINE, BODY, DARK_FIN, HIGHLIGHT, BELLY, STROKE_COLOR,
+    shadowColor, shadowBlur, dropShadow,
+  } = colors;
+
+  const x = cx * cs, y = cy * cs;
+  const w = cs, h = cs;
+  ctx.save();
+  const midX = x + w / 2, midY = y + h / 2;
+  ctx.translate(midX, midY);
+  if      (dir === "left")  ctx.scale(-1, 1);
+  else if (dir === "down")  ctx.rotate(Math.PI / 2);
+  else if (dir === "up")    ctx.rotate(-Math.PI / 2);
+  ctx.translate(-midX, -midY);
+
+  const R = (fx, fy, fw, fh) =>
+    ctx.fillRect(
+      Math.round(x + fx * w), Math.round(y + fy * h),
+      Math.max(1, Math.round(fw * w)), Math.max(1, Math.round(fh * h)),
+    );
+
+  // Drop shadow (Option B)
+  if (dropShadow) {
+    const ox = 3, oy = 3;
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(Math.round(x + 0.04*w)+ox, Math.round(y + 0.20*h)+oy, Math.round(0.88*w), Math.round(0.60*h));
+  }
+
+  // Canvas shadow glow (Option C)
+  if (shadowColor) {
+    ctx.shadowColor = shadowColor;
+    ctx.shadowBlur = shadowBlur || 0;
+  }
+
+  // 1. Outline pass
+  ctx.fillStyle = OUTLINE;
+  R(0.02, 0.18, 0.92, 0.64);
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.02*w), Math.round(y + 0.52*h));
+  ctx.lineTo(Math.round(x + 0.02*w), Math.round(y + 0.18*h));
+  ctx.lineTo(Math.round(x - 0.32*w), Math.round(y + (0.18 - tailWag*0.10)*h));
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.02*w), Math.round(y + 0.48*h));
+  ctx.lineTo(Math.round(x + 0.02*w), Math.round(y + 0.82*h));
+  ctx.lineTo(Math.round(x - 0.32*w), Math.round(y + (0.82 + tailWag*0.10)*h));
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.30*w), Math.round(y + 0.20*h));
+  ctx.lineTo(Math.round(x + 0.5 *w), Math.round(y - 0.30*h));
+  ctx.lineTo(Math.round(x + 0.70*w), Math.round(y + 0.20*h));
+  ctx.closePath(); ctx.fill();
+
+  // 2. Body
+  ctx.fillStyle = BODY; R(0.04, 0.20, 0.88, 0.60);
+
+  // 3. Dorsal fin
+  ctx.fillStyle = DARK_FIN;
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.32*w), Math.round(y + 0.22*h));
+  ctx.lineTo(Math.round(x + 0.5 *w), Math.round(y - 0.28*h));
+  ctx.lineTo(Math.round(x + 0.68*w), Math.round(y + 0.22*h));
+  ctx.closePath(); ctx.fill();
+
+  // 4. Tail fins
+  ctx.fillStyle = DARK_FIN;
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04*w), Math.round(y + 0.50*h));
+  ctx.lineTo(Math.round(x + 0.04*w), Math.round(y + 0.20*h));
+  ctx.lineTo(Math.round(x - 0.30*w), Math.round(y + (0.20 - tailWag*0.10)*h));
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x + 0.04*w), Math.round(y + 0.50*h));
+  ctx.lineTo(Math.round(x + 0.04*w), Math.round(y + 0.80*h));
+  ctx.lineTo(Math.round(x - 0.30*w), Math.round(y + (0.80 + tailWag*0.10)*h));
+  ctx.closePath(); ctx.fill();
+
+  // 5. Top highlight
+  ctx.fillStyle = HIGHLIGHT; R(0.14, 0.28, 0.36, 0.09);
+
+  // 6. Belly
+  ctx.fillStyle = BELLY; R(0.18, 0.56, 0.5, 0.14);
+
+  // 7. Pectoral fin
+  ctx.fillStyle = DARK_FIN; R(0.36, 0.66, 0.2, 0.09);
+
+  // Turn off shadow for fine details
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+
+  // 8. Eye
+  ctx.fillStyle = "#d8eef4"; R(0.69, 0.28, 0.10, 0.14);
+  ctx.fillStyle = "#08181f"; R(0.71, 0.30, 0.06, 0.09);
+  ctx.fillStyle = "#ffffff"; R(0.70, 0.29, 0.02, 0.03);
+
+  // 9. Mouth
+  ctx.fillStyle = OUTLINE; R(0.84, 0.60, 0.08, 0.08);
+
+  // 10. Stroke outline
+  ctx.strokeStyle = STROKE_COLOR;
+  ctx.lineWidth = Math.max(1, Math.round(cs * 0.025));
+  ctx.strokeRect(Math.round(x+0.04*w), Math.round(y+0.20*h), Math.round(0.88*w), Math.round(0.60*h));
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x+0.32*w), Math.round(y+0.22*h));
+  ctx.lineTo(Math.round(x+0.5*w),  Math.round(y-0.28*h));
+  ctx.lineTo(Math.round(x+0.68*w), Math.round(y+0.22*h));
+  ctx.closePath(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x+0.04*w), Math.round(y+0.50*h));
+  ctx.lineTo(Math.round(x+0.04*w), Math.round(y+0.20*h));
+  ctx.lineTo(Math.round(x-0.30*w), Math.round(y+(0.20-tailWag*0.10)*h));
+  ctx.closePath(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Math.round(x+0.04*w), Math.round(y+0.50*h));
+  ctx.lineTo(Math.round(x+0.04*w), Math.round(y+0.80*h));
+  ctx.lineTo(Math.round(x-0.30*w), Math.round(y+(0.80+tailWag*0.10)*h));
+  ctx.closePath(); ctx.stroke();
+
+  ctx.restore();
+}
+
+// ── Color palettes for each option ───────────────────────────────────────
+
+// Option A: light warm body, dark stroke (no blue-teal hue)
+const A = {
+  OUTLINE:    "#0a1e28",
+  BODY:       "#c0d4de",   // light gray, hue pulled away from teal
+  DARK_FIN:   "#4a7080",
+  HIGHLIGHT:  "#dceef4",
+  BELLY:      "#f0f8fa",
+  STROKE_COLOR: "#0a1e28", // dark stroke instead of mid-gray
+};
+
+// Option B: near-white body + dark drop shadow for separation
+const B = {
+  OUTLINE:    "#0a1e28",
+  BODY:       "#e4f2f6",   // near-white, clearly visible on any background
+  DARK_FIN:   "#3a6878",   // darker fins = more internal contrast
+  HIGHLIGHT:  "#f4fafc",
+  BELLY:      "#f8fcfe",
+  STROKE_COLOR: "#0a1828",
+  dropShadow: true,
+};
+
+// Option C: current colors + cyan glow ring
+const C = {
+  OUTLINE:    "#0a1e28",
+  BODY:       "#7aaab8",   // unchanged
+  DARK_FIN:   "#4a7a8a",
+  HIGHLIGHT:  "#c0dae2",
+  BELLY:      "#f0f8fa",
+  STROKE_COLOR: "#a9acac", // unchanged stroke
+  shadowColor: "rgba(72,202,228,0.55)",
+  shadowBlur:  10,
+};
+
+// Option D: C body colors + A dark outline (no glow)
+const D = {
+  OUTLINE:    "#0a1e28",
+  BODY:       "#7aaab8",   // C body
+  DARK_FIN:   "#4a7a8a",   // C fins
+  HIGHLIGHT:  "#c0dae2",   // C highlight
+  BELLY:      "#f0f8fa",   // C belly
+  STROKE_COLOR: "#0a1e28", // A dark stroke
+};
+
+// ── Option A variants — progressively more body-part contrast ────────────
+
+// A1: gentle — fins only slightly darker than body
+const A1 = {
+  OUTLINE: "#0a1e28",
+  BODY:       "#c0d4de",
+  DARK_FIN:   "#4a7080",   // ~50 lightness gap vs body
+  HIGHLIGHT:  "#dceef4",
+  BELLY:      "#f0f8fa",
+  STROKE_COLOR: "#0a1e28",
+};
+
+// A2: mid — clearly darker fins, brighter belly stripe
+const A2 = {
+  OUTLINE: "#0a1e28",
+  BODY:       "#c4d6e2",
+  DARK_FIN:   "#28566a",   // noticeably darker, more saturated
+  HIGHLIGHT:  "#e4f4fa",   // brighter highlight band
+  BELLY:      "#f6fbfe",   // brighter white belly
+  STROKE_COLOR: "#0a1e28",
+};
+
+// A3: high — near-black fins against a lighter body
+const A3 = {
+  OUTLINE: "#0a1e28",
+  BODY:       "#ccdee8",   // lighter body so fins pop more
+  DARK_FIN:   "#0e2a38",   // near-black fins
+  HIGHLIGHT:  "#eaf6fc",   // very bright highlight
+  BELLY:      "#f8fbfe",
+  STROKE_COLOR: "#0a1e28",
+};
+
+// A4: two-tone warm — body shifted warmer (less blue) so fins read as cooler/darker
+const A4 = {
+  OUTLINE: "#0a1e28",
+  BODY:       "#ccd4d8",   // warm silver-gray (hue desaturated)
+  DARK_FIN:   "#1e3a4a",   // dark cool navy — maximum hue contrast vs warm body
+  HIGHLIGHT:  "#e8eef0",
+  BELLY:      "#f4f8fa",
+  STROKE_COLOR: "#0a1e28",
+};
+
+// ── Render all canvases ───────────────────────────────────────────────────
+
+function renderScene(canvasId, bgType, colors, label) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height;
+  const cs = 72; // shark cell size in preview
+  const pad = Math.round(cs * 0.30);
+
+  if (bgType === "menu") {
+    drawMenuBg(ctx, w, h);
+  } else {
+    drawTileGrid(ctx, w, h);
+  }
+
+  ctx.save();
+  const cx = (w - cs) / 2 / cs;
+  const cy = (h - cs) / 2 / cs;
+  drawShark(ctx, cx, cy, cs, "right", 0, colors);
+  ctx.restore();
+}
+
+renderScene("a-menu", "menu", A);
+renderScene("a-game", "game", A);
+renderScene("b-menu", "menu", B);
+renderScene("b-game", "game", B);
+renderScene("c-menu", "menu", C);
+renderScene("c-game", "game", C);
+renderScene("d-menu", "menu", D);
+renderScene("d-game", "game", D);
+
+// ── Animate all canvases ──────────────────────────────────────────────────
+let t = 0;
+function animate() {
+  t += 0.032;
+  const tailWag = Math.sin(t * 2.4) * 0.85;
+  const w = 180, h = 180, cs = 72;
+  const cx = (w - cs) / 2 / cs;
+  const cy = (h - cs) / 2 / cs;
+
+  // Large preview canvases
+  [["a-menu","menu",A],["a-game","game",A],
+   ["b-menu","menu",B],["b-game","game",B],
+   ["c-menu","menu",C],["c-game","game",C],
+   ["d-menu","menu",D],["d-game","game",D]].forEach(([id, bg, colors]) => {
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext("2d");
+    if (bg === "menu") drawMenuBg(ctx, w, h);
+    else drawTileGrid(ctx, w, h);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.scale(1 + 0.025 * Math.sin(t * 1.3), 1 + 0.025 * Math.sin(t * 1.3));
+    ctx.translate(-w/2, -h/2 + Math.sin(t * 0.75) * 2.5);
+    drawShark(ctx, cx, cy, cs, "right", tailWag, colors);
+    ctx.restore();
+  });
+
+  // Option A variants — game + tiny
+  const aVariants = [["a1",A1],["a2",A2],["a3",A3],["a4",A4]];
+  aVariants.forEach(([prefix, colors]) => {
+    const gc = document.getElementById(`${prefix}-game`);
+    const gctx = gc.getContext("2d");
+    drawTileGrid(gctx, gc.width, gc.height);
+    gctx.save();
+    gctx.translate(gc.width/2, gc.height/2);
+    gctx.scale(1 + 0.025 * Math.sin(t * 1.3), 1 + 0.025 * Math.sin(t * 1.3));
+    gctx.translate(-gc.width/2, -gc.height/2 + Math.sin(t * 0.75) * 2.5);
+    drawShark(gctx, (gc.width - 72) / 2 / 72, (gc.height - 72) / 2 / 72, 72, "right", tailWag, colors);
+    gctx.restore();
+  });
+
+  // Tiny actual-size canvases (180×96, shark at col 3 row 1)
+  [["a-tiny",A],["b-tiny",B],["c-tiny",C],["d-tiny",D],
+   ["a1-tiny",A1],["a2-tiny",A2],["a3-tiny",A3],["a4-tiny",A4]].forEach(([id, colors]) => {
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext("2d");
+    drawTinyScene(ctx, canvas.width, canvas.height, 3, 1, tailWag, colors);
+  });
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

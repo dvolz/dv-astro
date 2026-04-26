@@ -13,6 +13,7 @@ export interface BigEnemy {
   visualX: number; visualY: number;
   animFromX: number; animFromY: number;
   animStartTime: number;
+  spawnTime?: number;
 }
 export interface Leviathan { x: number; y: number; }
 export interface BabyShark { x: number; y: number; }
@@ -66,6 +67,13 @@ export interface DyingEnemy {
 export interface DyingPickup {
   x: number; y: number;
   startTime: number;
+}
+
+export interface BubblePop {
+  x: number;         // grid cell column
+  y: number;         // grid cell row
+  startTime: number; // performance.now()
+  color: string;
 }
 
 // Single mutable state object — imported by all modules as a singleton.
@@ -169,6 +177,10 @@ export const gs = {
   risingPickups: [] as DyingPickup[],
   dyingRafId:    null as number | null,
 
+  // ── Bubble pop VFX ───────────────────────────────────────────────────
+  bubblePops:      [] as BubblePop[],
+  bubblePopRafId:  null as number | null,
+
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,
   coralMovesCounter:    0,
@@ -187,5 +199,5 @@ export const gs = {
   // ── Settings (read from localStorage at startup) ──────────────────────
   colorblindMode: false,
   shimmerMode:    false,
-  zenMode:        false,
+  speedRunMode:   false,
 };

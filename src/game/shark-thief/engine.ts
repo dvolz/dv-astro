@@ -1,7 +1,7 @@
 // ===== GameEngine =====  →  GameEngine.swift
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
-import { GRID, DYING_DURATION, RISING_DURATION } from "./config";
+import { GRID, DYING_DURATION, RISING_DURATION, BUBBLE_POP_COLORS } from "./config";
 import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH, ABYSS_DEPTH, type DepthConfig } from "./level-config";
 import { gs, type DyingPickup } from "./state";
 import { leviathanCollision } from "./collision";
@@ -13,7 +13,7 @@ import {
   calcSharkScore, saveGame, clearSave, updateMaxDepth,
 } from "./persistence";
 import { draw, initRenderer } from "./renderers";
-import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse, startEnemyAnimLoop } from "./animation";
+import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse, startEnemyAnimLoop, startBubblePopLoop } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
 import { randomColorFromPalette } from "./config";
 
@@ -34,6 +34,17 @@ export function startDyingLoop(): void {
     }
   }
   gs.dyingRafId = requestAnimationFrame(tick);
+}
+
+// ── Bubble pop helper ─────────────────────────────────────────────────────
+
+function triggerBubblePop(x: number, y: number): void {
+  gs.bubblePops.push({
+    x, y,
+    startTime: performance.now(),
+    color: BUBBLE_POP_COLORS[gs.currentDepth] ?? "#ffffff",
+  });
+  startBubblePopLoop();
 }
 
 // ── Keep the N farthest enemies, dissolve the rest ───────────────────────
@@ -494,6 +505,7 @@ function collectFishMidSlide(cx: number, cy: number): void {
   gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
   updateHudScore(gs.score, "special");
   gs.enemies.push(spawnEnemy());
+  triggerBubblePop(cx, cy);
   checkDepthTransition();
   for (const [ox, oy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) {
     const nx = cx + ox, ny = cy + oy;
@@ -506,6 +518,7 @@ function collectFishMidSlide(cx: number, cy: number): void {
 
 function collectAlgaeBall(idx: number): void {
   const algaeCfg = LEVEL_CONFIG[gs.currentDepth].algaeBall!;
+  const { x: ballX, y: ballY } = gs.algaeBalls[idx];
   gs.algaeBalls.splice(idx, 1);
   gs.algaeBallRespawnTimers.push(algaeCfg.respawnInterval);
   gs.score += algaeCfg.points;
@@ -542,6 +555,7 @@ function collectAlgaeBall(idx: number): void {
       gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
     }
   }
+  triggerBubblePop(ballX, ballY);
   checkDepthTransition();
 }
 
@@ -574,6 +588,7 @@ export function moveShark(dx: number, dy: number): void {
     updateHudScore(gs.score, "special");
     gs.enemies.push(spawnEnemy());
     checkDepthTransition();
+    triggerBubblePop(nx, ny);
     startBounceAnim(nx, ny);
     saveGame();
     return;
@@ -674,6 +689,7 @@ export function moveShark(dx: number, dy: number): void {
       updateHudScore(gs.score, "special");
       spawnOneEel();
       gs.shrimpMovesCounter = 0;
+      triggerBubblePop(gs.shark.x, gs.shark.y);
       checkDepthTransition();
     }
   }
@@ -690,6 +706,7 @@ export function moveShark(dx: number, dy: number): void {
     const fishTypes: Array<"mackerel" | "garibaldi" | "oarfish"> = ["mackerel", "garibaldi", "oarfish"];
     spawnSingleNeutralFish(fishTypes[Math.floor(Math.random() * fishTypes.length)]);
     gs.neutralFish[gs.neutralFish.length - 1].spawnTime = Date.now();
+    triggerBubblePop(nx, ny);
     checkDepthTransition();
   }
 
@@ -739,7 +756,8 @@ export function moveShark(dx: number, dy: number): void {
     gs.score += LEVEL_CONFIG[gs.currentDepth].ammonite?.points ?? 10;
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     updateHudScore(gs.score, "special");
-    gs.bigEnemies.push(spawnBigEnemy());
+    gs.bigEnemies.push({ ...spawnBigEnemy(), spawnTime: Date.now() });
+    triggerBubblePop(nx, ny);
     checkDepthTransition();
   }
 
@@ -750,6 +768,7 @@ export function moveShark(dx: number, dy: number): void {
     gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
     updateHudScore(gs.score, "special");
     gs.enemies.push(spawnEnemy());
+    triggerBubblePop(gs.shark.x, gs.shark.y);
     // Capture egg interval before transition may change currentDepth
     const eggInterval = LEVEL_CONFIG[gs.currentDepth].egg?.interval ?? 0;
     checkDepthTransition();
@@ -779,6 +798,7 @@ export function moveShark(dx: number, dy: number): void {
 
     // Step 3: Remove the fish, convert tile + cardinal neighbours to ice (+ pattern)
     const fx = gs.shark.x, fy = gs.shark.y;
+    triggerBubblePop(fx, fy);
     gs.frozenFish.splice(collectedFishIdx, 1);
     gs.frozenFishMovesCounter = 0;
     for (const [ox, oy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) {
@@ -822,6 +842,7 @@ export function moveShark(dx: number, dy: number): void {
       gs.enemies.push(spawnEnemy());
       checkDepthTransition();
       const { x: bx, y: by } = gs.toxicBarrels[barrelIdx];
+      triggerBubblePop(bx, by);
       gs.toxicBarrels.splice(barrelIdx, 1);
       gs.toxicBarrelMovesCounter = 0;
       // Expand cloud — cloudSize×cloudSize minus 4 corners

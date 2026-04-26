@@ -2013,11 +2013,11 @@ export const blogData = {
         </div>
         <div class="settings-row">
           <div>
-            <span class="settings-row-label">ZEN MODE</span>
-            <span class="settings-row-sub">Hide timers during play</span>
+            <span class="settings-row-label">SPEED RUN MODE</span>
+            <span class="settings-row-sub">Show timers during play</span>
           </div>
-          <label class="pixel-toggle" aria-label="Toggle zen mode">
-            <input type="checkbox" id="settingsZen" />
+          <label class="pixel-toggle" aria-label="Toggle speed run mode">
+            <input type="checkbox" id="settingsSpeedRun" />
             <div class="toggle-track">
               <div class="toggle-knob"></div>
             </div>
@@ -2217,20 +2217,20 @@ export const blogData = {
   // ── Settings — read from localStorage before first render ────────────────
   gs.colorblindMode = localStorage.getItem("sharkColorblind") === "true";
   gs.shimmerMode    = localStorage.getItem("sharkShimmer") === "true";
-  gs.zenMode        = localStorage.getItem("sharkZen") === "true";
+  gs.speedRunMode   = localStorage.getItem("sharkSpeedRun") === "true";
 
   const settingsColorblind = document.getElementById("settingsColorblind") as HTMLInputElement;
   const settingsHaptics    = document.getElementById("settingsHaptics")    as HTMLInputElement;
   const settingsShimmer    = document.getElementById("settingsShimmer")    as HTMLInputElement;
-  const settingsZen        = document.getElementById("settingsZen")        as HTMLInputElement;
+  const settingsSpeedRun   = document.getElementById("settingsSpeedRun")   as HTMLInputElement;
 
   const hudTimeBlock   = document.getElementById("hudTime")!.closest(".hud-stat-block") as HTMLElement;
   const hudLvTimeBlock = document.getElementById("hudLvTime")!.closest(".hud-stat-block") as HTMLElement;
   const hudRow2        = hudTimeBlock.closest(".hud-row-2")!;
   const hudDividers    = Array.from(hudRow2.querySelectorAll<HTMLElement>(".hud-stat-divider"));
 
-  function applyZenMode() {
-    const hidden = gs.zenMode;
+  function applySpeedRunMode() {
+    const hidden = !gs.speedRunMode;
     hudTimeBlock.style.visibility   = hidden ? "hidden" : "";
     hudLvTimeBlock.style.visibility = hidden ? "hidden" : "";
     hudDividers.forEach(d => d.style.visibility = hidden ? "hidden" : "");
@@ -2239,8 +2239,8 @@ export const blogData = {
   settingsColorblind.checked = gs.colorblindMode;
   settingsHaptics.checked    = localStorage.getItem("sharkHaptics") !== "false";
   settingsShimmer.checked    = gs.shimmerMode;
-  settingsZen.checked        = gs.zenMode;
-  applyZenMode();
+  settingsSpeedRun.checked   = gs.speedRunMode;
+  applySpeedRunMode();
 
   settingsColorblind.addEventListener("change", () => {
     gs.colorblindMode = settingsColorblind.checked;
@@ -2255,10 +2255,10 @@ export const blogData = {
     if (gs.shimmerMode && !gs.shimmerRafId && !gs.gameOver)
       gs.shimmerRafId = requestAnimationFrame(tickShimmer);
   });
-  settingsZen.addEventListener("change", () => {
-    gs.zenMode = settingsZen.checked;
-    localStorage.setItem("sharkZen", String(gs.zenMode));
-    applyZenMode();
+  settingsSpeedRun.addEventListener("change", () => {
+    gs.speedRunMode = settingsSpeedRun.checked;
+    localStorage.setItem("sharkSpeedRun", String(gs.speedRunMode));
+    applySpeedRunMode();
   });
 
   // ── Keyboard controls ─────────────────────────────────────────────────────
