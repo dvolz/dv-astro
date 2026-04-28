@@ -47,8 +47,9 @@ function buildDepthSelectButtons(): void {
     { depth: 4, cls: "ds-d4",  label: "DEPTH 4 — ELECTRIC"      },
     { depth: 5, cls: "ds-d5",  label: "DEPTH 5 — THE ARCTIC"    },
     { depth: 6, cls: "ds-d6",  label: "DEPTH 6 — BUSY PACIFIC"  },
-    { depth: 7, cls: "ds-d7",  label: "DEPTH 7 — THE REEF"      },
-    { depth: 8, cls: "ds-d8",  label: "DEPTH 8 — THE ABYSS"     },
+    { depth: 7, cls: "ds-d7",  label: "DEPTH 7 — THE REEF"           },
+    { depth: 8, cls: "ds-d8",  label: "DEPTH 8 — TURTLE MIGRATION"  },
+    { depth: 9, cls: "ds-d9",  label: "DEPTH 9 — THE ABYSS"         },
   ];
 
   container.innerHTML = depths

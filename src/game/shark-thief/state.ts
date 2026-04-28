@@ -39,6 +39,17 @@ export interface NeutralFish {
   spawnTime?:   number;  // Date.now() when spawned from bladder; drives 2s spawn flash
 }
 
+export interface SeaTurtle {
+  x: number; y: number;       // grid coords; x may be < 0 (entering) while migrating in
+  size: 2 | 3;                // 2×2 or 3×3 grid cells
+  aggressive: boolean;
+  moveAccum: number;          // neutral: threshold = speedDivisor (3); aggressive: threshold = 2
+  visualX: number; visualY: number;
+  animFromX: number; animFromY: number;
+  animStartTime: number;
+  spawnTime?: number;         // Date.now() when spawned; drives 2s spawn flash
+}
+
 export interface AlgaeBall {
   x:          number;
   y:          number;
@@ -180,6 +191,12 @@ export const gs = {
   // ── Bubble pop VFX ───────────────────────────────────────────────────
   bubblePops:      [] as BubblePop[],
   bubblePopRafId:  null as number | null,
+
+  // ── Depth 8 — Turtle Migration ───────────────────────────────────────────
+  seaTurtles:         [] as SeaTurtle[],
+  turtleSpawnQueue:   0,   // turtles waiting to swim in from the left edge
+  turtleSpawnCounter: 0,   // moves elapsed since last turtle entry
+  turtleEggMovesCounter: 0,
 
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,

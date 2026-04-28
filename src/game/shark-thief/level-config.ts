@@ -114,6 +114,20 @@ export interface ElectricEelConfig {
   shockEnemySteps:  number;  // how many cells enemies move per tick during shock (default 1)
 }
 
+export interface TurtleConfig {
+  initCount:    number;  // turtles pre-placed in left third at depth start
+  max:          number;  // max neutral turtles on the grid at once
+  speedDivisor: number;  // neutral turtles move once per N player moves
+  spawnDelay:   number;  // player moves to wait before a replacement turtle enters
+}
+
+export interface TurtleEggConfig {
+  initCount: number;  // eggs placed at depth start
+  max:       number;  // max eggs on the board at once
+  interval:  number;  // player moves between spawns
+  points:    number;  // points per egg collected
+}
+
 // ── Per-depth config ──────────────────────────────────────────────────────
 
 export interface DepthConfig {
@@ -131,6 +145,8 @@ export interface DepthConfig {
   kelp?:        KelpConfig;
   shrimp?: ShrimpConfig;
   electricEel?: ElectricEelConfig;
+  turtles?:     TurtleConfig;
+  turtleEgg?:   TurtleEggConfig;
 
   tilePalette:     TilePalette; // background tile palette
   canvasBase:      string;      // canvas fill colour drawn behind the tile grid
@@ -305,6 +321,29 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
   },
 
   8: {
+    // Turtle Migration
+    turtles: {
+      initCount:    3,   // turtles pre-placed in left third at depth start
+      max:          5,   // max neutral turtles on grid at once
+      speedDivisor: 3,   // 1 move per 3 player moves
+      spawnDelay:   15,  // moves to wait before a replacement enters from the left
+    },
+    turtleEgg: {
+      initCount: 1,   // eggs placed at depth start
+      max:       4,   // max 4 eggs on board (matches ammonite rate)
+      interval:  25,  // new egg spawns 25 moves after the last is collected
+      points:    10,
+    },
+    tilePalette:     "coastal",
+    canvasBase:      "#0c5850",
+    enemyKeep:       10,
+    coinRate:        0.00025,
+    startingYellows: 31,
+    descendScore:    100,
+    minEnemyDist:    5,
+  },
+
+  9: {
     // The Abyss (Leviathan)
     tilePalette:     "ocean",
     canvasBase:      "#0f5262",
@@ -320,10 +359,11 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
 // Derived from LEVEL_CONFIG — never hardcode depth numbers in the game logic.
 // If you move a mechanic to a different depth key above, these update automatically.
 
-export const TOXIC_DEPTH    = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].toxicBarrel))!;
-export const CORAL_DEPTH    = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
-export const ICE_DEPTH      = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
-export const NURSERY_DEPTH  = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
-export const PACIFIC_DEPTH  = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].neutralFish))!;
-export const ELECTRIC_DEPTH = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].electricEel))!;
-export const ABYSS_DEPTH    = Math.max(...Object.keys(LEVEL_CONFIG).map(Number));
+export const TOXIC_DEPTH             = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].toxicBarrel))!;
+export const CORAL_DEPTH             = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].coral))!;
+export const ICE_DEPTH               = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].icePatches))!;
+export const NURSERY_DEPTH           = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].egg))!;
+export const PACIFIC_DEPTH           = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].neutralFish))!;
+export const ELECTRIC_DEPTH          = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].electricEel))!;
+export const TURTLE_MIGRATION_DEPTH  = (Object.keys(LEVEL_CONFIG).map(Number).find(d => !!LEVEL_CONFIG[d].turtles))!;
+export const ABYSS_DEPTH             = Math.max(...Object.keys(LEVEL_CONFIG).map(Number));

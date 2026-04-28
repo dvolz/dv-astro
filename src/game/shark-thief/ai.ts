@@ -151,6 +151,57 @@ export function moveNeutralFish(): void {
   }
 }
 
+// ── Sea turtle movement (Depth 8 — Turtle Migration) ─────────────────────
+
+export function moveTurtles(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].turtles;
+  if (!cfg) return;
+
+  const toRemove: typeof gs.seaTurtles = [];
+
+  for (const t of gs.seaTurtles) {
+    t.moveAccum++;
+    const threshold = t.aggressive ? 2 : cfg.speedDivisor;
+    if (t.moveAccum < threshold) continue;
+    t.moveAccum = 0;
+
+    if (!t.aggressive) {
+      // Neutral: move one cell rightward only
+      t.x++;
+      // Exited the right edge — mark for removal and queue replenishment
+      if (t.x >= GRID) {
+        toRemove.push(t);
+        continue;
+      }
+    } else {
+      // Aggressive: Manhattan-first chase (same as regular enemies)
+      const diffX = gs.shark.x - t.x;
+      const diffY = gs.shark.y - t.y;
+      let sdx = 0, sdy = 0;
+      if (Math.abs(diffX) >= Math.abs(diffY)) sdx = Math.sign(diffX);
+      else                                     sdy = Math.sign(diffY);
+
+      const maxCoord = GRID - t.size;
+      const tx = Math.max(0, Math.min(maxCoord, t.x + sdx));
+      const ty = Math.max(0, Math.min(maxCoord, t.y + sdy));
+
+      // Only blocked by coral; turtles and enemies pass through each other
+      let hitsCoral = false;
+      for (let dy = 0; dy < t.size && !hitsCoral; dy++)
+        for (let dx = 0; dx < t.size && !hitsCoral; dx++)
+          if (gs.coral[ty + dy]?.[tx + dx]) hitsCoral = true;
+
+      if (!hitsCoral) { t.x = tx; t.y = ty; }
+    }
+  }
+
+  // Remove exited turtles and queue replacements
+  if (toRemove.length > 0) {
+    gs.seaTurtles = gs.seaTurtles.filter(t => !toRemove.includes(t));
+    gs.turtleSpawnQueue += toRemove.length;
+  }
+}
+
 // ── Electric eel movement (Depth 7) ──────────────────────────────────────
 
 export function moveEels(): void {

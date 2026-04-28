@@ -14,6 +14,7 @@ export const BUBBLE_POP_COLORS: Record<number, string> = {
   5: "#c0e8f8", // Frozen fish — icy blue-white
   6: "#90c840", // Kelp bladder — kelp green
   7: "#c8906a", // Coral shell — sandy tan
+  8: "#c8e8b0", // Turtle egg — soft green-white
 };
 export const ARCTIC_TILE_COLORS = [
   "#8ab8cc", "#7aafc4", "#8cbfd4", "#82b4c8", "#90c0d0",
@@ -65,8 +66,15 @@ export const ELECTRIC_TILE_COLORS = [
   "#4060b0", "#2a58aa", "#3464b8", "#3c70be", "#2e5eb2",
 ];
 
+// Coastal palette — warm sandy blue-green, shallow sun-lit water (Depth 8)
+// Hue ~184-186°, higher lightness than deep ocean — brighter and slightly warmer.
+export const COASTAL_TILE_COLORS = [
+  "#3ab8b0", "#42bab8", "#4abcba", "#38b4ac", "#46b8b6",
+  "#40b6b4", "#3cbab2", "#44bcba", "#3ab0a8", "#48bab8",
+];
+
 // Available background palettes — add new entries here to create more options.
-export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic" | "pacific" | "electric";
+export type TilePalette = "ocean" | "tropical" | "arctic" | "nursery" | "toxic" | "pacific" | "electric" | "coastal";
 
 export const TILE_PALETTES: Record<TilePalette, string[]> = {
   ocean:    TILE_COLORS,
@@ -76,6 +84,7 @@ export const TILE_PALETTES: Record<TilePalette, string[]> = {
   toxic:    TOXIC_TILE_COLORS,
   pacific:  PACIFIC_TILE_COLORS,
   electric: ELECTRIC_TILE_COLORS,
+  coastal:  COASTAL_TILE_COLORS,
 };
 
 export function randomColorFromPalette(palette: TilePalette): string {
@@ -92,5 +101,6 @@ export const DEPTH_META: Record<number, { color: string; glow: string; name: str
   5: { color: "#7fd8f0", glow: "rgba(127,216,240,0.5)",  name: "ARCTIC" },
   6: { color: "#48d4b8", glow: "rgba(72,212,184,0.5)",   name: "BUSY PACIFIC" },
   7: { color: "#daa070", glow: "rgba(218,160,112,0.5)",  name: "REEF" },
-  8: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
+  8: { color: "#42bdb8", glow: "rgba(66,189,184,0.5)",   name: "TURTLE MIGRATION" },
+  9: { color: "#9d6fe0", glow: "rgba(157,111,224,0.5)",  name: "ABYSS" },
 };

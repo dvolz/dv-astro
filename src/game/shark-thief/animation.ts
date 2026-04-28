@@ -72,6 +72,11 @@ export function startEnemyAnimLoop(): void {
     fish.animFromY    = fish.visualY;
     fish.animStartTime = now;
   }
+  for (const t of gs.seaTurtles) {
+    t.animFromX    = t.visualX;
+    t.animFromY    = t.visualY;
+    t.animStartTime = now;
+  }
   if (gs.enemyAnimRafId) cancelAnimationFrame(gs.enemyAnimRafId);
   gs.enemyAnimRafId = requestAnimationFrame(tickEnemyAnims);
 }
@@ -103,6 +108,15 @@ function tickEnemyAnims(now: number): void {
     fish.visualX = fish.animFromX + (fish.x - fish.animFromX) * ease;
     fish.visualY = fish.animFromY + (fish.y - fish.animFromY) * ease;
     if (t >= 1) fish.animStartTime = 0;
+    else anyRunning = true;
+  }
+  for (const turtle of gs.seaTurtles) {
+    if (turtle.animStartTime === 0) continue;
+    const t = Math.min(1, (now - turtle.animStartTime) / ANIM_DURATION);
+    const ease = 1 - (1 - t) * (1 - t);
+    turtle.visualX = turtle.animFromX + (turtle.x - turtle.animFromX) * ease;
+    turtle.visualY = turtle.animFromY + (turtle.y - turtle.animFromY) * ease;
+    if (t >= 1) turtle.animStartTime = 0;
     else anyRunning = true;
   }
   draw();

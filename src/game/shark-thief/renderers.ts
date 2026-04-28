@@ -2,8 +2,8 @@
 // All functions take a CanvasRenderingContext2D as first arg — no global state.
 
 import { GRID, DYING_DURATION, RISING_DURATION, BUBBLE_POP_DURATION } from "./config";
-import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH } from "./level-config";
-import { gs, type NeutralFish, type ElectricEel } from "./state";
+import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH, TURTLE_MIGRATION_DEPTH } from "./level-config";
+import { gs, type NeutralFish, type ElectricEel, type SeaTurtle } from "./state";
 import { drawNeutralFish, drawAlgaeBall } from "./sprites";
 import { drawEelHeadV3 } from "./sprites-v2";
 import { applySpawnAnim } from "./anim-utils";
@@ -1007,6 +1007,123 @@ function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
 
 // Neutral fish sprites are in sprites.ts — drawNeutralFish() imported above.
 
+// ── Sea turtle (Depth 8 — Turtle Migration) ───────────────────────────────
+
+function drawTurtle(
+  ctx: CanvasRenderingContext2D,
+  turtle: SeaTurtle,
+  CELL: number,
+): void {
+  const bw = turtle.size * CELL;
+  const bx = turtle.visualX * CELL;
+  const by = turtle.visualY * CELL;
+  const cx = bx + bw / 2;
+  const cy = by + bw / 2;
+
+  ctx.save();
+  if (turtle.spawnTime !== undefined) applySpawnAnim(ctx, turtle.spawnTime, bw, bw, CELL);
+
+  // Shell outline
+  ctx.fillStyle = "#1a2808";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, bw * 0.42, bw * 0.36, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shell body
+  ctx.fillStyle = "#4a6018";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, bw * 0.40, bw * 0.34, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shell highlight
+  ctx.fillStyle = "#6a8828";
+  ctx.beginPath();
+  ctx.ellipse(cx - bw * 0.07, cy - bw * 0.09, bw * 0.17, bw * 0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shell scute pattern — 3 darker ovals
+  ctx.fillStyle = "#2a3808";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, bw * 0.14, bw * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx - bw * 0.18, cy - bw * 0.07, bw * 0.09, bw * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + bw * 0.18, cy - bw * 0.07, bw * 0.09, bw * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Flippers (4 small rounded stubs peeking from shell edge)
+  ctx.fillStyle = "#3a4e10";
+  // Front top and bottom (right side — turtles always face right)
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.74, by + bw * 0.15, bw * 0.10, bw * 0.07, 0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.74, by + bw * 0.85, bw * 0.10, bw * 0.07, -0.4, 0, Math.PI * 2); ctx.fill();
+  // Rear top and bottom (left side)
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.26, by + bw * 0.15, bw * 0.09, bw * 0.06, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.26, by + bw * 0.85, bw * 0.09, bw * 0.06, 0.4, 0, Math.PI * 2); ctx.fill();
+
+  // Tail (left side)
+  ctx.fillStyle = "#3a4e10";
+  ctx.beginPath();
+  ctx.ellipse(bx + bw * 0.09, cy, bw * 0.08, bw * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Head (right side, facing direction of migration)
+  const headX = bx + bw * 0.88;
+  const headR  = bw * 0.09;
+  ctx.fillStyle = "#1a2808";
+  ctx.beginPath();
+  ctx.ellipse(headX, cy, headR * 1.25, headR, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#4a6018";
+  ctx.beginPath();
+  ctx.ellipse(headX, cy, headR * 1.05, headR * 0.82, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye
+  ctx.fillStyle = turtle.aggressive ? "#e02010" : "#d8e8b0";
+  ctx.beginPath();
+  ctx.arc(headX + headR * 0.45, cy - headR * 0.35, headR * 0.30, 0, Math.PI * 2);
+  ctx.fill();
+  if (!turtle.aggressive) {
+    ctx.fillStyle = "#1a1a10";
+    ctx.beginPath();
+    ctx.arc(headX + headR * 0.48, cy - headR * 0.38, headR * 0.13, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ── Turtle egg pickup (Depth 8) ───────────────────────────────────────────
+
+function drawTurtleEgg(
+  ctx: CanvasRenderingContext2D,
+  px: number, py: number, ps: number,
+): void {
+  ctx.save();
+  const cx = px + ps / 2;
+  const cy = py + ps * 0.52;
+  const rx = ps * 0.28;
+  const ry = ps * 0.38;
+  // Shadow/outline
+  ctx.fillStyle = "#2a4030";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx + 1, ry + 1, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Egg body — white with slight green hue
+  ctx.fillStyle = "#dff2e8";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Specular highlight
+  ctx.fillStyle = "#f8fef8";
+  ctx.beginPath();
+  ctx.ellipse(cx - rx * 0.28, cy - ry * 0.32, rx * 0.28, ry * 0.18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 // ── Main game render function ─────────────────────────────────────────────
 
 export function draw(): void {
@@ -1151,13 +1268,22 @@ export function draw(): void {
     }
   }
 
-  // Ammonite super pickups
-  for (let r = 0; r < GRID; r++)
-    for (let c = 0; c < GRID; c++) {
-      if (!gs.superPickups[r][c]) continue;
-      const px = c * CELL + pad, py = r * CELL + pad, ps = CELL - pad * 2;
-      drawShellPickup(ctx, px, py, ps);
-    }
+  // Super pickups — ammonite (depth 1) or turtle egg (depth 8)
+  if (gs.currentDepth === TURTLE_MIGRATION_DEPTH) {
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++) {
+        if (!gs.superPickups[r][c]) continue;
+        const px = c * CELL, py = r * CELL;
+        drawTurtleEgg(ctx, px, py, CELL);
+      }
+  } else {
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++) {
+        if (!gs.superPickups[r][c]) continue;
+        const px = c * CELL + pad, py = r * CELL + pad, ps = CELL - pad * 2;
+        drawShellPickup(ctx, px, py, ps);
+      }
+  }
 
   // Shark egg (Depth 3)
   if (gs.sharkEgg) {
@@ -1264,6 +1390,13 @@ export function draw(): void {
     ctx.fillStyle = "#120a1e"; ctx.fillRect(-bw / 2 - 1, -bw / 2 - 1, bw + 2, bw + 2);
     ctx.fillStyle = "#2d1a4a"; ctx.fillRect(-bw / 2, -bw / 2, bw, bw);
     ctx.restore();
+  }
+
+  // Sea turtles (Depth 8 — Turtle Migration)
+  if (gs.currentDepth === TURTLE_MIGRATION_DEPTH && gs.seaTurtles.length > 0) {
+    for (const t of gs.seaTurtles) {
+      drawTurtle(ctx, t, CELL);
+    }
   }
 
   // Electric eels (Depth 7 — Electric) — drawn before neutral fish and player

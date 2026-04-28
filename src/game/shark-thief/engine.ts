@@ -2,12 +2,12 @@
 // Core game logic: init, moveShark, endGame, depth transitions, dying-enemy dissolve.
 
 import { GRID, DYING_DURATION, RISING_DURATION, BUBBLE_POP_COLORS } from "./config";
-import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH, ABYSS_DEPTH, type DepthConfig } from "./level-config";
+import { LEVEL_CONFIG, PACIFIC_DEPTH, ELECTRIC_DEPTH, TURTLE_MIGRATION_DEPTH, ABYSS_DEPTH, type DepthConfig } from "./level-config";
 import { gs, type DyingPickup } from "./state";
 import { leviathanCollision } from "./collision";
-import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish, spawnAlgaeBallIfNeeded, seedElectricEels, spawnShrimpIfNeeded, spawnOneEel } from "./spawn";
+import { spawnEnemy, spawnBigEnemy, spawnCoral, spawnLeviathan, spawnAmmoniteIfNeeded, spawnCoralPickupIfNeeded, spawnSharkEgg, spawnFrozenFishIfNeeded, seedIcePatches, spawnToxicBarrelIfNeeded, seedNeutralFish, seedKelp, seedSeagrass, spawnSingleNeutralFish, spawnAlgaeBallIfNeeded, seedElectricEels, spawnShrimpIfNeeded, spawnOneEel, seedTurtles, spawnTurtleFromLeft, spawnTurtleEggIfNeeded } from "./spawn";
 import { resolveSlide } from "./slide";
-import { moveEnemiesAI, moveLeviathanAI, moveNeutralFish, moveEels, triggerShock, setEndGame } from "./ai";
+import { moveEnemiesAI, moveLeviathanAI, moveNeutralFish, moveEels, moveTurtles, triggerShock, setEndGame } from "./ai";
 import {
   getHighScore, saveHighScore, getSharkBest, saveSharkBest,
   calcSharkScore, saveGame, clearSave, updateMaxDepth,
@@ -137,6 +137,15 @@ function teardownMechanic(cfg: DepthConfig): void {
     gs.postShockGrace = 0;
     if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
   }
+  if (cfg.turtles) {
+    gs.seaTurtles         = [];
+    gs.turtleSpawnQueue   = 0;
+    gs.turtleSpawnCounter = 0;
+  }
+  if (cfg.turtleEgg) {
+    gs.turtleEggMovesCounter = 0;
+    for (let r = 0; r < GRID; r++) gs.superPickups[r].fill(false);
+  }
 }
 
 function setupMechanic(cfg: DepthConfig): void {
@@ -201,6 +210,16 @@ function setupMechanic(cfg: DepthConfig): void {
   if (cfg.shrimp) {
     gs.shrimpMovesCounter = 0;
     for (let i = 0; i < cfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
+  }
+  if (cfg.turtles) {
+    gs.seaTurtles         = [];
+    gs.turtleSpawnQueue   = 0;
+    gs.turtleSpawnCounter = 0;
+    seedTurtles();
+  }
+  if (cfg.turtleEgg) {
+    gs.turtleEggMovesCounter = 0;
+    for (let i = 0; i < cfg.turtleEgg.initCount; i++) spawnTurtleEggIfNeeded();
   }
 }
 
@@ -441,6 +460,10 @@ export function init(): void {
   gs.shockVibrateY            = 0;
   gs.postShockGrace           = 0;
   if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
+  gs.seaTurtles           = [];
+  gs.turtleSpawnQueue     = 0;
+  gs.turtleSpawnCounter   = 0;
+  gs.turtleEggMovesCounter = 0;
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -607,6 +630,18 @@ export function moveShark(dx: number, dy: number): void {
     }
   }
 
+  // Neutral turtles: impassable — no bounce animation (shark simply can't move into them)
+  if (gs.seaTurtles.length > 0) {
+    const blocked = gs.seaTurtles.some(t =>
+      !t.aggressive &&
+      nx >= t.x && nx < t.x + t.size && ny >= t.y && ny < t.y + t.size
+    );
+    if (blocked) {
+      setDir();
+      return;
+    }
+  }
+
   gs.sharkPrevX = gs.shark.x;
   gs.sharkPrevY = gs.shark.y;
   gs.sharkPositionHistory.unshift({ x: gs.sharkPrevX, y: gs.sharkPrevY });
@@ -655,6 +690,12 @@ export function moveShark(dx: number, dy: number): void {
   // Neutral fish movement (Depth 6 — Busy Pacific)
   if (LEVEL_CONFIG[gs.currentDepth].neutralFish) {
     moveNeutralFish();
+    startEnemyAnimLoop();
+  }
+
+  // Turtle movement (Depth 8 — Turtle Migration)
+  if (LEVEL_CONFIG[gs.currentDepth].turtles) {
+    moveTurtles();
     startEnemyAnimLoop();
   }
 
@@ -750,7 +791,7 @@ export function moveShark(dx: number, dy: number): void {
   }
 
   // Super pickup (ammonite → big enemy)
-  if (gs.superPickups[ny][nx]) {
+  if (gs.superPickups[ny][nx] && LEVEL_CONFIG[gs.currentDepth].ammonite) {
     gs.superPickups[ny][nx] = false;
     gs.ammoniteMovesCounter = 0;
     gs.score += LEVEL_CONFIG[gs.currentDepth].ammonite?.points ?? 10;
@@ -758,6 +799,29 @@ export function moveShark(dx: number, dy: number): void {
     updateHudScore(gs.score, "special");
     gs.bigEnemies.push({ ...spawnBigEnemy(), spawnTime: Date.now() });
     triggerBubblePop(nx, ny);
+    checkDepthTransition();
+  }
+
+  // Turtle egg (Depth 8 — turns nearest neutral turtle aggressive)
+  if (gs.superPickups[ny][nx] && LEVEL_CONFIG[gs.currentDepth].turtleEgg) {
+    gs.superPickups[ny][nx] = false;
+    gs.turtleEggMovesCounter = 0;
+    gs.score += LEVEL_CONFIG[gs.currentDepth].turtleEgg.points;
+    gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
+    updateHudScore(gs.score, "special");
+    triggerBubblePop(nx, ny);
+    // Turn the nearest on-grid neutral turtle aggressive
+    const neutral = gs.seaTurtles.filter(t => !t.aggressive && t.x >= 0);
+    if (neutral.length > 0) {
+      const nearest = neutral.reduce((a, b) =>
+        Math.abs(a.x - nx) + Math.abs(a.y - ny) <= Math.abs(b.x - nx) + Math.abs(b.y - ny) ? a : b
+      );
+      nearest.aggressive = true;
+      nearest.moveAccum = 0;
+      // Replenish the neutral pool
+      gs.turtleSpawnQueue++;
+      gs.turtleSpawnCounter = 0;
+    }
     checkDepthTransition();
   }
 
@@ -897,6 +961,27 @@ export function moveShark(dx: number, dy: number): void {
       spawnToxicBarrelIfNeeded();
     }
   }
+  if (depthCfg.turtleEgg) {
+    gs.turtleEggMovesCounter++;
+    if (gs.turtleEggMovesCounter >= depthCfg.turtleEgg.interval) spawnTurtleEggIfNeeded();
+  }
+  if (depthCfg.turtles) {
+    // Queue a new turtle if neutral count is below max and none already queued
+    const neutralCount = gs.seaTurtles.filter(t => !t.aggressive).length;
+    if (neutralCount < depthCfg.turtles.max && gs.turtleSpawnQueue === 0) {
+      gs.turtleSpawnQueue = 1;
+      gs.turtleSpawnCounter = 0;
+    }
+    // Fire queued turtle entry after spawnDelay moves
+    if (gs.turtleSpawnQueue > 0) {
+      gs.turtleSpawnCounter++;
+      if (gs.turtleSpawnCounter >= depthCfg.turtles.spawnDelay) {
+        gs.seaTurtles.push(spawnTurtleFromLeft());
+        gs.turtleSpawnQueue--;
+        gs.turtleSpawnCounter = 0;
+      }
+    }
+  }
 
   // Enemy AI — regular + big every 2 player moves; grace moves after shock skip enemy turn
   if (gs.postShockGrace > 0) {
@@ -931,6 +1016,11 @@ export function moveShark(dx: number, dy: number): void {
   for (const be of gs.bigEnemies)
     if (gs.shark.x >= be.x && gs.shark.x <= be.x + 1 && gs.shark.y >= be.y && gs.shark.y <= be.y + 1) { endGame(); return; }
   if (leviathanCollision(gs.shark, gs.leviathan)) { endGame(); return; }
+  for (const t of gs.seaTurtles) {
+    if (!t.aggressive) continue;
+    if (gs.shark.x >= t.x && gs.shark.x < t.x + t.size &&
+        gs.shark.y >= t.y && gs.shark.y < t.y + t.size) { endGame(); return; }
+  }
 
   if (depthCfg.toxicBarrel) spreadToxicContamination();
 
@@ -1090,6 +1180,10 @@ export function loadGame(save: any): void {
   gs.shockVibrateY   = 0;
   gs.postShockGrace  = 0;
   if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
+  gs.seaTurtles           = [];
+  gs.turtleSpawnQueue     = 0;
+  gs.turtleSpawnCounter   = 0;
+  gs.turtleEggMovesCounter = 0;
   // Re-seed at depth if applicable — same pattern as ice patch re-seeding
   const retryCfg = LEVEL_CONFIG[gs.currentDepth];
   if (retryCfg.neutralFish) seedNeutralFish();
@@ -1108,6 +1202,13 @@ export function loadGame(save: any): void {
   if (retryCfg.shrimp) {
     gs.shrimpMovesCounter = 0;
     for (let i = 0; i < retryCfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
+  }
+  if (retryCfg.turtles) {
+    seedTurtles();
+  }
+  if (retryCfg.turtleEgg) {
+    gs.turtleEggMovesCounter = 0;
+    for (let i = 0; i < retryCfg.turtleEgg.initCount; i++) spawnTurtleEggIfNeeded();
   }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");

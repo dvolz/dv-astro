@@ -2,7 +2,7 @@
 
 import { GRID } from "./config";
 import { LEVEL_CONFIG } from "./level-config";
-import { gs, type Enemy, type BigEnemy, type NeutralFish, type AlgaeBall, type ElectricEel } from "./state";
+import { gs, type Enemy, type BigEnemy, type NeutralFish, type AlgaeBall, type ElectricEel, type SeaTurtle } from "./state";
 import { bigEnemyOverlaps } from "./collision";
 
 // ── Center safe zone ─────────────────────────────────────────────────────
@@ -547,6 +547,99 @@ export function spawnCoral(): void {
     gs.coral[cy][cx] = true;
     placed++;
   }
+}
+
+// ── Sea turtles (Depth 8 — Turtle Migration) ─────────────────────────────
+
+function countNeutralTurtles(): number {
+  return gs.seaTurtles.filter(t => !t.aggressive).length;
+}
+
+function turtleOccupies(t: SeaTurtle, x: number, y: number): boolean {
+  return x >= t.x && x < t.x + t.size && y >= t.y && y < t.y + t.size;
+}
+
+export function seedTurtles(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].turtles;
+  if (!cfg) return;
+  gs.seaTurtles = [];
+  const leftThird = Math.floor(GRID / 3);
+
+  for (let i = 0; i < cfg.initCount; i++) {
+    const size = (Math.random() < 0.5 ? 2 : 3) as 2 | 3;
+    let tx: number, ty: number, attempts = 0;
+    do {
+      tx = Math.floor(Math.random() * (leftThird - size + 1));
+      ty = Math.floor(Math.random() * (GRID - size + 1));
+      attempts++;
+      if (attempts > 1000) break;
+    } while (
+      // Keep away from shark
+      Math.abs(tx - gs.shark.x) + Math.abs(ty - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+      // No overlap with other turtles
+      gs.seaTurtles.some(other =>
+        tx < other.x + other.size && tx + size > other.x &&
+        ty < other.y + other.size && ty + size > other.y
+      )
+    );
+    if (attempts <= 1000) {
+      gs.seaTurtles.push({
+        x: tx, y: ty, size, aggressive: false, moveAccum: 0,
+        visualX: tx, visualY: ty, animFromX: tx, animFromY: ty, animStartTime: 0,
+        spawnTime: Date.now(),
+      });
+    }
+  }
+}
+
+export function spawnTurtleFromLeft(): SeaTurtle {
+  const size = (Math.random() < 0.5 ? 2 : 3) as 2 | 3;
+  let ty: number, attempts = 0;
+  do {
+    ty = Math.floor(Math.random() * (GRID - size + 1));
+    attempts++;
+    if (attempts > 200) break;
+  } while (
+    // Avoid shark rows
+    gs.shark.y >= ty && gs.shark.y < ty + size ||
+    // Avoid other turtles at x=0
+    gs.seaTurtles.some(other =>
+      0 < other.x + other.size && 0 + size > other.x &&
+      ty < other.y + other.size && ty + size > other.y
+    )
+  );
+  const startX = -size;
+  return {
+    x: startX, y: ty, size, aggressive: false, moveAccum: 0,
+    visualX: startX, visualY: ty, animFromX: startX, animFromY: ty, animStartTime: 0,
+    spawnTime: Date.now(),
+  };
+}
+
+function countTurtleEggs(): number {
+  let n = 0;
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      if (gs.superPickups[r][c]) n++;
+  return n;
+}
+
+export function spawnTurtleEggIfNeeded(): void {
+  const cfg = LEVEL_CONFIG[gs.currentDepth].turtleEgg;
+  if (!cfg || countTurtleEggs() >= cfg.max) return;
+  let ex: number, ey: number, attempts = 0;
+  do {
+    ex = Math.floor(Math.random() * GRID);
+    ey = Math.floor(Math.random() * GRID);
+    attempts++;
+    if (attempts > 1000) return;
+  } while (
+    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
+    gs.pickups[ey][ex] || gs.superPickups[ey][ex] ||
+    gs.seaTurtles.some(t => turtleOccupies(t, ex, ey))
+  );
+  gs.superPickups[ey][ex] = true;
+  gs.turtleEggMovesCounter = 0;
 }
 
 // ── Leviathan (Depth 4) ──────────────────────────────────────────────────
