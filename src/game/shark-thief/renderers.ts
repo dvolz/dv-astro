@@ -1053,14 +1053,14 @@ function drawTurtle(
   ctx.ellipse(cx + bw * 0.18, cy - bw * 0.07, bw * 0.09, bw * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Flippers (4 small rounded stubs peeking from shell edge)
+  // Flippers — elongated paddle shapes swept outward from shell
   ctx.fillStyle = "#3a4e10";
-  // Front top and bottom (right side — turtles always face right)
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.74, by + bw * 0.15, bw * 0.10, bw * 0.07, 0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.74, by + bw * 0.85, bw * 0.10, bw * 0.07, -0.4, 0, Math.PI * 2); ctx.fill();
-  // Rear top and bottom (left side)
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.26, by + bw * 0.15, bw * 0.09, bw * 0.06, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.26, by + bw * 0.85, bw * 0.09, bw * 0.06, 0.4, 0, Math.PI * 2); ctx.fill();
+  // Front flippers (right side — longer, swept back)
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.76, by + bw * 0.20, bw * 0.16, bw * 0.045,  0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.76, by + bw * 0.80, bw * 0.16, bw * 0.045, -0.6, 0, Math.PI * 2); ctx.fill();
+  // Rear flippers (left side — shorter)
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.24, by + bw * 0.20, bw * 0.13, bw * 0.040, -0.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(bx + bw * 0.24, by + bw * 0.80, bw * 0.13, bw * 0.040,  0.5, 0, Math.PI * 2); ctx.fill();
 
   // Tail (left side)
   ctx.fillStyle = "#3a4e10";
@@ -1112,14 +1112,14 @@ function drawTurtleEgg(
   const cx = px + ps / 2;
   const cy = py + ps * 0.52;
   const rx = ps * 0.28;
-  const ry = ps * 0.38;
+  const ry = ps * 0.34;
   // Shadow/outline
-  ctx.fillStyle = "#2a4030";
+  ctx.fillStyle = "#1e3828";
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx + 1, ry + 1, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Egg body — white with slight green hue
-  ctx.fillStyle = "#dff2e8";
+  // Egg body — green-tinted
+  ctx.fillStyle = "#c8e8d0";
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
   ctx.fill();

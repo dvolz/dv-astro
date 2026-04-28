@@ -25,7 +25,10 @@ export function moveEnemiesAI(): void {
     let ty = Math.max(0, Math.min(GRID - 1, e.y + sdy));
     const occupied     = gs.enemies.some(o => o !== e && o.x === tx && o.y === ty);
     const blockedCoral = !!gs.coral[ty]?.[tx];
-    if (!occupied && !blockedCoral) {
+    const blockedTurtle = gs.seaTurtles.some(t =>
+      !t.aggressive && tx >= t.x && tx < t.x + t.size && ty >= t.y && ty < t.y + t.size,
+    );
+    if (!occupied && !blockedCoral && !blockedTurtle) {
       e.x = tx; e.y = ty;
       if (gs.iceCells[e.y]?.[e.x]) {
         const slid = resolveSlide(e.x, e.y, sdx, sdy);
@@ -53,7 +56,10 @@ export function moveEnemiesAI(): void {
     const hitsCoral =
       gs.coral[ty]?.[tx]     || gs.coral[ty]?.[tx + 1] ||
       gs.coral[ty + 1]?.[tx] || gs.coral[ty + 1]?.[tx + 1];
-    if (!blocked && !hitsEnemy && !hitsCoral) {
+    const hitsTurtle = gs.seaTurtles.some(t =>
+      !t.aggressive && t.x < tx + 2 && t.x + t.size > tx && t.y < ty + 2 && t.y + t.size > ty,
+    );
+    if (!blocked && !hitsEnemy && !hitsCoral && !hitsTurtle) {
       be.x = tx; be.y = ty;
       if (gs.iceCells[be.y]?.[be.x]) {
         const slid = resolveSlide(be.x, be.y, sdx, sdy);
@@ -166,13 +172,17 @@ export function moveTurtles(): void {
     t.moveAccum = 0;
 
     if (!t.aggressive) {
-      // Neutral: move one cell rightward only
-      t.x++;
-      // Exited the right edge — mark for removal and queue replenishment
-      if (t.x >= GRID) {
-        toRemove.push(t);
-        continue;
-      }
+      // Neutral: move one cell rightward, blocked by swarm enemies
+      const nx = t.x + 1;
+      if (nx >= GRID) { toRemove.push(t); continue; }
+      const enemyBlocks =
+        gs.enemies.some(e =>
+          e.x >= nx && e.x < nx + t.size && e.y >= t.y && e.y < t.y + t.size,
+        ) ||
+        gs.bigEnemies.some(be =>
+          be.x < nx + t.size && be.x + 2 > nx && be.y < t.y + t.size && be.y + 2 > t.y,
+        );
+      if (!enemyBlocks) t.x = nx;
     } else {
       // Aggressive: Manhattan-first chase (same as regular enemies)
       const diffX = gs.shark.x - t.x;

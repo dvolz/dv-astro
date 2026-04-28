@@ -326,7 +326,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       spawnDelay:   15,  // moves to wait before a replacement enters from the left
     },
     turtleEgg: {
-      points: 10,  // points for eating a turtle's egg (50% of turtles carry one)
+      points: 15,  // points for eating a turtle's egg (3×3 turtles only)
     },
     tilePalette:     "coastal",
     canvasBase:      "#0c5850",

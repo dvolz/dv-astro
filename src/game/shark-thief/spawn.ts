@@ -584,7 +584,7 @@ export function seedTurtles(): void {
     );
     if (attempts <= 1000) {
       gs.seaTurtles.push({
-        x: tx, y: ty, size, aggressive: false, hasEgg: Math.random() < 0.5, moveAccum: 0,
+        x: tx, y: ty, size, aggressive: false, hasEgg: size === 3, moveAccum: 0,
         visualX: tx, visualY: ty, animFromX: tx, animFromY: ty, animStartTime: 0,
         spawnTime: Date.now(),
       });
@@ -610,7 +610,7 @@ export function spawnTurtleFromLeft(): SeaTurtle {
   );
   const startX = -size;
   return {
-    x: startX, y: ty, size, aggressive: false, hasEgg: Math.random() < 0.5, moveAccum: 0,
+    x: startX, y: ty, size, aggressive: false, hasEgg: size === 3, moveAccum: 0,
     visualX: startX, visualY: ty, animFromX: startX, animFromY: ty, animStartTime: 0,
     spawnTime: Date.now(),
   };
