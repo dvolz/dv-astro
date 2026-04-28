@@ -185,13 +185,27 @@ export function moveTurtles(): void {
       const tx = Math.max(0, Math.min(maxCoord, t.x + sdx));
       const ty = Math.max(0, Math.min(maxCoord, t.y + sdy));
 
-      // Only blocked by coral; turtles and enemies pass through each other
-      let hitsCoral = false;
-      for (let dy = 0; dy < t.size && !hitsCoral; dy++)
-        for (let dx = 0; dx < t.size && !hitsCoral; dx++)
-          if (gs.coral[ty + dy]?.[tx + dx]) hitsCoral = true;
+      // Blocked by coral, swarm enemies, and other turtles
+      let blocked = false;
+      outer: for (let dy = 0; dy < t.size; dy++) {
+        for (let dx = 0; dx < t.size; dx++) {
+          if (gs.coral[ty + dy]?.[tx + dx]) { blocked = true; break outer; }
+        }
+      }
+      if (!blocked) {
+        for (const e of gs.enemies) {
+          if (e.x >= tx && e.x < tx + t.size && e.y >= ty && e.y < ty + t.size) { blocked = true; break; }
+        }
+      }
+      if (!blocked) {
+        for (const other of gs.seaTurtles) {
+          if (other === t) continue;
+          if (other.x < tx + t.size && other.x + other.size > tx &&
+              other.y < ty + t.size && other.y + other.size > ty) { blocked = true; break; }
+        }
+      }
 
-      if (!hitsCoral) { t.x = tx; t.y = ty; }
+      if (!blocked) { t.x = tx; t.y = ty; }
     }
   }
 

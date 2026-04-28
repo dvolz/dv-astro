@@ -1093,6 +1093,13 @@ function drawTurtle(
   }
 
   ctx.restore();
+
+  // Egg attached behind turtle (one cell to the left, vertically centered)
+  if (turtle.hasEgg && !turtle.aggressive) {
+    const eggPx = (turtle.visualX - 1) * CELL;
+    const eggPy = (turtle.visualY + Math.floor((turtle.size - 1) / 2)) * CELL;
+    drawTurtleEgg(ctx, eggPx, eggPy, CELL);
+  }
 }
 
 // ── Turtle egg pickup (Depth 8) ───────────────────────────────────────────
@@ -1268,22 +1275,13 @@ export function draw(): void {
     }
   }
 
-  // Super pickups — ammonite (depth 1) or turtle egg (depth 8)
-  if (gs.currentDepth === TURTLE_MIGRATION_DEPTH) {
-    for (let r = 0; r < GRID; r++)
-      for (let c = 0; c < GRID; c++) {
-        if (!gs.superPickups[r][c]) continue;
-        const px = c * CELL, py = r * CELL;
-        drawTurtleEgg(ctx, px, py, CELL);
-      }
-  } else {
-    for (let r = 0; r < GRID; r++)
-      for (let c = 0; c < GRID; c++) {
-        if (!gs.superPickups[r][c]) continue;
-        const px = c * CELL + pad, py = r * CELL + pad, ps = CELL - pad * 2;
-        drawShellPickup(ctx, px, py, ps);
-      }
-  }
+  // Super pickups — ammonite shells
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++) {
+      if (!gs.superPickups[r][c]) continue;
+      const px = c * CELL + pad, py = r * CELL + pad, ps = CELL - pad * 2;
+      drawShellPickup(ctx, px, py, ps);
+    }
 
   // Shark egg (Depth 3)
   if (gs.sharkEgg) {

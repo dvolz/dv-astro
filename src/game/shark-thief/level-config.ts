@@ -122,10 +122,7 @@ export interface TurtleConfig {
 }
 
 export interface TurtleEggConfig {
-  initCount: number;  // eggs placed at depth start
-  max:       number;  // max eggs on the board at once
-  interval:  number;  // player moves between spawns
-  points:    number;  // points per egg collected
+  points: number;  // points awarded when shark eats a turtle's egg
 }
 
 // ── Per-depth config ──────────────────────────────────────────────────────
@@ -329,10 +326,7 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
       spawnDelay:   15,  // moves to wait before a replacement enters from the left
     },
     turtleEgg: {
-      initCount: 1,   // eggs placed at depth start
-      max:       4,   // max 4 eggs on board (matches ammonite rate)
-      interval:  25,  // new egg spawns 25 moves after the last is collected
-      points:    10,
+      points: 10,  // points for eating a turtle's egg (50% of turtles carry one)
     },
     tilePalette:     "coastal",
     canvasBase:      "#0c5850",

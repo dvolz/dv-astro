@@ -43,6 +43,7 @@ export interface SeaTurtle {
   x: number; y: number;       // grid coords; x may be < 0 (entering) while migrating in
   size: 2 | 3;                // 2×2 or 3×3 grid cells
   aggressive: boolean;
+  hasEgg: boolean;            // true if a turtle egg is attached behind this turtle
   moveAccum: number;          // neutral: threshold = speedDivisor (3); aggressive: threshold = 2
   visualX: number; visualY: number;
   animFromX: number; animFromY: number;
@@ -196,7 +197,6 @@ export const gs = {
   seaTurtles:         [] as SeaTurtle[],
   turtleSpawnQueue:   0,   // turtles waiting to swim in from the left edge
   turtleSpawnCounter: 0,   // moves elapsed since last turtle entry
-  turtleEggMovesCounter: 0,
 
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,

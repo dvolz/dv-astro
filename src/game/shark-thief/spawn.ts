@@ -584,7 +584,7 @@ export function seedTurtles(): void {
     );
     if (attempts <= 1000) {
       gs.seaTurtles.push({
-        x: tx, y: ty, size, aggressive: false, moveAccum: 0,
+        x: tx, y: ty, size, aggressive: false, hasEgg: Math.random() < 0.5, moveAccum: 0,
         visualX: tx, visualY: ty, animFromX: tx, animFromY: ty, animStartTime: 0,
         spawnTime: Date.now(),
       });
@@ -610,36 +610,10 @@ export function spawnTurtleFromLeft(): SeaTurtle {
   );
   const startX = -size;
   return {
-    x: startX, y: ty, size, aggressive: false, moveAccum: 0,
+    x: startX, y: ty, size, aggressive: false, hasEgg: Math.random() < 0.5, moveAccum: 0,
     visualX: startX, visualY: ty, animFromX: startX, animFromY: ty, animStartTime: 0,
     spawnTime: Date.now(),
   };
-}
-
-function countTurtleEggs(): number {
-  let n = 0;
-  for (let r = 0; r < GRID; r++)
-    for (let c = 0; c < GRID; c++)
-      if (gs.superPickups[r][c]) n++;
-  return n;
-}
-
-export function spawnTurtleEggIfNeeded(): void {
-  const cfg = LEVEL_CONFIG[gs.currentDepth].turtleEgg;
-  if (!cfg || countTurtleEggs() >= cfg.max) return;
-  let ex: number, ey: number, attempts = 0;
-  do {
-    ex = Math.floor(Math.random() * GRID);
-    ey = Math.floor(Math.random() * GRID);
-    attempts++;
-    if (attempts > 1000) return;
-  } while (
-    Math.abs(ex - gs.shark.x) + Math.abs(ey - gs.shark.y) < LEVEL_CONFIG[gs.currentDepth].minEnemyDist ||
-    gs.pickups[ey][ex] || gs.superPickups[ey][ex] ||
-    gs.seaTurtles.some(t => turtleOccupies(t, ex, ey))
-  );
-  gs.superPickups[ey][ex] = true;
-  gs.turtleEggMovesCounter = 0;
 }
 
 // ── Leviathan (Depth 4) ──────────────────────────────────────────────────
