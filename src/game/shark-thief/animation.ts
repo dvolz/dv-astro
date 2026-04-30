@@ -73,6 +73,7 @@ export function startEnemyAnimLoop(): void {
     fish.animStartTime = now;
   }
   for (const t of gs.seaTurtles) {
+    if (!t.aggressive) continue; // neutral turtles use real-time positioning
     t.animFromX    = t.visualX;
     t.animFromY    = t.visualY;
     t.animStartTime = now;
@@ -111,7 +112,7 @@ function tickEnemyAnims(now: number): void {
     else anyRunning = true;
   }
   for (const turtle of gs.seaTurtles) {
-    if (turtle.animStartTime === 0) continue;
+    if (!turtle.aggressive || turtle.animStartTime === 0) continue; // neutral turtles use real-time positioning
     const t = Math.min(1, (now - turtle.animStartTime) / ANIM_DURATION);
     const ease = 1 - (1 - t) * (1 - t);
     turtle.visualX = turtle.animFromX + (turtle.x - turtle.animFromX) * ease;
@@ -166,6 +167,46 @@ export function tickShimmer(): void {
   }
   if (dirty) draw();
   gs.shimmerRafId = requestAnimationFrame(tickShimmer);
+}
+
+// ── Neutral turtle real-time migration loop (Depth 8) ─────────────────────
+
+export function startNeutralTurtleLoop(): void {
+  if (gs.neutralTurtleRafId) return;
+  gs.neutralTurtleRafId = requestAnimationFrame(tickNeutralTurtles);
+}
+
+function tickNeutralTurtles(): void {
+  if (gs.gameOver || !LEVEL_CONFIG[gs.currentDepth]?.turtles) {
+    gs.neutralTurtleRafId = null;
+    return;
+  }
+
+  const cfg = LEVEL_CONFIG[gs.currentDepth].turtles!;
+  const speed = GRID / cfg.crossTimeSec;
+  const wallNow = Date.now();
+  const toRemove: Array<(typeof gs.seaTurtles)[0]> = [];
+
+  for (const t of gs.seaTurtles) {
+    if (t.aggressive) continue;
+    const elapsed = (wallNow - t.entryTime) / 1000;
+    t.visualX = t.startX + elapsed * speed;
+    t.x = Math.floor(t.visualX);
+    if (t.x >= GRID) toRemove.push(t);
+  }
+
+  if (toRemove.length > 0) {
+    gs.seaTurtles = gs.seaTurtles.filter(t => !toRemove.includes(t));
+    gs.turtleSpawnQueue += toRemove.length;
+  }
+
+  draw();
+
+  if (gs.seaTurtles.some(t => !t.aggressive)) {
+    gs.neutralTurtleRafId = requestAnimationFrame(tickNeutralTurtles);
+  } else {
+    gs.neutralTurtleRafId = null;
+  }
 }
 
 // ── Bubble pop VFX loop ───────────────────────────────────────────────────

@@ -13,7 +13,7 @@ import {
   calcSharkScore, saveGame, clearSave, updateMaxDepth,
 } from "./persistence";
 import { draw, initRenderer } from "./renderers";
-import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse, startEnemyAnimLoop, startBubblePopLoop } from "./animation";
+import { startSharkAnim, startBounceAnim, tickShimmer, tickCloudPulse, startEnemyAnimLoop, startBubblePopLoop, startNeutralTurtleLoop } from "./animation";
 import { updateHudScore, getHudTimeEl, getHudLvTime, stopHudClock, startHudClock, updateHudDepth, formatClockSec } from "./hud";
 import { randomColorFromPalette } from "./config";
 
@@ -208,10 +208,12 @@ function setupMechanic(cfg: DepthConfig): void {
     for (let i = 0; i < cfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
   }
   if (cfg.turtles) {
-    gs.seaTurtles         = [];
-    gs.turtleSpawnQueue   = 0;
-    gs.turtleSpawnCounter = 0;
+    gs.seaTurtles          = [];
+    gs.turtleSpawnQueue    = 0;
+    gs.turtleSpawnCounter  = 0;
+    gs.depthEntryMoveCount = gs.moveCount;
     seedTurtles();
+    startNeutralTurtleLoop();
   }
 }
 
@@ -452,9 +454,11 @@ export function init(): void {
   gs.shockVibrateY            = 0;
   gs.postShockGrace           = 0;
   if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
-  gs.seaTurtles         = [];
-  gs.turtleSpawnQueue   = 0;
-  gs.turtleSpawnCounter = 0;
+  gs.seaTurtles          = [];
+  gs.turtleSpawnQueue    = 0;
+  gs.turtleSpawnCounter  = 0;
+  gs.depthEntryMoveCount = 0;
+  if (gs.neutralTurtleRafId) { cancelAnimationFrame(gs.neutralTurtleRafId); gs.neutralTurtleRafId = null; }
 
   // Shark position
   gs.shark.x = Math.floor(Math.random() * GRID);
@@ -621,7 +625,7 @@ export function moveShark(dx: number, dy: number): void {
     }
   }
 
-  // Neutral turtles: impassable — no bounce animation (shark simply can't move into them)
+  // Neutral turtles: impassable — bounce like neutral fish
   if (gs.seaTurtles.length > 0) {
     const blocked = gs.seaTurtles.some(t =>
       !t.aggressive &&
@@ -629,6 +633,7 @@ export function moveShark(dx: number, dy: number): void {
     );
     if (blocked) {
       setDir();
+      startBounceAnim(nx, ny);
       return;
     }
   }
@@ -802,6 +807,7 @@ export function moveShark(dx: number, dy: number): void {
       if (eggX < 0 || nx !== eggX || ny !== eggY) continue;
       t.hasEgg = false;
       t.aggressive = true;
+      t.aggroTime = Date.now();
       t.moveAccum = 0;
       gs.score += LEVEL_CONFIG[gs.currentDepth].turtleEgg.points;
       gs.score = Math.min(gs.score, gs.depthEntryScore + LEVEL_CONFIG[gs.currentDepth].descendScore);
@@ -964,6 +970,7 @@ export function moveShark(dx: number, dy: number): void {
         gs.seaTurtles.push(spawnTurtleFromLeft());
         gs.turtleSpawnQueue--;
         gs.turtleSpawnCounter = 0;
+        startNeutralTurtleLoop();
       }
     }
   }
@@ -1165,6 +1172,7 @@ export function loadGame(save: any): void {
   gs.shockVibrateY   = 0;
   gs.postShockGrace  = 0;
   if (gs.shockRafId) { cancelAnimationFrame(gs.shockRafId); gs.shockRafId = null; }
+  if (gs.neutralTurtleRafId) { cancelAnimationFrame(gs.neutralTurtleRafId); gs.neutralTurtleRafId = null; }
   gs.seaTurtles           = [];
   gs.turtleSpawnQueue     = 0;
   gs.turtleSpawnCounter   = 0;
@@ -1188,7 +1196,9 @@ export function loadGame(save: any): void {
     for (let i = 0; i < retryCfg.shrimp.initCount; i++) spawnShrimpIfNeeded();
   }
   if (retryCfg.turtles) {
+    gs.depthEntryMoveCount = gs.moveCount;
     seedTurtles();
+    startNeutralTurtleLoop();
   }
 
   document.getElementById("gameOverOverlay")!.classList.remove("visible");

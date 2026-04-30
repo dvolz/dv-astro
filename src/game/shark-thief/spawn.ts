@@ -583,8 +583,14 @@ export function seedTurtles(): void {
       )
     );
     if (attempts <= 1000) {
+      const eggMinMoves = cfg.eggMinMoves ?? 0;
       gs.seaTurtles.push({
-        x: tx, y: ty, size, aggressive: false, hasEgg: size === 3, moveAccum: 0,
+        x: tx, y: ty, size,
+        aggressive: false, aggroTime: undefined,
+        dir: "right",
+        hasEgg: size === 3 && (gs.moveCount - gs.depthEntryMoveCount) >= eggMinMoves,
+        moveAccum: 0,
+        startX: tx, entryTime: Date.now(),
         visualX: tx, visualY: ty, animFromX: tx, animFromY: ty, animStartTime: 0,
         spawnTime: Date.now(),
       });
@@ -609,8 +615,14 @@ export function spawnTurtleFromLeft(): SeaTurtle {
     )
   );
   const startX = -size;
+  const eggMinMoves = LEVEL_CONFIG[gs.currentDepth].turtles?.eggMinMoves ?? 0;
   return {
-    x: startX, y: ty, size, aggressive: false, hasEgg: size === 3, moveAccum: 0,
+    x: startX, y: ty, size,
+    aggressive: false, aggroTime: undefined,
+    dir: "right" as const,
+    hasEgg: size === 3 && (gs.moveCount - gs.depthEntryMoveCount) >= eggMinMoves,
+    moveAccum: 0,
+    startX, entryTime: Date.now(),
     visualX: startX, visualY: ty, animFromX: startX, animFromY: ty, animStartTime: 0,
     spawnTime: Date.now(),
   };

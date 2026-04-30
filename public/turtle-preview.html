@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Turtle Sprite Mock-ups — Shark Thief</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #08161e;
+    color: #c8e0ec;
+    font-family: monospace;
+    padding: 32px 24px;
+  }
+  h1 {
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: #4ac0d8; margin-bottom: 4px;
+  }
+  .subtitle { font-size: 9px; color: #3a6070; margin-bottom: 40px; letter-spacing: 1px; }
+  .block { margin-bottom: 52px; }
+  h2 {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: #8ad8e8; margin-bottom: 4px;
+  }
+  .desc { font-size: 9px; color: #406070; margin-bottom: 14px; letter-spacing: 1px; }
+  .row { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .card { text-align: center; }
+  .lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #506878; margin-top: 7px; }
+  .note { font-size: 8px; color: #304050; margin-top: 2px; }
+  hr { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0 0 40px; }
+</style>
+</head>
+<body>
+
+<h1>Sea Turtle Sprite Mock-ups</h1>
+<p class="subtitle">
+  pixel-art · fillRect + polygon only · outline-first → fill → stroke-last · olive/brown palette<br>
+  to port: replace drawTurtle() body with chosen variant's draw function
+</p>
+
+<div id="root"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════════════════════════════════
+
+const CELL = 40;
+const PAD  = CELL;           // padding around bounding box in preview canvas
+const BG   = '#0d2a3c';      // ocean preview background
+const GRID = 'rgba(255,255,255,0.05)';
+
+// ════════════════════════════════════════════════════════════════════════════
+//  INFRASTRUCTURE — matches the shark's drawing contract exactly
+// ════════════════════════════════════════════════════════════════════════════
+
+function makeCanvas(w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  return [c, c.getContext('2d')];
+}
+
+function drawGrid(ctx, w, h) {
+  ctx.strokeStyle = GRID;
+  ctx.lineWidth = 0.5;
+  for (let gx = 0; gx <= w; gx += CELL) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+  for (let gy = 0; gy <= h; gy += CELL) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+}
+
+// Pixel-art helper factory — same pattern as the shark's R() helper.
+// All coordinates are normalised 0–1 within the bw×bw bounding box.
+function H(ctx, bx, by, bw) {
+  const p  = (v) => Math.round(bx + v * bw);
+  const q  = (v) => Math.round(by + v * bw);
+  const d  = (v) => Math.max(1, Math.round(v * bw));
+
+  // fillRect shorthand
+  const R = (fx, fy, fw, fh) => ctx.fillRect(p(fx), q(fy), d(fw), d(fh));
+
+  // fill triangle
+  const TRI = (ax, ay,  bx2, by2,  cx2, cy2) => {
+    ctx.beginPath();
+    ctx.moveTo(p(ax),  q(ay));
+    ctx.lineTo(p(bx2), q(by2));
+    ctx.lineTo(p(cx2), q(cy2));
+    ctx.closePath(); ctx.fill();
+  };
+
+  // fill quadrilateral (4-point polygon)
+  const QUAD = (ax, ay,  bx2, by2,  cx2, cy2,  dx2, dy2) => {
+    ctx.beginPath();
+    ctx.moveTo(p(ax),  q(ay));
+    ctx.lineTo(p(bx2), q(by2));
+    ctx.lineTo(p(cx2), q(cy2));
+    ctx.lineTo(p(dx2), q(dy2));
+    ctx.closePath(); ctx.fill();
+  };
+
+  // stroke triangle (uses current strokeStyle/lineWidth)
+  const STRI = (ax, ay,  bx2, by2,  cx2, cy2) => {
+    ctx.beginPath();
+    ctx.moveTo(p(ax),  q(ay));
+    ctx.lineTo(p(bx2), q(by2));
+    ctx.lineTo(p(cx2), q(cy2));
+    ctx.closePath(); ctx.stroke();
+  };
+
+  // stroke quadrilateral
+  const SQUAD = (ax, ay,  bx2, by2,  cx2, cy2,  dx2, dy2) => {
+    ctx.beginPath();
+    ctx.moveTo(p(ax),  q(ay));
+    ctx.lineTo(p(bx2), q(by2));
+    ctx.lineTo(p(cx2), q(cy2));
+    ctx.lineTo(p(dx2), q(dy2));
+    ctx.closePath(); ctx.stroke();
+  };
+
+  // stroke rect (convenience wrapper around strokeRect)
+  const SR = (fx, fy, fw, fh) =>
+    ctx.strokeRect(p(fx), q(fy), d(fw), d(fh));
+
+  return { R, TRI, QUAD, STRI, SQUAD, SR };
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+//  T1 — BROAD & NATURAL
+//  Most faithful to the reference photo. Large swept-back front flippers
+//  that attach mid-shell and angle toward the tail. Dome shell.
+//  Silhouette: wide wings + oval body + small head nub.
+// ════════════════════════════════════════════════════════════════════════════
+
+function drawT1(ctx, bx, by, bw, aggressive) {
+  const { R, TRI, STRI, SR } = H(ctx, bx, by, bw);
+
+  // Palette — olive-brown, photo-accurate
+  const OUTLINE = '#1a2810';
+  const SHELL   = '#5c5820';
+  const SHELL_H = '#7a6a2a';   // highlight (top-left light)
+  const SCUTE   = '#2c2e0e';   // darker scute marks on shell
+  const FLIPPER = '#3a4012';
+  const HEAD    = '#585416';
+  const EYE     = aggressive ? '#e02010' : '#c8d040';
+  const PUPIL   = '#101408';
+
+  const LW = Math.max(1, Math.round(bw * 0.025));
+
+  // ── 1. Outline fill pass (dark shapes slightly expanded) ──────────────────
+  ctx.fillStyle = OUTLINE;
+  // Front flippers: attach mid-shell top/bottom, sweep back toward tail & out
+  TRI(0.42, 0.22,  0.68, 0.22,  0.15, -0.22);  // top
+  TRI(0.42, 0.78,  0.68, 0.78,  0.15,  1.22);  // bottom
+  // Rear flippers: smaller, left side of shell, sweep upper-left / lower-left
+  TRI(0.22, 0.24,  0.22, 0.42,  0.02,  0.04);  // top
+  TRI(0.22, 0.76,  0.22, 0.58,  0.02,  0.96);  // bottom
+  // Shell block
+  R(0.20, 0.20, 0.60, 0.60);
+  // Head nub (right)
+  R(0.78, 0.38, 0.17, 0.24);
+  // Tail nub (left)
+  R(0.04, 0.44, 0.15, 0.12);
+
+  // ── 2. Flipper color fill ────────────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  TRI(0.44, 0.22,  0.66, 0.22,  0.17, -0.20);  // top front
+  TRI(0.44, 0.78,  0.66, 0.78,  0.17,  1.20);  // bottom front
+  TRI(0.22, 0.26,  0.22, 0.40,  0.04,  0.06);  // top rear
+  TRI(0.22, 0.74,  0.22, 0.60,  0.04,  0.94);  // bottom rear
+
+  // ── 3. Shell body ────────────────────────────────────────────────────────
+  ctx.fillStyle = SHELL;
+  R(0.22, 0.22, 0.56, 0.56);
+
+  // ── 4. Shell highlight (top-left, directional light from upper-left) ─────
+  ctx.fillStyle = SHELL_H;
+  R(0.28, 0.26, 0.18, 0.09);
+  R(0.26, 0.28, 0.06, 0.10);  // left edge catch-light
+
+  // ── 5. Scute pattern — 3 darker rects (matches original turtle's marks) ──
+  ctx.fillStyle = SCUTE;
+  R(0.37, 0.37, 0.11, 0.11);  // center scute
+  R(0.27, 0.29, 0.08, 0.07);  // upper-left scute
+  R(0.50, 0.29, 0.08, 0.07);  // upper-right scute
+
+  // ── 6. Tail ──────────────────────────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  R(0.06, 0.46, 0.10, 0.08);
+
+  // ── 7. Head ──────────────────────────────────────────────────────────────
+  ctx.fillStyle = HEAD;
+  R(0.80, 0.40, 0.12, 0.20);
+
+  // ── 8. Eye ───────────────────────────────────────────────────────────────
+  ctx.fillStyle = EYE;
+  R(0.86, 0.42, 0.05, 0.07);
+  if (!aggressive) {
+    ctx.fillStyle = PUPIL;
+    R(0.88, 0.44, 0.02, 0.04);
+  }
+
+  // ── 9. Stroke outline (identical contract to the shark) ──────────────────
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = LW;
+  SR(0.22, 0.22, 0.56, 0.56);           // shell
+  STRI(0.44, 0.22,  0.66, 0.22,  0.17, -0.20);  // top front flipper
+  STRI(0.44, 0.78,  0.66, 0.78,  0.17,  1.20);  // bottom front flipper
+  STRI(0.22, 0.26,  0.22, 0.40,  0.04,  0.06);  // top rear flipper
+  STRI(0.22, 0.74,  0.22, 0.60,  0.04,  0.94);  // bottom rear flipper
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+//  T2 — SLEEK RACER
+//  Streamlined, torpedo read. Shell wider on x, narrower on y.
+//  Front flippers fan nearly perpendicular (straight out), not swept back.
+//  Pointed head and tail like a missile. More stylised than T1.
+// ════════════════════════════════════════════════════════════════════════════
+
+function drawT2(ctx, bx, by, bw, aggressive) {
+  const { R, TRI, STRI, SR } = H(ctx, bx, by, bw);
+
+  // Palette — colder olive-green, more yellow-green cast
+  const OUTLINE = '#162010';
+  const SHELL   = '#4a5610';
+  const SHELL_H = '#697220';
+  const SCUTE   = '#282e08';
+  const FLIPPER = '#2c3a08';
+  const HEAD    = '#4e5c14';
+  const EYE     = aggressive ? '#e02010' : '#c8d040';
+  const PUPIL   = '#0e1406';
+
+  const LW = Math.max(1, Math.round(bw * 0.025));
+
+  // ── 1. Outline fill pass ──────────────────────────────────────────────────
+  ctx.fillStyle = OUTLINE;
+  // Front flippers: perpendicular fan (tip above/below centre-x of body)
+  TRI(0.28, 0.26,  0.62, 0.26,  0.44, -0.28);  // top
+  TRI(0.28, 0.74,  0.62, 0.74,  0.44,  1.28);  // bottom
+  // Rear flippers: small, angled out-back
+  TRI(0.16, 0.28,  0.16, 0.42,  0.01,  0.12);  // top
+  TRI(0.16, 0.72,  0.16, 0.58,  0.01,  0.88);  // bottom
+  // Shell — horizontal slab
+  R(0.14, 0.26, 0.66, 0.48);
+  // Pointed head triangle
+  TRI(0.80, 0.43,  0.80, 0.57,  0.99, 0.50);
+  // Pointed tail triangle
+  TRI(0.20, 0.43,  0.20, 0.57,  0.01, 0.50);
+
+  // ── 2. Flipper color fill ────────────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  TRI(0.30, 0.26,  0.60, 0.26,  0.44, -0.26);  // top front
+  TRI(0.30, 0.74,  0.60, 0.74,  0.44,  1.26);  // bottom front
+  TRI(0.16, 0.30,  0.16, 0.40,  0.03,  0.14);  // top rear
+  TRI(0.16, 0.70,  0.16, 0.60,  0.03,  0.86);  // bottom rear
+
+  // ── 3. Shell ─────────────────────────────────────────────────────────────
+  ctx.fillStyle = SHELL;
+  R(0.16, 0.28, 0.62, 0.44);
+
+  // ── 4. Highlight — wide horizontal stripe along the top third ────────────
+  ctx.fillStyle = SHELL_H;
+  R(0.22, 0.30, 0.28, 0.07);
+
+  // ── 5. Scutes — horizontal divider bar + two flanking marks ──────────────
+  ctx.fillStyle = SCUTE;
+  R(0.22, 0.48, 0.46, 0.05);   // horizontal mid-bar
+  R(0.28, 0.34, 0.06, 0.06);   // upper-left mark
+  R(0.56, 0.34, 0.06, 0.06);   // upper-right mark
+
+  // ── 6. Head (pointed triangle) ───────────────────────────────────────────
+  ctx.fillStyle = HEAD;
+  TRI(0.80, 0.45,  0.80, 0.55,  0.97, 0.50);
+
+  // ── 7. Tail (pointed triangle) ───────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  TRI(0.20, 0.45,  0.20, 0.55,  0.03, 0.50);
+
+  // ── 8. Eye ───────────────────────────────────────────────────────────────
+  ctx.fillStyle = EYE;
+  R(0.83, 0.44, 0.04, 0.06);
+  if (!aggressive) {
+    ctx.fillStyle = PUPIL;
+    R(0.84, 0.45, 0.02, 0.03);
+  }
+
+  // ── 9. Stroke outline ────────────────────────────────────────────────────
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = LW;
+  SR(0.16, 0.28, 0.62, 0.44);           // shell
+  STRI(0.30, 0.26,  0.60, 0.26,  0.44, -0.26);  // top front flipper
+  STRI(0.30, 0.74,  0.60, 0.74,  0.44,  1.26);  // bottom front flipper
+  STRI(0.16, 0.30,  0.16, 0.40,  0.03,  0.14);  // top rear flipper
+  STRI(0.16, 0.70,  0.16, 0.60,  0.03,  0.86);  // bottom rear flipper
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+//  T3 — CHUNKY & ANGULAR
+//  Most geometric. Square shell block. Front flippers are parallelograms
+//  (4-point polygon), giving a bold angular silhouette. Blocky square head.
+//  4-square scute grid. Reads instantly as a solid obstacle.
+// ════════════════════════════════════════════════════════════════════════════
+
+function drawT3(ctx, bx, by, bw, aggressive) {
+  const { R, TRI, QUAD, STRI, SQUAD, SR } = H(ctx, bx, by, bw);
+
+  // Palette — warmer brown (less olive), high contrast
+  const OUTLINE = '#1a1c08';
+  const SHELL   = '#665530';
+  const SHELL_H = '#8a7040';
+  const SCUTE   = '#342a10';
+  const FLIPPER = '#3a3a18';
+  const HEAD    = '#6a6028';
+  const EYE     = aggressive ? '#e02010' : '#c8d040';
+  const PUPIL   = '#12100a';
+
+  const LW = Math.max(1, Math.round(bw * 0.025));
+
+  // ── 1. Outline fill pass ──────────────────────────────────────────────────
+  ctx.fillStyle = OUTLINE;
+  // Front flippers: parallelogram — swept slightly toward tail (left)
+  QUAD(0.36, 0.20,  0.68, 0.20,  0.56, -0.24,  0.24, -0.24);  // top
+  QUAD(0.36, 0.80,  0.68, 0.80,  0.56,  1.24,  0.24,  1.24);  // bottom
+  // Rear flippers: right-angle triangle (very angular)
+  TRI(0.20, 0.20,  0.20, 0.40,  0.02, 0.20);   // top
+  TRI(0.20, 0.80,  0.20, 0.60,  0.02, 0.80);   // bottom
+  // Shell — square block
+  R(0.20, 0.20, 0.60, 0.60);
+  // Head — thick square block
+  R(0.80, 0.33, 0.17, 0.34);
+  // Tail — small square nub
+  R(0.03, 0.40, 0.16, 0.20);
+
+  // ── 2. Flipper color fill ────────────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  QUAD(0.38, 0.20,  0.66, 0.20,  0.54, -0.22,  0.26, -0.22);  // top front
+  QUAD(0.38, 0.80,  0.66, 0.80,  0.54,  1.22,  0.26,  1.22);  // bottom front
+  TRI(0.20, 0.22,  0.20, 0.38,  0.04, 0.22);   // top rear
+  TRI(0.20, 0.78,  0.20, 0.62,  0.04, 0.78);   // bottom rear
+
+  // ── 3. Shell ─────────────────────────────────────────────────────────────
+  ctx.fillStyle = SHELL;
+  R(0.22, 0.22, 0.56, 0.56);
+
+  // ── 4. Highlight — square block top-left (no curves, angular feel) ───────
+  ctx.fillStyle = SHELL_H;
+  R(0.26, 0.26, 0.16, 0.14);
+
+  // ── 5. Scutes — 4-block grid (mosaic / chunky) ───────────────────────────
+  ctx.fillStyle = SCUTE;
+  R(0.28, 0.28, 0.09, 0.09);  // top-left
+  R(0.43, 0.28, 0.09, 0.09);  // top-right
+  R(0.28, 0.43, 0.09, 0.09);  // bottom-left
+  R(0.43, 0.43, 0.09, 0.09);  // bottom-right
+
+  // ── 6. Tail ──────────────────────────────────────────────────────────────
+  ctx.fillStyle = FLIPPER;
+  R(0.05, 0.42, 0.12, 0.16);
+
+  // ── 7. Head ──────────────────────────────────────────────────────────────
+  ctx.fillStyle = HEAD;
+  R(0.82, 0.35, 0.13, 0.30);
+
+  // ── 8. Eye ───────────────────────────────────────────────────────────────
+  ctx.fillStyle = EYE;
+  R(0.87, 0.37, 0.05, 0.08);
+  if (!aggressive) {
+    ctx.fillStyle = PUPIL;
+    R(0.89, 0.38, 0.02, 0.04);
+  }
+
+  // ── 9. Stroke outline ────────────────────────────────────────────────────
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = LW;
+  SR(0.22, 0.22, 0.56, 0.56);           // shell
+  SQUAD(0.38, 0.20,  0.66, 0.20,  0.54, -0.22,  0.26, -0.22);  // top front
+  SQUAD(0.38, 0.80,  0.66, 0.80,  0.54,  1.22,  0.26,  1.22);  // bottom front
+  STRI(0.20, 0.22,  0.20, 0.38,  0.04, 0.22);   // top rear
+  STRI(0.20, 0.78,  0.20, 0.62,  0.04, 0.78);   // bottom rear
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+//  PAGE BUILDER
+// ════════════════════════════════════════════════════════════════════════════
+
+const VARIANTS = [
+  {
+    id:   'T1',
+    name: 'Broad & Natural',
+    desc: 'Swept-back front flippers · dome shell · photo-accurate silhouette',
+    fn:   drawT1,
+  },
+  {
+    id:   'T2',
+    name: 'Sleek Racer',
+    desc: 'Perpendicular wing flippers · streamlined horizontal shell · pointed head + tail',
+    fn:   drawT2,
+  },
+  {
+    id:   'T3',
+    name: 'Chunky & Angular',
+    desc: 'Parallelogram flippers · square shell · 4-block mosaic scutes · blocky head',
+    fn:   drawT3,
+  },
+];
+
+const root = document.getElementById('root');
+
+for (const v of VARIANTS) {
+  const block = document.createElement('div');
+  block.className = 'block';
+
+  const hdr = document.createElement('h2');
+  hdr.textContent = `${v.id} — ${v.name}`;
+  block.appendChild(hdr);
+
+  const desc = document.createElement('p');
+  desc.className = 'desc';
+  desc.textContent = v.desc;
+  block.appendChild(desc);
+
+  const row = document.createElement('div');
+  row.className = 'row';
+
+  for (const size of [2, 3]) {
+    for (const agg of [false, true]) {
+      const bw = size * CELL;
+      const cw = bw + PAD * 2;
+      const ch = bw + PAD * 2;
+      const [cnv, ctx] = makeCanvas(cw, ch);
+
+      // Background + grid
+      ctx.fillStyle = BG;
+      ctx.fillRect(0, 0, cw, ch);
+      drawGrid(ctx, cw, ch);
+
+      // Turtle
+      v.fn(ctx, PAD, PAD, bw, agg);
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.appendChild(cnv);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'lbl';
+      lbl.textContent = `${size}×${size} · ${agg ? 'aggressive' : 'neutral'}`;
+      card.appendChild(lbl);
+
+      row.appendChild(card);
+    }
+  }
+
+  block.appendChild(row);
+
+  const hr = document.createElement('hr');
+  root.appendChild(block);
+  root.appendChild(hr);
+}
+</script>
+</body>
+</html>

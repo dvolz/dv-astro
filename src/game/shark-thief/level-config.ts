@@ -117,8 +117,10 @@ export interface ElectricEelConfig {
 export interface TurtleConfig {
   initCount:    number;  // turtles pre-placed in left third at depth start
   max:          number;  // max neutral turtles on the grid at once
-  speedDivisor: number;  // neutral turtles move once per N player moves
+  speedDivisor: number;  // aggro turtles move once per N player moves
   spawnDelay:   number;  // player moves to wait before a replacement turtle enters
+  crossTimeSec: number;  // seconds for a neutral turtle to cross the full grid
+  eggMinMoves:  number;  // shark moves (from depth entry) before turtle eggs appear
 }
 
 export interface TurtleEggConfig {
@@ -322,8 +324,10 @@ export const LEVEL_CONFIG: Record<number, DepthConfig> = {
     turtles: {
       initCount:    3,   // turtles pre-placed in left third at depth start
       max:          5,   // max neutral turtles on grid at once
-      speedDivisor: 3,   // 1 move per 3 player moves
+      speedDivisor: 2,   // aggro turtles move once per 2 player moves
       spawnDelay:   15,  // moves to wait before a replacement enters from the left
+      crossTimeSec: 15,  // seconds for a neutral turtle to cross the full board
+      eggMinMoves:  30,  // shark moves before turtle eggs start appearing
     },
     turtleEgg: {
       points: 15,  // points for eating a turtle's egg (3×3 turtles only)

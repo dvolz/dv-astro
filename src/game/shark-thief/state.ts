@@ -43,11 +43,15 @@ export interface SeaTurtle {
   x: number; y: number;       // grid coords; x may be < 0 (entering) while migrating in
   size: 2 | 3;                // 2×2 or 3×3 grid cells
   aggressive: boolean;
+  aggroTime?: number;          // Date.now() when turned aggressive — drives flash + glow
+  dir: "right" | "left" | "up" | "down";  // facing direction; updated by aggro chase
   hasEgg: boolean;            // true if a turtle egg is attached behind this turtle
-  moveAccum: number;          // neutral: threshold = speedDivisor (3); aggressive: threshold = 2
+  moveAccum: number;          // aggro only: threshold = speedDivisor
+  startX: number;             // x position when spawned (for real-time neutral movement)
+  entryTime: number;          // Date.now() when spawned (for real-time neutral movement)
   visualX: number; visualY: number;
   animFromX: number; animFromY: number;
-  animStartTime: number;
+  animStartTime: number;      // aggro turn-based anim; 0 = idle
   spawnTime?: number;         // Date.now() when spawned; drives 2s spawn flash
 }
 
@@ -194,9 +198,11 @@ export const gs = {
   bubblePopRafId:  null as number | null,
 
   // ── Depth 8 — Turtle Migration ───────────────────────────────────────────
-  seaTurtles:         [] as SeaTurtle[],
-  turtleSpawnQueue:   0,   // turtles waiting to swim in from the left edge
-  turtleSpawnCounter: 0,   // moves elapsed since last turtle entry
+  seaTurtles:          [] as SeaTurtle[],
+  turtleSpawnQueue:    0,   // turtles waiting to swim in from the left edge
+  turtleSpawnCounter:  0,   // moves elapsed since last turtle entry
+  neutralTurtleRafId:  null as number | null,
+  depthEntryMoveCount: 0,   // moveCount when current turtle depth was entered (for eggMinMoves)
 
   // ── Shell counters ────────────────────────────────────────────────────
   ammoniteMovesCounter: 0,

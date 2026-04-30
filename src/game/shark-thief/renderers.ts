@@ -1021,7 +1021,31 @@ function drawTurtle(
   const cy = by + bw / 2;
 
   ctx.save();
+
+  // Rotate aggro turtles to face their movement direction
+  if (turtle.aggressive) {
+    const rotMap: Record<string, number> = { right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 };
+    const rot = rotMap[turtle.dir] ?? 0;
+    if (rot !== 0) {
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+      ctx.translate(-cx, -cy);
+    }
+  }
+
   if (turtle.spawnTime !== undefined) applySpawnAnim(ctx, turtle.spawnTime, bw, bw, CELL);
+
+  // Aggro glow — set shadow before drawing so the whole turtle radiates red
+  if (turtle.aggressive) {
+    const elapsed = turtle.aggroTime !== undefined ? Date.now() - turtle.aggroTime : Infinity;
+    if (elapsed < 800) {
+      ctx.shadowColor = "#ff0000";
+      ctx.shadowBlur = 20 + 12 * Math.abs(Math.sin((elapsed / 60) * Math.PI));
+    } else {
+      ctx.shadowColor = "#dd2200";
+      ctx.shadowBlur = 10;
+    }
+  }
 
   // Shell outline
   ctx.fillStyle = "#1a2808";
@@ -1029,14 +1053,14 @@ function drawTurtle(
   ctx.ellipse(cx, cy, bw * 0.42, bw * 0.36, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Shell body
-  ctx.fillStyle = "#4a6018";
+  // Shell body (darkened when aggressive)
+  ctx.fillStyle = turtle.aggressive ? "#3d0e0e" : "#4a6018";
   ctx.beginPath();
   ctx.ellipse(cx, cy, bw * 0.40, bw * 0.34, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Shell highlight
-  ctx.fillStyle = "#6a8828";
+  // Shell highlight (reddish when aggressive)
+  ctx.fillStyle = turtle.aggressive ? "#6b1a1a" : "#6a8828";
   ctx.beginPath();
   ctx.ellipse(cx - bw * 0.07, cy - bw * 0.09, bw * 0.17, bw * 0.11, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -1090,6 +1114,19 @@ function drawTurtle(
     ctx.beginPath();
     ctx.arc(headX + headR * 0.48, cy - headR * 0.38, headR * 0.13, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // Dark-red flash overlay on shell body during first 800ms of aggro
+  if (turtle.aggressive && turtle.aggroTime !== undefined) {
+    const elapsed = Date.now() - turtle.aggroTime;
+    if (elapsed < 800) {
+      const pulse = 0.5 + 0.5 * Math.sin((elapsed / 60) * Math.PI);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = `rgba(180, 0, 0, ${(pulse * 0.65).toFixed(2)})`;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, bw * 0.40, bw * 0.34, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   ctx.restore();

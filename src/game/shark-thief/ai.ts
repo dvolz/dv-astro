@@ -163,66 +163,50 @@ export function moveTurtles(): void {
   const cfg = LEVEL_CONFIG[gs.currentDepth].turtles;
   if (!cfg) return;
 
-  const toRemove: typeof gs.seaTurtles = [];
-
   for (const t of gs.seaTurtles) {
+    if (!t.aggressive) continue; // neutral turtles move in real-time via tickNeutralTurtles
+
     t.moveAccum++;
-    const threshold = t.aggressive ? 2 : cfg.speedDivisor;
-    if (t.moveAccum < threshold) continue;
+    if (t.moveAccum < cfg.speedDivisor) continue;
     t.moveAccum = 0;
 
-    if (!t.aggressive) {
-      // Neutral: move one cell rightward, blocked by swarm enemies
-      const nx = t.x + 1;
-      if (nx >= GRID) { toRemove.push(t); continue; }
-      const enemyBlocks =
-        gs.enemies.some(e =>
-          e.x >= nx && e.x < nx + t.size && e.y >= t.y && e.y < t.y + t.size,
-        ) ||
-        gs.bigEnemies.some(be =>
-          be.x < nx + t.size && be.x + 2 > nx && be.y < t.y + t.size && be.y + 2 > t.y,
-        );
-      if (!enemyBlocks) t.x = nx;
+    // Aggressive: Manhattan-first chase; update facing direction
+    const diffX = gs.shark.x - t.x;
+    const diffY = gs.shark.y - t.y;
+    let sdx = 0, sdy = 0;
+    if (Math.abs(diffX) >= Math.abs(diffY)) {
+      sdx = Math.sign(diffX);
+      t.dir = sdx > 0 ? "right" : "left";
     } else {
-      // Aggressive: Manhattan-first chase (same as regular enemies)
-      const diffX = gs.shark.x - t.x;
-      const diffY = gs.shark.y - t.y;
-      let sdx = 0, sdy = 0;
-      if (Math.abs(diffX) >= Math.abs(diffY)) sdx = Math.sign(diffX);
-      else                                     sdy = Math.sign(diffY);
-
-      const maxCoord = GRID - t.size;
-      const tx = Math.max(0, Math.min(maxCoord, t.x + sdx));
-      const ty = Math.max(0, Math.min(maxCoord, t.y + sdy));
-
-      // Blocked by coral, swarm enemies, and other turtles
-      let blocked = false;
-      outer: for (let dy = 0; dy < t.size; dy++) {
-        for (let dx = 0; dx < t.size; dx++) {
-          if (gs.coral[ty + dy]?.[tx + dx]) { blocked = true; break outer; }
-        }
-      }
-      if (!blocked) {
-        for (const e of gs.enemies) {
-          if (e.x >= tx && e.x < tx + t.size && e.y >= ty && e.y < ty + t.size) { blocked = true; break; }
-        }
-      }
-      if (!blocked) {
-        for (const other of gs.seaTurtles) {
-          if (other === t) continue;
-          if (other.x < tx + t.size && other.x + other.size > tx &&
-              other.y < ty + t.size && other.y + other.size > ty) { blocked = true; break; }
-        }
-      }
-
-      if (!blocked) { t.x = tx; t.y = ty; }
+      sdy = Math.sign(diffY);
+      t.dir = sdy > 0 ? "down" : "up";
     }
-  }
 
-  // Remove exited turtles and queue replacements
-  if (toRemove.length > 0) {
-    gs.seaTurtles = gs.seaTurtles.filter(t => !toRemove.includes(t));
-    gs.turtleSpawnQueue += toRemove.length;
+    const maxCoord = GRID - t.size;
+    const tx = Math.max(0, Math.min(maxCoord, t.x + sdx));
+    const ty = Math.max(0, Math.min(maxCoord, t.y + sdy));
+
+    // Blocked by coral, swarm enemies, and other turtles
+    let blocked = false;
+    outer: for (let dy = 0; dy < t.size; dy++) {
+      for (let dx = 0; dx < t.size; dx++) {
+        if (gs.coral[ty + dy]?.[tx + dx]) { blocked = true; break outer; }
+      }
+    }
+    if (!blocked) {
+      for (const e of gs.enemies) {
+        if (e.x >= tx && e.x < tx + t.size && e.y >= ty && e.y < ty + t.size) { blocked = true; break; }
+      }
+    }
+    if (!blocked) {
+      for (const other of gs.seaTurtles) {
+        if (other === t) continue;
+        if (other.x < tx + t.size && other.x + other.size > tx &&
+            other.y < ty + t.size && other.y + other.size > ty) { blocked = true; break; }
+      }
+    }
+
+    if (!blocked) { t.x = tx; t.y = ty; }
   }
 }
 
