@@ -79,6 +79,13 @@ Typical flow: Zak designs → Ray outlines a plan → Bob builds it.
 
 **When the user requests a level reorder or new depth:** invoke the `/level-update` skill. It contains the full checklist of files to touch, what auto-derives vs. what's hardcoded, and the Ray → Bob workflow.
 
+### General Rules (don't violate these)
+
+1. Always use context7 before writing code that calls any external library.
+2. Use repomix for codebase-wide analysis before architectural decisions.
+3. Always invoke the relevant skill before any task.
+4. Never use backslash line continuations in git commands.
+
 ### Design Rules (don't violate these)
 
 1. `level-config.ts` is the only file a designer touches to tune a depth.

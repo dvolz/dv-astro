@@ -2,421 +2,330 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Turtle Sprite Mock-ups — Shark Thief</title>
+<title>Turtle Shape Comparison</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #08161e;
-    color: #c8e0ec;
-    font-family: monospace;
-    padding: 32px 24px;
+  body { background: #08161e; color: #c8e0ec; font-family: monospace; padding: 32px 24px; }
+  h1 { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #4ac0d8; margin-bottom: 4px; }
+  h2 { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8ad8e8; margin-bottom: 10px; }
+  .sub { font-size: 9px; color: #3a6070; margin-bottom: 32px; letter-spacing: 1px; }
+  .desc { font-size: 9px; color: #406070; margin-bottom: 14px; }
+  .lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #506878; margin-top: 8px; text-align: center; }
+  .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 40px; }
+  .card { display: flex; flex-direction: column; align-items: center; }
+  hr { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0 0 40px; }
+  section { margin-bottom: 40px; }
+
+  /* Comparison grid — ref left, render right, same pixel size */
+  .compare { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 32px; }
+  .compare-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .compare-col .lbl { min-width: 140px; text-align: center; }
+
+  /* Ref image: 1×1 square, rotate 90° CW so turtle faces RIGHT (game orientation) */
+  .ref-img {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    transform: rotate(90deg);
+    /* transform-origin: center — default is fine */
   }
-  h1 {
-    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
-    color: #4ac0d8; margin-bottom: 4px;
-  }
-  .subtitle { font-size: 9px; color: #3a6070; margin-bottom: 40px; letter-spacing: 1px; }
-  .block { margin-bottom: 52px; }
-  h2 {
-    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
-    color: #8ad8e8; margin-bottom: 4px;
-  }
-  .desc { font-size: 9px; color: #406070; margin-bottom: 14px; letter-spacing: 1px; }
-  .row { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
-  .card { text-align: center; }
-  .lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #506878; margin-top: 7px; }
-  .note { font-size: 8px; color: #304050; margin-top: 2px; }
-  hr { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0 0 40px; }
+
+  /* Side-by-side overlay via a CSS grid */
+  .overlay-wrap { position: relative; display: inline-block; }
+  .overlay-wrap canvas { position: absolute; top: 0; left: 0; }
 </style>
 </head>
 <body>
+<h1>Turtle — shape comparison</h1>
+<p class="sub">reference pixel art (rotated 90° CW to game orientation) · vs · canvas rendering</p>
 
-<h1>Sea Turtle Sprite Mock-ups</h1>
-<p class="subtitle">
-  pixel-art · fillRect + polygon only · outline-first → fill → stroke-last · olive/brown palette<br>
-  to port: replace drawTurtle() body with chosen variant's draw function
-</p>
+<section id="comparison-section">
+  <h2>Side-by-side — 3×3 cell size</h2>
+  <p class="desc">Reference rotated to face RIGHT (= game orientation). Rendering at same pixel size. Compare silhouettes.</p>
+  <div class="compare" id="compare-row"></div>
+</section>
 
-<div id="root"></div>
+<hr>
+
+<section>
+  <h2>Rendering — all 3 palettes, 2×2 and 3×3</h2>
+  <p class="desc">Rebuilt to match reference: shell = ellipse, front flippers = 6-pt swept wings with concave notch gap, rear flippers = 5-pt stubby tabs, head = circle.</p>
+  <div id="palettes-row"></div>
+</section>
 
 <script>
-// ════════════════════════════════════════════════════════════════════════════
-//  CONSTANTS
-// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
+//  drawTurtle — rebuilt to match reference pixel art
+//
+//  Shell: ellipse (circular). Front flippers: 6-pt swept wings with
+//  concave notch creating triangular gap vs shell. Rear flippers: 5-pt
+//  stubby tabs. Head: circle. Neck: rect. Eye: circles.
+//
+//  Faces RIGHT (head = high x, tail = low x). bw×bw bounding box.
+// ════════════════════════════════════════════════════════════════════════
 
-const CELL = 40;
-const PAD  = CELL;           // padding around bounding box in preview canvas
-const BG   = '#0d2a3c';      // ocean preview background
-const GRID = 'rgba(255,255,255,0.05)';
+function drawTurtle(ctx, bx, by, bw, aggressive, pal) {
+  const x = bx, y = by, w = bw, h = bw;
 
-// ════════════════════════════════════════════════════════════════════════════
-//  INFRASTRUCTURE — matches the shark's drawing contract exactly
-// ════════════════════════════════════════════════════════════════════════════
+  const LW = Math.max(1, Math.round(bw * 0.025));
+
+  const OUTLINE  = pal.outline;
+  const SHELL    = aggressive ? '#3d0e0e' : pal.shell;
+  const SHELL_HI = aggressive ? '#6b1a1a' : pal.shellHi;
+  const FLIPPER  = aggressive ? '#3d0e0e' : pal.flipper;
+  const HEAD     = aggressive ? '#3d0e0e' : pal.head;
+  const EYE_BG   = aggressive ? '#e02010' : pal.eyeBg;
+
+  function pt(fx, fy) { return [Math.round(x + fx * w), Math.round(y + fy * h)]; }
+  function poly(pts) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+  }
+
+  // ── 1. OUTLINE FILL PASS ───────────────────────────────────────────────
+  ctx.fillStyle = OUTLINE;
+
+  // Top rear flipper — 5-pt tab at tail side
+  poly([pt(0.14,0.35), pt(0.14,0.46), pt(0.02,0.46), pt(0.00,0.41), pt(0.02,0.35)]); ctx.fill();
+  // Bottom rear flipper (mirror)
+  poly([pt(0.14,0.65), pt(0.14,0.54), pt(0.02,0.54), pt(0.00,0.59), pt(0.02,0.65)]); ctx.fill();
+
+  // Top front flipper — 6-pt swept wing with concave notch
+  poly([pt(0.63,0.17), pt(0.73,0.07), pt(0.68,0.02), pt(0.57,0.05), pt(0.53,0.14), pt(0.49,0.18)]); ctx.fill();
+  // Bottom front flipper (mirror around y=0.50)
+  poly([pt(0.63,0.83), pt(0.73,0.93), pt(0.68,0.98), pt(0.57,0.95), pt(0.53,0.86), pt(0.49,0.82)]); ctx.fill();
+
+  // Shell outline ellipse (slightly larger)
+  ctx.beginPath();
+  ctx.ellipse(Math.round(x + 0.39*w), Math.round(y + 0.50*h), Math.round(0.30*w), Math.round(0.29*h), 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Neck outline rect
+  poly([pt(0.67,0.44), pt(0.78,0.44), pt(0.78,0.56), pt(0.67,0.56)]); ctx.fill();
+
+  // Head outline circle
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.87*w), Math.round(y + 0.50*h), Math.round(0.12*w), 0, Math.PI*2);
+  ctx.fill();
+
+  // ── 2. COLOUR FILL PASS ────────────────────────────────────────────────
+
+  // Rear flippers (inset slightly)
+  ctx.fillStyle = FLIPPER;
+  poly([pt(0.135,0.36), pt(0.135,0.45), pt(0.03,0.45), pt(0.01,0.41), pt(0.03,0.36)]); ctx.fill();
+  poly([pt(0.135,0.64), pt(0.135,0.55), pt(0.03,0.55), pt(0.01,0.59), pt(0.03,0.64)]); ctx.fill();
+
+  // Front flippers (inset ~0.01)
+  poly([pt(0.63,0.18), pt(0.72,0.08), pt(0.68,0.03), pt(0.58,0.06), pt(0.54,0.15), pt(0.50,0.19)]); ctx.fill();
+  poly([pt(0.63,0.82), pt(0.72,0.92), pt(0.68,0.97), pt(0.58,0.94), pt(0.54,0.85), pt(0.50,0.81)]); ctx.fill();
+
+  // Shell body ellipse
+  ctx.fillStyle = SHELL;
+  ctx.beginPath();
+  ctx.ellipse(Math.round(x + 0.39*w), Math.round(y + 0.50*h), Math.round(0.28*w), Math.round(0.27*h), 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Shell highlight
+  ctx.fillStyle = SHELL_HI;
+  ctx.beginPath();
+  ctx.ellipse(Math.round(x + 0.35*w), Math.round(y + 0.43*h), Math.round(0.09*w), Math.round(0.07*h), -0.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // Neck colour fill (inset 0.01)
+  ctx.fillStyle = HEAD;
+  poly([pt(0.68,0.45), pt(0.77,0.45), pt(0.77,0.55), pt(0.68,0.55)]); ctx.fill();
+
+  // Head colour circle
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.87*w), Math.round(y + 0.50*h), Math.round(0.10*w), 0, Math.PI*2);
+  ctx.fill();
+
+  // Eye — outline circle, colour fill, pupil
+  ctx.fillStyle = OUTLINE;
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.89*w), Math.round(y + 0.46*h), Math.round(0.036*w), 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = EYE_BG;
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.89*w), Math.round(y + 0.46*h), Math.round(0.025*w), 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = OUTLINE;
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.895*w), Math.round(y + 0.46*h), Math.round(0.013*w), 0, Math.PI*2);
+  ctx.fill();
+
+  // ── 3. STROKE PASS ─────────────────────────────────────────────────────
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = LW;
+
+  // Shell stroke
+  ctx.beginPath();
+  ctx.ellipse(Math.round(x + 0.39*w), Math.round(y + 0.50*h), Math.round(0.28*w), Math.round(0.27*h), 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Front flipper strokes
+  poly([pt(0.63,0.18), pt(0.72,0.08), pt(0.68,0.03), pt(0.58,0.06), pt(0.54,0.15), pt(0.50,0.19)]); ctx.stroke();
+  poly([pt(0.63,0.82), pt(0.72,0.92), pt(0.68,0.97), pt(0.58,0.94), pt(0.54,0.85), pt(0.50,0.81)]); ctx.stroke();
+
+  // Head stroke
+  ctx.beginPath();
+  ctx.arc(Math.round(x + 0.87*w), Math.round(y + 0.50*h), Math.round(0.10*w), 0, Math.PI*2);
+  ctx.stroke();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PALETTES
+// ════════════════════════════════════════════════════════════════════════
+
+const PALETTES = [
+  {
+    id: 'V1', name: 'Dark Olive',
+    desc: 'Matches reference pixel art — dark military green',
+    outline: '#1a1a08', shell: '#3a4418', shellHi: '#4e5c22',
+    flipper: '#2e3810', head: '#3a4418', eyeBg: '#8a9460',
+  },
+  {
+    id: 'V2', name: 'Warm Brown',
+    desc: 'Hawksbill amber — previous in-game palette',
+    outline: '#201208', shell: '#584820', shellHi: '#7a6230',
+    flipper: '#3c2e10', head: '#584820', eyeBg: '#c0a868',
+  },
+  {
+    id: 'V3', name: 'Ocean Green',
+    desc: 'Vivid sea green — tropical/brighter',
+    outline: '#121a06', shell: '#3a5c14', shellHi: '#527c1e',
+    flipper: '#283e0c', head: '#3a5c14', eyeBg: '#aecf6a',
+  },
+];
+
+// ════════════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════════════
+
+const BG   = '#0c2a3c';
+const GRID = 'rgba(255,255,255,0.06)';
 
 function makeCanvas(w, h) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   return [c, c.getContext('2d')];
 }
-
-function drawGrid(ctx, w, h) {
-  ctx.strokeStyle = GRID;
-  ctx.lineWidth = 0.5;
+function drawGrid(ctx, w, h, CELL) {
+  ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
   for (let gx = 0; gx <= w; gx += CELL) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
   for (let gy = 0; gy <= h; gy += CELL) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
 }
-
-// Pixel-art helper factory — same pattern as the shark's R() helper.
-// All coordinates are normalised 0–1 within the bw×bw bounding box.
-function H(ctx, bx, by, bw) {
-  const p  = (v) => Math.round(bx + v * bw);
-  const q  = (v) => Math.round(by + v * bw);
-  const d  = (v) => Math.max(1, Math.round(v * bw));
-
-  // fillRect shorthand
-  const R = (fx, fy, fw, fh) => ctx.fillRect(p(fx), q(fy), d(fw), d(fh));
-
-  // fill triangle
-  const TRI = (ax, ay,  bx2, by2,  cx2, cy2) => {
-    ctx.beginPath();
-    ctx.moveTo(p(ax),  q(ay));
-    ctx.lineTo(p(bx2), q(by2));
-    ctx.lineTo(p(cx2), q(cy2));
-    ctx.closePath(); ctx.fill();
-  };
-
-  // fill quadrilateral (4-point polygon)
-  const QUAD = (ax, ay,  bx2, by2,  cx2, cy2,  dx2, dy2) => {
-    ctx.beginPath();
-    ctx.moveTo(p(ax),  q(ay));
-    ctx.lineTo(p(bx2), q(by2));
-    ctx.lineTo(p(cx2), q(cy2));
-    ctx.lineTo(p(dx2), q(dy2));
-    ctx.closePath(); ctx.fill();
-  };
-
-  // stroke triangle (uses current strokeStyle/lineWidth)
-  const STRI = (ax, ay,  bx2, by2,  cx2, cy2) => {
-    ctx.beginPath();
-    ctx.moveTo(p(ax),  q(ay));
-    ctx.lineTo(p(bx2), q(by2));
-    ctx.lineTo(p(cx2), q(cy2));
-    ctx.closePath(); ctx.stroke();
-  };
-
-  // stroke quadrilateral
-  const SQUAD = (ax, ay,  bx2, by2,  cx2, cy2,  dx2, dy2) => {
-    ctx.beginPath();
-    ctx.moveTo(p(ax),  q(ay));
-    ctx.lineTo(p(bx2), q(by2));
-    ctx.lineTo(p(cx2), q(cy2));
-    ctx.lineTo(p(dx2), q(dy2));
-    ctx.closePath(); ctx.stroke();
-  };
-
-  // stroke rect (convenience wrapper around strokeRect)
-  const SR = (fx, fy, fw, fh) =>
-    ctx.strokeRect(p(fx), q(fy), d(fw), d(fh));
-
-  return { R, TRI, QUAD, STRI, SQUAD, SR };
+function card(canvas, label) {
+  const d = document.createElement('div');
+  d.className = 'card';
+  d.appendChild(canvas);
+  const l = document.createElement('div');
+  l.className = 'lbl'; l.textContent = label;
+  d.appendChild(l);
+  return d;
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  SECTION 1 — side-by-side comparison at 3×3
+// ════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════════
-//  T1 — BROAD & NATURAL
-//  Most faithful to the reference photo. Large swept-back front flippers
-//  that attach mid-shell and angle toward the tail. Dome shell.
-//  Silhouette: wide wings + oval body + small head nub.
-// ════════════════════════════════════════════════════════════════════════════
+const COMPARE_CELL = 52;
+const compareRow = document.getElementById('compare-row');
 
-function drawT1(ctx, bx, by, bw, aggressive) {
-  const { R, TRI, STRI, SR } = H(ctx, bx, by, bw);
+// Reference image column (rotated via CSS)
+{
+  const SIZE = COMPARE_CELL * 3;  // 156px
 
-  // Palette — olive-brown, photo-accurate
-  const OUTLINE = '#1a2810';
-  const SHELL   = '#5c5820';
-  const SHELL_H = '#7a6a2a';   // highlight (top-left light)
-  const SCUTE   = '#2c2e0e';   // darker scute marks on shell
-  const FLIPPER = '#3a4012';
-  const HEAD    = '#585416';
-  const EYE     = aggressive ? '#e02010' : '#c8d040';
-  const PUPIL   = '#101408';
+  const refCol = document.createElement('div');
+  refCol.className = 'compare-col';
 
-  const LW = Math.max(1, Math.round(bw * 0.025));
+  const img = document.createElement('img');
+  img.src = '/turtle-ref.png';
+  img.className = 'ref-img';
+  img.style.width  = SIZE + 'px';
+  img.style.height = SIZE + 'px';
+  refCol.appendChild(img);
 
-  // ── 1. Outline fill pass (dark shapes slightly expanded) ──────────────────
-  ctx.fillStyle = OUTLINE;
-  // Front flippers: attach mid-shell top/bottom, sweep back toward tail & out
-  TRI(0.42, 0.22,  0.68, 0.22,  0.15, -0.22);  // top
-  TRI(0.42, 0.78,  0.68, 0.78,  0.15,  1.22);  // bottom
-  // Rear flippers: smaller, left side of shell, sweep upper-left / lower-left
-  TRI(0.22, 0.24,  0.22, 0.42,  0.02,  0.04);  // top
-  TRI(0.22, 0.76,  0.22, 0.58,  0.02,  0.96);  // bottom
-  // Shell block
-  R(0.20, 0.20, 0.60, 0.60);
-  // Head nub (right)
-  R(0.78, 0.38, 0.17, 0.24);
-  // Tail nub (left)
-  R(0.04, 0.44, 0.15, 0.12);
+  const l = document.createElement('div');
+  l.className = 'lbl';
+  l.textContent = 'reference (CSS rotate 90°)';
+  refCol.appendChild(l);
 
-  // ── 2. Flipper color fill ────────────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  TRI(0.44, 0.22,  0.66, 0.22,  0.17, -0.20);  // top front
-  TRI(0.44, 0.78,  0.66, 0.78,  0.17,  1.20);  // bottom front
-  TRI(0.22, 0.26,  0.22, 0.40,  0.04,  0.06);  // top rear
-  TRI(0.22, 0.74,  0.22, 0.60,  0.04,  0.94);  // bottom rear
-
-  // ── 3. Shell body ────────────────────────────────────────────────────────
-  ctx.fillStyle = SHELL;
-  R(0.22, 0.22, 0.56, 0.56);
-
-  // ── 4. Shell highlight (top-left, directional light from upper-left) ─────
-  ctx.fillStyle = SHELL_H;
-  R(0.28, 0.26, 0.18, 0.09);
-  R(0.26, 0.28, 0.06, 0.10);  // left edge catch-light
-
-  // ── 5. Scute pattern — 3 darker rects (matches original turtle's marks) ──
-  ctx.fillStyle = SCUTE;
-  R(0.37, 0.37, 0.11, 0.11);  // center scute
-  R(0.27, 0.29, 0.08, 0.07);  // upper-left scute
-  R(0.50, 0.29, 0.08, 0.07);  // upper-right scute
-
-  // ── 6. Tail ──────────────────────────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  R(0.06, 0.46, 0.10, 0.08);
-
-  // ── 7. Head ──────────────────────────────────────────────────────────────
-  ctx.fillStyle = HEAD;
-  R(0.80, 0.40, 0.12, 0.20);
-
-  // ── 8. Eye ───────────────────────────────────────────────────────────────
-  ctx.fillStyle = EYE;
-  R(0.86, 0.42, 0.05, 0.07);
-  if (!aggressive) {
-    ctx.fillStyle = PUPIL;
-    R(0.88, 0.44, 0.02, 0.04);
-  }
-
-  // ── 9. Stroke outline (identical contract to the shark) ──────────────────
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = LW;
-  SR(0.22, 0.22, 0.56, 0.56);           // shell
-  STRI(0.44, 0.22,  0.66, 0.22,  0.17, -0.20);  // top front flipper
-  STRI(0.44, 0.78,  0.66, 0.78,  0.17,  1.20);  // bottom front flipper
-  STRI(0.22, 0.26,  0.22, 0.40,  0.04,  0.06);  // top rear flipper
-  STRI(0.22, 0.74,  0.22, 0.60,  0.04,  0.94);  // bottom rear flipper
+  compareRow.appendChild(refCol);
 }
 
+// Rendering columns — V2 neutral + aggressive
+for (const agg of [false, true]) {
+  const CELL = COMPARE_CELL;
+  const SIZE = CELL * 3;
+  const PAD  = CELL;
+  const cw   = SIZE + PAD * 2;
+  const ch   = SIZE + PAD * 2;
+  const [cnv, ctx] = makeCanvas(cw, ch);
 
-// ════════════════════════════════════════════════════════════════════════════
-//  T2 — SLEEK RACER
-//  Streamlined, torpedo read. Shell wider on x, narrower on y.
-//  Front flippers fan nearly perpendicular (straight out), not swept back.
-//  Pointed head and tail like a missile. More stylised than T1.
-// ════════════════════════════════════════════════════════════════════════════
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, cw, ch);
+  drawGrid(ctx, cw, ch, CELL);
+  drawTurtle(ctx, PAD, PAD, SIZE, agg, PALETTES[0]);  // V1 Dark Olive = currently in game
 
-function drawT2(ctx, bx, by, bw, aggressive) {
-  const { R, TRI, STRI, SR } = H(ctx, bx, by, bw);
+  const col = document.createElement('div');
+  col.className = 'compare-col';
+  col.appendChild(cnv);
+  const l = document.createElement('div');
+  l.className = 'lbl';
+  l.textContent = `V1 Dark Olive · 3×3 · ${agg ? 'aggressive' : 'neutral'}`;
+  col.appendChild(l);
 
-  // Palette — colder olive-green, more yellow-green cast
-  const OUTLINE = '#162010';
-  const SHELL   = '#4a5610';
-  const SHELL_H = '#697220';
-  const SCUTE   = '#282e08';
-  const FLIPPER = '#2c3a08';
-  const HEAD    = '#4e5c14';
-  const EYE     = aggressive ? '#e02010' : '#c8d040';
-  const PUPIL   = '#0e1406';
-
-  const LW = Math.max(1, Math.round(bw * 0.025));
-
-  // ── 1. Outline fill pass ──────────────────────────────────────────────────
-  ctx.fillStyle = OUTLINE;
-  // Front flippers: perpendicular fan (tip above/below centre-x of body)
-  TRI(0.28, 0.26,  0.62, 0.26,  0.44, -0.28);  // top
-  TRI(0.28, 0.74,  0.62, 0.74,  0.44,  1.28);  // bottom
-  // Rear flippers: small, angled out-back
-  TRI(0.16, 0.28,  0.16, 0.42,  0.01,  0.12);  // top
-  TRI(0.16, 0.72,  0.16, 0.58,  0.01,  0.88);  // bottom
-  // Shell — horizontal slab
-  R(0.14, 0.26, 0.66, 0.48);
-  // Pointed head triangle
-  TRI(0.80, 0.43,  0.80, 0.57,  0.99, 0.50);
-  // Pointed tail triangle
-  TRI(0.20, 0.43,  0.20, 0.57,  0.01, 0.50);
-
-  // ── 2. Flipper color fill ────────────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  TRI(0.30, 0.26,  0.60, 0.26,  0.44, -0.26);  // top front
-  TRI(0.30, 0.74,  0.60, 0.74,  0.44,  1.26);  // bottom front
-  TRI(0.16, 0.30,  0.16, 0.40,  0.03,  0.14);  // top rear
-  TRI(0.16, 0.70,  0.16, 0.60,  0.03,  0.86);  // bottom rear
-
-  // ── 3. Shell ─────────────────────────────────────────────────────────────
-  ctx.fillStyle = SHELL;
-  R(0.16, 0.28, 0.62, 0.44);
-
-  // ── 4. Highlight — wide horizontal stripe along the top third ────────────
-  ctx.fillStyle = SHELL_H;
-  R(0.22, 0.30, 0.28, 0.07);
-
-  // ── 5. Scutes — horizontal divider bar + two flanking marks ──────────────
-  ctx.fillStyle = SCUTE;
-  R(0.22, 0.48, 0.46, 0.05);   // horizontal mid-bar
-  R(0.28, 0.34, 0.06, 0.06);   // upper-left mark
-  R(0.56, 0.34, 0.06, 0.06);   // upper-right mark
-
-  // ── 6. Head (pointed triangle) ───────────────────────────────────────────
-  ctx.fillStyle = HEAD;
-  TRI(0.80, 0.45,  0.80, 0.55,  0.97, 0.50);
-
-  // ── 7. Tail (pointed triangle) ───────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  TRI(0.20, 0.45,  0.20, 0.55,  0.03, 0.50);
-
-  // ── 8. Eye ───────────────────────────────────────────────────────────────
-  ctx.fillStyle = EYE;
-  R(0.83, 0.44, 0.04, 0.06);
-  if (!aggressive) {
-    ctx.fillStyle = PUPIL;
-    R(0.84, 0.45, 0.02, 0.03);
-  }
-
-  // ── 9. Stroke outline ────────────────────────────────────────────────────
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = LW;
-  SR(0.16, 0.28, 0.62, 0.44);           // shell
-  STRI(0.30, 0.26,  0.60, 0.26,  0.44, -0.26);  // top front flipper
-  STRI(0.30, 0.74,  0.60, 0.74,  0.44,  1.26);  // bottom front flipper
-  STRI(0.16, 0.30,  0.16, 0.40,  0.03,  0.14);  // top rear flipper
-  STRI(0.16, 0.70,  0.16, 0.60,  0.03,  0.86);  // bottom rear flipper
+  compareRow.appendChild(col);
 }
 
+// Add a 2×2 comparison too
+{
+  const CELL = COMPARE_CELL;
+  const SIZE = CELL * 2;
+  const PAD  = CELL;
+  const cw   = SIZE + PAD * 2;
+  const ch   = SIZE + PAD * 2;
+  const [cnv, ctx] = makeCanvas(cw, ch);
 
-// ════════════════════════════════════════════════════════════════════════════
-//  T3 — CHUNKY & ANGULAR
-//  Most geometric. Square shell block. Front flippers are parallelograms
-//  (4-point polygon), giving a bold angular silhouette. Blocky square head.
-//  4-square scute grid. Reads instantly as a solid obstacle.
-// ════════════════════════════════════════════════════════════════════════════
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, cw, ch);
+  drawGrid(ctx, cw, ch, CELL);
+  drawTurtle(ctx, PAD, PAD, SIZE, false, PALETTES[0]);
 
-function drawT3(ctx, bx, by, bw, aggressive) {
-  const { R, TRI, QUAD, STRI, SQUAD, SR } = H(ctx, bx, by, bw);
+  const col = document.createElement('div');
+  col.className = 'compare-col';
+  col.appendChild(cnv);
+  const l = document.createElement('div');
+  l.className = 'lbl';
+  l.textContent = 'V1 Dark Olive · 2×2 · neutral';
+  col.appendChild(l);
 
-  // Palette — warmer brown (less olive), high contrast
-  const OUTLINE = '#1a1c08';
-  const SHELL   = '#665530';
-  const SHELL_H = '#8a7040';
-  const SCUTE   = '#342a10';
-  const FLIPPER = '#3a3a18';
-  const HEAD    = '#6a6028';
-  const EYE     = aggressive ? '#e02010' : '#c8d040';
-  const PUPIL   = '#12100a';
-
-  const LW = Math.max(1, Math.round(bw * 0.025));
-
-  // ── 1. Outline fill pass ──────────────────────────────────────────────────
-  ctx.fillStyle = OUTLINE;
-  // Front flippers: parallelogram — swept slightly toward tail (left)
-  QUAD(0.36, 0.20,  0.68, 0.20,  0.56, -0.24,  0.24, -0.24);  // top
-  QUAD(0.36, 0.80,  0.68, 0.80,  0.56,  1.24,  0.24,  1.24);  // bottom
-  // Rear flippers: right-angle triangle (very angular)
-  TRI(0.20, 0.20,  0.20, 0.40,  0.02, 0.20);   // top
-  TRI(0.20, 0.80,  0.20, 0.60,  0.02, 0.80);   // bottom
-  // Shell — square block
-  R(0.20, 0.20, 0.60, 0.60);
-  // Head — thick square block
-  R(0.80, 0.33, 0.17, 0.34);
-  // Tail — small square nub
-  R(0.03, 0.40, 0.16, 0.20);
-
-  // ── 2. Flipper color fill ────────────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  QUAD(0.38, 0.20,  0.66, 0.20,  0.54, -0.22,  0.26, -0.22);  // top front
-  QUAD(0.38, 0.80,  0.66, 0.80,  0.54,  1.22,  0.26,  1.22);  // bottom front
-  TRI(0.20, 0.22,  0.20, 0.38,  0.04, 0.22);   // top rear
-  TRI(0.20, 0.78,  0.20, 0.62,  0.04, 0.78);   // bottom rear
-
-  // ── 3. Shell ─────────────────────────────────────────────────────────────
-  ctx.fillStyle = SHELL;
-  R(0.22, 0.22, 0.56, 0.56);
-
-  // ── 4. Highlight — square block top-left (no curves, angular feel) ───────
-  ctx.fillStyle = SHELL_H;
-  R(0.26, 0.26, 0.16, 0.14);
-
-  // ── 5. Scutes — 4-block grid (mosaic / chunky) ───────────────────────────
-  ctx.fillStyle = SCUTE;
-  R(0.28, 0.28, 0.09, 0.09);  // top-left
-  R(0.43, 0.28, 0.09, 0.09);  // top-right
-  R(0.28, 0.43, 0.09, 0.09);  // bottom-left
-  R(0.43, 0.43, 0.09, 0.09);  // bottom-right
-
-  // ── 6. Tail ──────────────────────────────────────────────────────────────
-  ctx.fillStyle = FLIPPER;
-  R(0.05, 0.42, 0.12, 0.16);
-
-  // ── 7. Head ──────────────────────────────────────────────────────────────
-  ctx.fillStyle = HEAD;
-  R(0.82, 0.35, 0.13, 0.30);
-
-  // ── 8. Eye ───────────────────────────────────────────────────────────────
-  ctx.fillStyle = EYE;
-  R(0.87, 0.37, 0.05, 0.08);
-  if (!aggressive) {
-    ctx.fillStyle = PUPIL;
-    R(0.89, 0.38, 0.02, 0.04);
-  }
-
-  // ── 9. Stroke outline ────────────────────────────────────────────────────
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = LW;
-  SR(0.22, 0.22, 0.56, 0.56);           // shell
-  SQUAD(0.38, 0.20,  0.66, 0.20,  0.54, -0.22,  0.26, -0.22);  // top front
-  SQUAD(0.38, 0.80,  0.66, 0.80,  0.54,  1.22,  0.26,  1.22);  // bottom front
-  STRI(0.20, 0.22,  0.20, 0.38,  0.04, 0.22);   // top rear
-  STRI(0.20, 0.78,  0.20, 0.62,  0.04, 0.78);   // bottom rear
+  compareRow.appendChild(col);
 }
 
+// ════════════════════════════════════════════════════════════════════════
+//  SECTION 2 — all palettes at both sizes
+// ════════════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════════════════
-//  PAGE BUILDER
-// ════════════════════════════════════════════════════════════════════════════
+const palRoot = document.getElementById('palettes-row');
+const CELL = 44;
 
-const VARIANTS = [
-  {
-    id:   'T1',
-    name: 'Broad & Natural',
-    desc: 'Swept-back front flippers · dome shell · photo-accurate silhouette',
-    fn:   drawT1,
-  },
-  {
-    id:   'T2',
-    name: 'Sleek Racer',
-    desc: 'Perpendicular wing flippers · streamlined horizontal shell · pointed head + tail',
-    fn:   drawT2,
-  },
-  {
-    id:   'T3',
-    name: 'Chunky & Angular',
-    desc: 'Parallelogram flippers · square shell · 4-block mosaic scutes · blocky head',
-    fn:   drawT3,
-  },
-];
-
-const root = document.getElementById('root');
-
-for (const v of VARIANTS) {
+for (const pal of PALETTES) {
   const block = document.createElement('div');
-  block.className = 'block';
+  block.style.marginBottom = '48px';
 
   const hdr = document.createElement('h2');
-  hdr.textContent = `${v.id} — ${v.name}`;
+  hdr.textContent = `${pal.id} — ${pal.name}`;
   block.appendChild(hdr);
 
   const desc = document.createElement('p');
   desc.className = 'desc';
-  desc.textContent = v.desc;
+  desc.textContent = pal.desc;
   block.appendChild(desc);
 
   const row = document.createElement('div');
@@ -425,36 +334,22 @@ for (const v of VARIANTS) {
   for (const size of [2, 3]) {
     for (const agg of [false, true]) {
       const bw = size * CELL;
-      const cw = bw + PAD * 2;
-      const ch = bw + PAD * 2;
+      const cw = bw + CELL * 2;
+      const ch = bw + CELL * 2;
       const [cnv, ctx] = makeCanvas(cw, ch);
 
-      // Background + grid
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, cw, ch);
-      drawGrid(ctx, cw, ch);
+      drawGrid(ctx, cw, ch, CELL);
+      drawTurtle(ctx, CELL, CELL, bw, agg, pal);
 
-      // Turtle
-      v.fn(ctx, PAD, PAD, bw, agg);
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.appendChild(cnv);
-
-      const lbl = document.createElement('div');
-      lbl.className = 'lbl';
-      lbl.textContent = `${size}×${size} · ${agg ? 'aggressive' : 'neutral'}`;
-      card.appendChild(lbl);
-
-      row.appendChild(card);
+      row.appendChild(card(cnv, `${size}×${size} · ${agg ? 'aggro' : 'neutral'}`));
     }
   }
 
   block.appendChild(row);
-
-  const hr = document.createElement('hr');
-  root.appendChild(block);
-  root.appendChild(hr);
+  palRoot.appendChild(block);
+  palRoot.appendChild(Object.assign(document.createElement('hr')));
 }
 </script>
 </body>

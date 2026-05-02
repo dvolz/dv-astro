@@ -1007,6 +1007,18 @@ function drawKelp(ctx: CanvasRenderingContext2D, CELL: number): void {
 
 // Neutral fish sprites are in sprites.ts — drawNeutralFish() imported above.
 
+// ── Turtle sprite image cache ─────────────────────────────────────────────
+let _turtleImg: HTMLImageElement | null = null;
+let _turtleImgLoaded = false;
+function getTurtleImg(): HTMLImageElement | null {
+  if (_turtleImgLoaded) return _turtleImg;
+  _turtleImgLoaded = true;
+  const img = new Image();
+  img.src = '/turtle-ref.png';
+  img.onload = () => { _turtleImg = img; };
+  return null;
+}
+
 // ── Sea turtle (Depth 8 — Turtle Migration) ───────────────────────────────
 
 function drawTurtle(
@@ -1022,110 +1034,47 @@ function drawTurtle(
 
   ctx.save();
 
-  // Rotate aggro turtles to face their movement direction
-  if (turtle.aggressive) {
-    const rotMap: Record<string, number> = { right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 };
-    const rot = rotMap[turtle.dir] ?? 0;
-    if (rot !== 0) {
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.translate(-cx, -cy);
-    }
-  }
+  // Rotate to face movement direction — PNG natively faces UP
+  const pngRotMap: Record<string, number> = { up: 0, right: Math.PI / 2, down: Math.PI, left: -Math.PI / 2 };
+  const pngRot = pngRotMap[turtle.dir] ?? Math.PI / 2;
+  ctx.translate(cx, cy);
+  ctx.rotate(pngRot);
+  ctx.translate(-cx, -cy);
 
   if (turtle.spawnTime !== undefined) applySpawnAnim(ctx, turtle.spawnTime, bw, bw, CELL);
 
-  // Aggro glow — set shadow before drawing so the whole turtle radiates red
+  // Aggro glow shadow
   if (turtle.aggressive) {
     const elapsed = turtle.aggroTime !== undefined ? Date.now() - turtle.aggroTime : Infinity;
     if (elapsed < 800) {
-      ctx.shadowColor = "#ff0000";
+      ctx.shadowColor = '#ff0000';
       ctx.shadowBlur = 20 + 12 * Math.abs(Math.sin((elapsed / 60) * Math.PI));
     } else {
-      ctx.shadowColor = "#dd2200";
+      ctx.shadowColor = '#dd2200';
       ctx.shadowBlur = 10;
     }
   }
 
-  // Shell outline
-  ctx.fillStyle = "#1a2808";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, bw * 0.42, bw * 0.36, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const _img = getTurtleImg();
+  if (_img) {
+    if (turtle.aggressive) {
+      ctx.filter = 'sepia(1) saturate(8) hue-rotate(300deg)';
+    }
+    ctx.drawImage(_img, bx, by, bw, bw);
+    ctx.filter = 'none';
+    ctx.shadowBlur = 0;
 
-  // Shell body (darkened when aggressive)
-  ctx.fillStyle = turtle.aggressive ? "#3d0e0e" : "#4a6018";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, bw * 0.40, bw * 0.34, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Shell highlight (reddish when aggressive)
-  ctx.fillStyle = turtle.aggressive ? "#6b1a1a" : "#6a8828";
-  ctx.beginPath();
-  ctx.ellipse(cx - bw * 0.07, cy - bw * 0.09, bw * 0.17, bw * 0.11, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Shell scute pattern — 3 darker ovals
-  ctx.fillStyle = "#2a3808";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, bw * 0.14, bw * 0.12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx - bw * 0.18, cy - bw * 0.07, bw * 0.09, bw * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + bw * 0.18, cy - bw * 0.07, bw * 0.09, bw * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Flippers — elongated paddle shapes swept outward from shell
-  ctx.fillStyle = "#3a4e10";
-  // Front flippers (right side — longer, swept back)
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.76, by + bw * 0.20, bw * 0.16, bw * 0.045,  0.6, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.76, by + bw * 0.80, bw * 0.16, bw * 0.045, -0.6, 0, Math.PI * 2); ctx.fill();
-  // Rear flippers (left side — shorter)
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.24, by + bw * 0.20, bw * 0.13, bw * 0.040, -0.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(bx + bw * 0.24, by + bw * 0.80, bw * 0.13, bw * 0.040,  0.5, 0, Math.PI * 2); ctx.fill();
-
-  // Tail (left side)
-  ctx.fillStyle = "#3a4e10";
-  ctx.beginPath();
-  ctx.ellipse(bx + bw * 0.09, cy, bw * 0.08, bw * 0.05, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Head (right side, facing direction of migration)
-  const headX = bx + bw * 0.88;
-  const headR  = bw * 0.09;
-  ctx.fillStyle = "#1a2808";
-  ctx.beginPath();
-  ctx.ellipse(headX, cy, headR * 1.25, headR, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#4a6018";
-  ctx.beginPath();
-  ctx.ellipse(headX, cy, headR * 1.05, headR * 0.82, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eye
-  ctx.fillStyle = turtle.aggressive ? "#e02010" : "#d8e8b0";
-  ctx.beginPath();
-  ctx.arc(headX + headR * 0.45, cy - headR * 0.35, headR * 0.30, 0, Math.PI * 2);
-  ctx.fill();
-  if (!turtle.aggressive) {
-    ctx.fillStyle = "#1a1a10";
-    ctx.beginPath();
-    ctx.arc(headX + headR * 0.48, cy - headR * 0.38, headR * 0.13, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Dark-red flash overlay on shell body during first 800ms of aggro
-  if (turtle.aggressive && turtle.aggroTime !== undefined) {
-    const elapsed = Date.now() - turtle.aggroTime;
-    if (elapsed < 800) {
-      const pulse = 0.5 + 0.5 * Math.sin((elapsed / 60) * Math.PI);
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = `rgba(180, 0, 0, ${(pulse * 0.65).toFixed(2)})`;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, bw * 0.40, bw * 0.34, 0, 0, Math.PI * 2);
-      ctx.fill();
+    // Aggro pulse — second draw at reduced opacity for flash effect
+    if (turtle.aggressive && turtle.aggroTime !== undefined) {
+      const elapsed = Date.now() - turtle.aggroTime;
+      if (elapsed < 800) {
+        const pulse = 0.5 + 0.5 * Math.sin((elapsed / 60) * Math.PI);
+        ctx.globalAlpha = pulse * 0.5;
+        ctx.filter = 'sepia(1) saturate(20) hue-rotate(300deg)';
+        ctx.drawImage(_img, bx, by, bw, bw);
+        ctx.filter = 'none';
+        ctx.globalAlpha = 1;
+      }
     }
   }
 
